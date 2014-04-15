@@ -1,6 +1,5 @@
 #!/bin/bash
 
-mkdir -p go
 export GOPATH=$PWD
 
 go build noobbot
