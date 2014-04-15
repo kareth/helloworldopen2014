@@ -1,0 +1,5 @@
+#!/bin/bash
+
+source ../scripts/check_pl_args
+
+dist/build/hwo2014bot/hwo2014bot "$@"

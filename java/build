@@ -1,0 +1,10 @@
+#!/bin/bash
+
+source ../config
+
+if [ "$BUILD_MODE" == "offline" ]; then
+  echo "offline build"
+  mvn -B -o package -DskipTests
+else
+  mvn -B package -DskipTests
+fi

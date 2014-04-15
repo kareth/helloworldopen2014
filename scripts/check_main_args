@@ -1,0 +1,6 @@
+#!/bin/bash -e
+
+if [ -z $2 ]; then
+  echo "usage: $0 <host> <port> [<botname>]"
+  exit 1
+fi

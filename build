@@ -1,0 +1,4 @@
+#!/bin/bash
+
+source ./config
+(cd $PL && ./build "$@")

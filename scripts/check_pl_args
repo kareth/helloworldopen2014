@@ -1,0 +1,6 @@
+#!/bin/bash -e
+
+if [ -z $4 ]; then
+  echo "usage: $0 <host> <port> <botname> <botkey>"
+  exit 1
+fi

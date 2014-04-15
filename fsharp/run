@@ -1,0 +1,5 @@
+#!/bin/bash
+
+source ../scripts/check_pl_args
+
+mono bot.exe "$@"

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+source ../config
+
+rustc -O main.rs

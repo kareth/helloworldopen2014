@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -e
+
+source ../config
+
+if [ "$BUILD_MODE" == "offline" ]; then
+  echo "offline build"
+else
+  cabal update
+fi
+
+cabal install

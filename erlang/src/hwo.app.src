@@ -1,0 +1,12 @@
+{application, hwo,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { hwo_app, []}},
+  {env, []}
+ ]}.

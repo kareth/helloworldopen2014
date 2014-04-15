@@ -1,0 +1,9 @@
+#!/bin/bash
+
+source ../config
+
+if [ "$BUILD_MODE" == "offline" ]; then
+  echo "offline build"
+else
+  npm install
+fi
