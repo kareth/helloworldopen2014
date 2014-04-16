@@ -1,2 +1,0 @@
-/usr/bin/ar cr libdefault_bot.a  CMakeFiles/default_bot.dir/bot.cpp.o
-/usr/bin/ranlib libdefault_bot.a
