@@ -1,32 +1,29 @@
-#include "connection.h"
+#include "utils/connection.h"
 
-hwo_connection::hwo_connection(const std::string& host, const std::string& port)
-  : socket(io_service)
-{
+namespace utils {
+
+Connection::Connection(const std::string& host, const std::string& port)
+  : socket(io_service) {
   tcp::resolver resolver(io_service);
   tcp::resolver::query query(host, port);
   boost::asio::connect(socket, resolver.resolve(query));
   response_buf.prepare(8192);
 }
 
-hwo_connection::~hwo_connection()
-{
+Connection::~Connection() {
   socket.close();
 }
 
-jsoncons::json hwo_connection::receive_response(boost::system::error_code& error)
-{
-  boost::asio::read_until(socket, response_buf, "\n", error);
-  if (error)
-  {
+jsoncons::json Connection::receive_response(boost::system::error_code* error) {
+  boost::asio::read_until(socket, response_buf, "\n", *error);
+  if (*error) {
     return jsoncons::json();
   }
   std::istream s(&response_buf);
   return jsoncons::json::parse(s);
 }
 
-void hwo_connection::send_requests(const std::vector<jsoncons::json>& msgs)
-{
+void Connection::send_requests(const std::vector<jsoncons::json>& msgs) {
   jsoncons::output_format format;
   format.escape_all_non_ascii(true);
   boost::asio::streambuf request_buf;
@@ -37,3 +34,5 @@ void hwo_connection::send_requests(const std::vector<jsoncons::json>& msgs)
   }
   socket.send(request_buf.data());
 }
+
+}  // namespace utils

@@ -1,0 +1,3 @@
+/Users/kareth/code/hwo2014-team-2076/cpp/bin/CMakeFiles/bot.dir
+/Users/kareth/code/hwo2014-team-2076/cpp/bin/bots/default/CMakeFiles/default_bot.dir
+/Users/kareth/code/hwo2014-team-2076/cpp/bin/utils/CMakeFiles/utils.dir

@@ -1,0 +1,2 @@
+/usr/bin/ar cr libutils.a  CMakeFiles/utils.dir/connection.cpp.o CMakeFiles/utils.dir/protocol.cpp.o
+/usr/bin/ranlib libutils.a

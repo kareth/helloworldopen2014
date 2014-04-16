@@ -1,0 +1,1 @@
+/usr/bin/c++    -std=c++11 -stdlib=libc++ -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/bot.dir/main.cpp.o  -o bot  /usr/local/lib/libboost_system-mt.dylib utils/libutils.a bots/default/libdefault_bot.a 

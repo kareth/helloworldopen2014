@@ -1,0 +1,2 @@
+#!/bin/bash
+./run testserver.helloworldopen.com 8091
