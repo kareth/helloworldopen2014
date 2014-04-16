@@ -46,7 +46,7 @@ game_logic::msg_vector game_logic::on_game_start(const jsoncons::json& data)
 
 game_logic::msg_vector game_logic::on_car_positions(const jsoncons::json& data)
 {
-  return { make_throttle(0.5) };
+  return { make_throttle(0.6) };
 }
 
 game_logic::msg_vector game_logic::on_crash(const jsoncons::json& data)
