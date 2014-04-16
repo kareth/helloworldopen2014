@@ -25,11 +25,13 @@ include(StyleCheck)
 
 add_subdirectory(utils)
 add_subdirectory(bots)
+add_subdirectory(game)
 
 add_executable(bot main.cpp)
 target_link_libraries(bot
   ${Boost_LIBRARIES}
   utils
+  game
   default_bot
 )
 
