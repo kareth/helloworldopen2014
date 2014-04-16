@@ -13,8 +13,8 @@ SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 INCLUDE_DIRECTORIES("${BASEPATH}")
 INCLUDE_DIRECTORIES("${BASEPATH}/jsoncons/src")
 
-# enable_testing()
-# include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+enable_testing()
+include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 find_package(Boost 1.54.0 COMPONENTS system REQUIRED)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
@@ -23,9 +23,10 @@ include(EnableCxx11)
 include(BuildType)
 include(StyleCheck)
 
-add_subdirectory(utils)
 add_subdirectory(bots)
 add_subdirectory(game)
+add_subdirectory(gtest)
+add_subdirectory(utils)
 
 add_executable(bot main.cpp)
 target_link_libraries(bot
