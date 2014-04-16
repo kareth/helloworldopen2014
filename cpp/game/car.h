@@ -6,6 +6,11 @@ namespace game {
 class Car {
  public:
  private:
+   std::string name_;
+   std::string color_;
+   double length_;
+   double width_;
+   double guide_flag_position_;
 };
 
 }  // namespace game
