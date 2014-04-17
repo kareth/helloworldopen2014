@@ -12,8 +12,9 @@ add_library(bots ${BOTS_SOURCES})
 add_style_check_target(bots "${BOTS_SOURCES}" HWO)
 add_style_check_target(bots "${BOTS_HEADERS}" HWO)
 
-add_subdirectory(default)
+add_subdirectory(basic)
 add_subdirectory(tomek)
+add_subdirectory(piotr)
 
 target_link_libraries(bots
   ${Boost_LIBRARIES}

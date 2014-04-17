@@ -1,6 +1,7 @@
-#include "bots/default/bot.h"
+#include "bots/basic/bot.h"
 
-namespace default_bot {
+namespace bots {
+namespace basic {
 
 Bot::Bot() {
 }
@@ -49,4 +50,5 @@ void Bot::CarSpawned(const std::string& color)  {
   return;
 }
 
-}  // namespace default_bot
+}  // namespace basic
+}  // namespace bots

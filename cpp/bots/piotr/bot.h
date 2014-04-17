@@ -1,5 +1,5 @@
-#ifndef CPP_BOTS_DEFAULT_BOT_H_
-#define CPP_BOTS_DEFAULT_BOT_H_
+#ifndef CPP_BOTS_PIOTR_BOT_H_
+#define CPP_BOTS_PIOTR_BOT_H_
 
 #include <string>
 #include <map>
@@ -7,7 +7,8 @@
 #include "game/command.h"
 #include "game/position.h"
 
-namespace default_bot {
+namespace bots {
+namespace piotr {
 
 class Bot : public bots::BotInterface {
  public:
@@ -27,6 +28,7 @@ class Bot : public bots::BotInterface {
   void CarSpawned(const std::string& color) override;
 };
 
-}  // namespace default_bot
+}  // namespace piotr
+}  // namespace bots
 
-#endif  // CPP_BOTS_DEFAULT_BOT_H_
+#endif  // CPP_BOTS_PIOTR_BOT_H_

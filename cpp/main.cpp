@@ -6,15 +6,18 @@
 #include "utils/connection.h"
 #include "bots/bot_interface.h"
 #include "bots/raw_bot.h"
-#include "bots/default/bot.h"
+#include "bots/basic/bot.h"
 #include "bots/tomek/bot.h"
+#include "bots/piotr/bot.h"
 
 // Does not take ownership
 bots::BotInterface* GetBot(const string& bot_name) {
   if (bot_name == "tomek")
     return new bots::tomek::Bot();
+  if (bot_name == "piotr")
+    return new bots::piotr::Bot();
 
-  return new default_bot::Bot();
+  return new bots::basic::Bot();
 }
 
 void run(utils::Connection* connection, bots::RawBot* bot,
