@@ -1,5 +1,6 @@
 set(GAME_SOURCES
   track.cpp
+  command.cpp
 )
 
 set(GAME_HEADERS
@@ -8,6 +9,7 @@ set(GAME_HEADERS
   position.h
   race.h
   track.h
+  command.h
 )
 
 set(GAME_TESTS

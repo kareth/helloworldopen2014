@@ -4,15 +4,16 @@
 #include "jsoncons/json.hpp"
 #include "utils/protocol.h"
 #include "utils/connection.h"
-#include "bots/bot_api.h"
+#include "bots/bot_interface.h"
+#include "bots/raw_bot.h"
 #include "bots/default/bot.h"
 
 // Does not take ownership
-bots::BotAPI* GetBot() {
+bots::BotInterface* GetRealBot() {
   return new default_bot::Bot();
 }
 
-void run(utils::Connection* connection, bots::BotAPI* bot,
+void run(utils::Connection* connection, bots::RawBot* bot,
     const std::string& name, const std::string& key) {
   connection->send_requests({ utils::make_join(name, key) });
 
@@ -27,7 +28,7 @@ void run(utils::Connection* connection, bots::BotAPI* bot,
       throw boost::system::system_error(error);
     }
 
-    connection->send_requests(bot->react(response));
+    connection->send_requests(bot->React(response));
   }
 }
 
@@ -46,7 +47,7 @@ int main(int argc, const char* argv[]) {
     std::cout << "Host: " << host << ", port: " << port <<
       ", name: " << name << ", key:" << key << std::endl;
 
-    std::unique_ptr<bots::BotAPI> bot(GetBot());
+    std::unique_ptr<bots::RawBot> bot(new bots::RawBot(GetRealBot()));
     utils::Connection connection(host, port);
 
     run(&connection, bot.get(), name, key);

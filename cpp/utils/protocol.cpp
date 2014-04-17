@@ -24,4 +24,13 @@ jsoncons::json make_throttle(double throttle) {
   return make_request("throttle", throttle);
 }
 
+jsoncons::json make_switch(game::Switch s) {
+  if (s == game::kSwitchLeft)
+    return make_request("switchLane", "Left");
+  else if (s == game::kSwitchRight)
+    return make_request("switchLane", "Right");
+  else
+    return make_ping();
+}
+
 }  // namespace utils

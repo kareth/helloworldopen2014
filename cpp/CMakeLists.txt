@@ -33,6 +33,7 @@ target_link_libraries(bot
   ${Boost_LIBRARIES}
   utils
   game
+  bots
   default_bot
 )
 
