@@ -1,0 +1,34 @@
+{"msgType": "carPositions", "data": [
+  {
+    "id": {
+      "name": "Schumacher",
+      "color": "red"
+    },
+    "angle": 0.0,
+    "piecePosition": {
+      "pieceIndex": 0,
+      "inPieceDistance": 0.0,
+      "lane": {
+        "startLaneIndex": 0,
+        "endLaneIndex": 0
+      },
+      "lap": 0
+    }
+  },
+  {
+    "id": {
+      "name": "Rosberg",
+      "color": "blue"
+    },
+    "angle": 45.0,
+    "piecePosition": {
+      "pieceIndex": 0,
+      "inPieceDistance": 20.0,
+      "lane": {
+        "startLaneIndex": 1,
+        "endLaneIndex": 1
+      },
+      "lap": 0
+    }
+  }
+], "gameId": "OIUHGERJWEOI", "gameTick": 0}
