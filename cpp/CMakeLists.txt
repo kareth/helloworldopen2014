@@ -25,6 +25,7 @@ include(StyleCheck)
 
 add_subdirectory(bots)
 add_subdirectory(game)
+add_subdirectory(game/data)
 add_subdirectory(gtest)
 add_subdirectory(utils)
 
