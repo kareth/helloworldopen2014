@@ -8,7 +8,7 @@ using jsoncons::json;
 
 namespace game {
 
-class ParseJsonTest : public testing::Test {
+class TrackParseJsonTest : public testing::Test {
  protected:
   void SetUp() {
     json game_init_json = json::parse_file("data/gameInit.json");
@@ -19,12 +19,12 @@ class ParseJsonTest : public testing::Test {
   Track track_;
 };
 
-TEST_F(ParseJsonTest, ParsesIdAndName) {
+TEST_F(TrackParseJsonTest, ParsesIdAndName) {
   EXPECT_EQ("keimola", track_.id());
   EXPECT_EQ("Keimola", track_.name());
 }
 
-TEST_F(ParseJsonTest, ParsesPieces) {
+TEST_F(TrackParseJsonTest, ParsesPieces) {
   ASSERT_EQ(40, track_.pieces().size());
 
   EXPECT_EQ(PieceType::kStraight, track_.pieces()[0].type());
@@ -41,7 +41,7 @@ TEST_F(ParseJsonTest, ParsesPieces) {
   EXPECT_EQ(true, track_.pieces()[8].has_switch());
 }
 
-TEST_F(ParseJsonTest, ParsesLanes) {
+TEST_F(TrackParseJsonTest, ParsesLanes) {
   ASSERT_EQ(2, track_.lanes().size());
 
   EXPECT_EQ(-10, track_.lanes()[0].distance_from_center());
@@ -51,4 +51,4 @@ TEST_F(ParseJsonTest, ParsesLanes) {
   EXPECT_EQ(1, track_.lanes()[1].index());
 }
 
-}  // game
+}  // namespace game

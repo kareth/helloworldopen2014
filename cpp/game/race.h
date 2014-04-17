@@ -1,17 +1,41 @@
 #ifndef CPP_GAME_RACE_H_
 #define CPP_GAME_RACE_H_
 
+#include <iostream>
+#include <vector>
+
+#include "jsoncons/json.hpp"
+#include "game/car.h"
+#include "game/track.h"
+
 namespace game {
 
 class Race {
  public:
- private:
-   int laps_;
-   int max_lap_time_;
-   bool quick_race_;
+  // The input json should point to the "race" part of the "gameInit"
+  // command. E.g.
+  //
+  // {
+  //   "cars": [],
+  //   "raceSession": {},
+  //   "track": {}
+  // }
+  void ParseFromJson(const jsoncons::json& data);
 
-   Track track_;
-   std::vector<Car> cars_;
+  const int laps() const { return laps_; }
+  const int max_lap_time_ms() const { return max_lap_time_ms_; }
+  const bool quick_race() const { return quick_race_; }
+
+  const Track& track() const { return track_; }
+  const std::vector<Car> cars() const { return cars_; }
+
+ private:
+  int laps_ = 0;
+  int max_lap_time_ms_ = 0;
+  bool quick_race_ = false;
+
+  Track track_;
+  std::vector<Car> cars_;
 };
 
 }  // namespace game

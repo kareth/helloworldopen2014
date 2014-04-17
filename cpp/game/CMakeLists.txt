@@ -1,18 +1,21 @@
 set(GAME_SOURCES
-  track.cpp
+  car.cpp
   command.cpp
+  race.cpp
+  track.cpp
 )
 
 set(GAME_HEADERS
   car.h
+  command.h
   lane.h
   position.h
   race.h
   track.h
-  command.h
 )
 
 set(GAME_TESTS
+  race_test.cpp
   track_test.cpp
 )
 
