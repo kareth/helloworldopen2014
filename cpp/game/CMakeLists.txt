@@ -1,5 +1,4 @@
 set(GAME_SOURCES
-<<<<<<< HEAD
   car.cpp
   position.cpp
   command.cpp
