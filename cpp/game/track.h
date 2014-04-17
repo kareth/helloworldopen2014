@@ -4,31 +4,39 @@
 #include <string>
 #include <vector>
 
+#include "game/piece.h"
+#include "jsoncons/json.hpp"
+
 using std::string;
 using std::vector;
 
-namespace jsoncons {
-class json;
-}
-
 namespace game {
-
-class Lane;
-class Piece;
 
 class Track {
  public:
-  Track(Track&) = delete;
-  void operator=(Track) = delete;
+  Track() {
+  }
 
-  static std::unique_ptr<Track> ParseFromJson(const jsoncons::json& data);
+  const string& id() const { return id_; }
+  const string& name() const { return name_; }
+  const vector<Piece>& pieces() const { return pieces_; }
+
+  // The input json should point to the "track" part of the "gameInit"
+  // command. E.g.
+  //
+  // {
+  //   "id": ...,
+  //   "name": ...,
+  //   "pieces": []
+  // }
+  void ParseFromJson(const jsoncons::json& data);
 
   // TODO(tomek) iterator maybe?
  private:
   string id_;
   string name_;
+
   vector<Piece> pieces_;
-  vector<Lane> lanes_;
 };
 
 }  // namespace game
