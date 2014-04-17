@@ -2,7 +2,9 @@
 #define CPP_BOTS_BOT_INTERFACE_H_
 
 #include <string>
+#include <map>
 #include "game/command.h"
+#include "game/position.h"
 
 namespace bots {
 
@@ -12,8 +14,8 @@ class BotInterface {
   virtual void YourCar(const std::string& color) = 0;
   virtual void NewRace() = 0;
   virtual void GameStarted() = 0;
-  virtual game::Command GetMove() = 0;
-  virtual void CarFinishedLap() = 0;
+  virtual game::Command GetMove(const std::map<std::string, game::Position>& positions) = 0;
+  virtual void CarFinishedLap(const std::string& color) = 0;
   virtual void CarFinishedRace(const std::string& color) = 0;
   virtual void GameEnd() = 0;
   virtual void TournamentEnd() = 0;

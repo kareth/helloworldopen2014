@@ -1,5 +1,6 @@
 set(GAME_SOURCES
   car.cpp
+  position.cpp
   command.cpp
   race.cpp
   track.cpp
@@ -17,6 +18,7 @@ set(GAME_HEADERS
 set(GAME_TESTS
   race_test.cpp
   track_test.cpp
+  position_test.cpp
 )
 
 add_library(game ${GAME_SOURCES})

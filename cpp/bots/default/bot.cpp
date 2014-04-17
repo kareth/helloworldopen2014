@@ -21,11 +21,11 @@ void Bot::GameStarted() {
   return;
 }
 
-game::Command Bot::GetMove(/* vektor/mapa pozycji aut */)  {
+game::Command Bot::GetMove(const std::map<std::string, game::Position>& positions)  {
   return game::Command(0.65);
 }
 
-void Bot::CarFinishedLap(/* Car and results */)  {
+void Bot::CarFinishedLap(const std::string& color /* + results */)  {
   return;
 }
 

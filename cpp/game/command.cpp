@@ -14,4 +14,4 @@ Command::Command(double t, Switch s)
     : throttle_set_(true), switch_set_(true), throttle_(t), switch_(s) {
 }
 
-}  // namespace command
+}  // namespace game

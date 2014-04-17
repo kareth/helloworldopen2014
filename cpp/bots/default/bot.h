@@ -2,8 +2,10 @@
 #define CPP_BOTS_DEFAULT_BOT_H_
 
 #include <string>
+#include <map>
 #include "bots/bot_interface.h"
 #include "game/command.h"
+#include "game/position.h"
 
 namespace default_bot {
 
@@ -15,8 +17,8 @@ class Bot : public bots::BotInterface {
   void YourCar(const std::string& color);
   void NewRace();
   void GameStarted();
-  game::Command GetMove();
-  void CarFinishedLap();
+  game::Command GetMove(const std::map<std::string, game::Position>& positions);
+  void CarFinishedLap(const std::string& color);
   void CarFinishedRace(const std::string& color);
   void GameEnd();
   void TournamentEnd();
