@@ -38,7 +38,7 @@ class Piece {
   }
 
   Piece(double angle, double radius, bool has_switch)
-    : type_(PieceType::kStraight), angle_(angle), radius_(radius),
+    : type_(PieceType::kBent), angle_(angle), radius_(radius),
       has_switch_(has_switch) {
   }
 

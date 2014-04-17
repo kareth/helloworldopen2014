@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "game/piece.h"
+#include "game/lane.h"
 #include "jsoncons/json.hpp"
 
 using std::string;
@@ -20,6 +21,7 @@ class Track {
   const string& id() const { return id_; }
   const string& name() const { return name_; }
   const vector<Piece>& pieces() const { return pieces_; }
+  const vector<Lane>& lanes() const { return lanes_; }
 
   // The input json should point to the "track" part of the "gameInit"
   // command. E.g.
@@ -37,6 +39,7 @@ class Track {
   string name_;
 
   vector<Piece> pieces_;
+  vector<Lane> lanes_;
 };
 
 }  // namespace game
