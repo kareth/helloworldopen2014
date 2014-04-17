@@ -7,18 +7,18 @@ namespace bots {
 
 class BotInterface {
  public:
-  virtual game::Command OnJoin() = 0;
-  virtual game::Command OnYourCar() = 0;
-  virtual game::Command OnGameInit() = 0;
-  virtual game::Command OnGameStart() = 0;
-  virtual game::Command OnCarPositions() = 0;
-  virtual game::Command OnGameEnd() = 0;
+  virtual void JoinedGame() = 0;
+  virtual void YourCar() = 0;
+  virtual void NewRace() = 0;
+  virtual void GameStarted() = 0;
+  virtual game::Command GetMove() = 0;
+  virtual void CarFinishedLap() = 0;
+  virtual void CarFinishedRace() = 0;
+  virtual void GameEnd() = 0;
+  virtual void TournamentEnd() = 0;
 
-  virtual game::Command OnCrash() = 0;
-  virtual game::Command OnSpawn() = 0;
-  virtual game::Command OnLapFinished() = 0;
-  virtual game::Command OnFinish() = 0;
-  virtual game::Command OnError() = 0;
+  virtual void CarCrashed() = 0;
+  virtual void CarSpawned() = 0;
 };
 
 }  // namespace bots

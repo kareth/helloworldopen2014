@@ -12,7 +12,7 @@ enum Switch {
 class Command {
  public:
   Command();
-  Command(double t);
+  explicit Command(double t);
   Command(double t, Switch s);
 
   Switch get_switch() const { return switch_; }
