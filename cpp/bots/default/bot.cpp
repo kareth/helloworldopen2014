@@ -9,7 +9,7 @@ void Bot::JoinedGame() {
   return;
 }
 
-void Bot::YourCar(/* Car */) {
+void Bot::YourCar(const std::string& color) {
   return;
 }
 
@@ -29,7 +29,7 @@ void Bot::CarFinishedLap(/* Car and results */)  {
   return;
 }
 
-void Bot::CarFinishedRace(/* Car */)  {
+void Bot::CarFinishedRace(const std::string& color)  {
   return;
 }
 
@@ -41,11 +41,11 @@ void Bot::TournamentEnd()  {
   return;
 }
 
-void Bot::CarCrashed(/* Car */)  {
+void Bot::CarCrashed(const std::string& color)  {
   return;
 }
 
-void Bot::CarSpawned(/* Car */)  {
+void Bot::CarSpawned(const std::string& color)  {
   return;
 }
 
