@@ -40,8 +40,10 @@ class RawBot {
   msg_vector OnError(const jsoncons::json& data);
   msg_vector OnDNF(const jsoncons::json& data);
 
-
   msg_vector ping() const { return { utils::make_ping() }; }
+
+  // Prints color with color in terminal
+  std::string ColorPrint(const std::string& color) const;
 
   std::unique_ptr<BotInterface> bot_;
   const std::map<std::string, action_fun> action_map_;

@@ -54,11 +54,11 @@ RawBot::msg_vector RawBot::OnJoin(const jsoncons::json& data) {
   return ping();
 }
 
-// TODO(anyone) just get the color
 RawBot::msg_vector RawBot::OnYourCar(const jsoncons::json& data) {
-  std::cout << "Server: Your Car" << std::endl;
+  const auto& color = data["color"].as<std::string>();
+  std::cout << "Server: Your Car - " << ColorPrint(color) << std::endl;
 
-  bot_->YourCar(/* Car */);
+  bot_->YourCar(color);
   return ping();
 }
 
@@ -94,11 +94,10 @@ RawBot::msg_vector RawBot::OnLapFinished(const jsoncons::json& data) {
 }
 
 RawBot::msg_vector RawBot::OnFinish(const jsoncons::json& data) {
-  std::cout << "Server: Finish" << std::endl;
+  const auto& color = data["color"].as<std::string>();
+  std::cout << "Server: " << ColorPrint(color) << " finished the race" << std::endl;
 
-  // TODO(anyone) just color of finished car
-
-  bot_->CarFinishedRace(/* Car */);
+  bot_->CarFinishedRace(color);
   return ping();
 }
 
@@ -118,20 +117,18 @@ RawBot::msg_vector RawBot::OnTournamentEnd(const jsoncons::json& data) {
 }
 
 RawBot::msg_vector RawBot::OnCrash(const jsoncons::json& data) {
-  std::cout << "Server: Someone crashed" << std::endl;
+  const auto& color = data["color"].as<std::string>();
+  std::cout << "Server: " << ColorPrint(color) << " player crashed" << std::endl;
 
-  // TODO(anyone) Parse crash info
-
-  bot_->CarCrashed(/* Car */);
+  bot_->CarCrashed(color);
   return ping();
 }
 
 RawBot::msg_vector RawBot::OnSpawn(const jsoncons::json& data) {
-  std::cout << "Server: Someone restored from crash" << std::endl;
+  const auto& color = data["color"].as<std::string>();
+  std::cout << "Server: " << ColorPrint(color) << " restored from crash" << std::endl;
 
-  // TODO(anyone) Parse spawn info
-
-  bot_->CarSpawned(/* Car */);
+  bot_->CarSpawned(color);
   return ping();
 }
 
@@ -143,6 +140,20 @@ RawBot::msg_vector RawBot::OnError(const jsoncons::json& data) {
 RawBot::msg_vector RawBot::OnDNF(const jsoncons::json& data) {
   std::cout << "Server: Disqualification - " << data["reason"].as<std::string>() << std::endl;
   return ping();
+}
+
+std::string RawBot::ColorPrint(const std::string& color) const {
+  std::map<std::string, std::string> colors {
+    { "red", "\x1B[31m" },
+    { "blue", "\x1B[34m" },
+    { "green", "\x1B[32m" },
+    { "normal", "\x1B[0m" }
+  };
+
+  if (colors.find(color) != colors.end())
+    return colors[color] + color + colors["normal"];
+  else
+    return color;
 }
 
 }  // namespace bots
