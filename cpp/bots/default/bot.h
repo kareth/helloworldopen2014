@@ -10,18 +10,18 @@ class Bot : public bots::BotInterface {
  public:
   Bot();
 
-  game::Command OnJoin();
-  game::Command OnYourCar();
-  game::Command OnGameInit();
-  game::Command OnGameStart();
-  game::Command OnCarPositions();
-  game::Command OnLapFinished();
-  game::Command OnFinish();
-  game::Command OnGameEnd();
+  void JoinedGame();
+  void YourCar();
+  void NewRace();
+  void GameStarted();
+  game::Command GetMove();
+  void CarFinishedLap();
+  void CarFinishedRace();
+  void GameEnd();
+  void TournamentEnd();
 
-  game::Command OnCrash();
-  game::Command OnSpawn();
-  game::Command OnError();
+  void CarCrashed();
+  void CarSpawned();
 };
 
 }  // namespace default_bot

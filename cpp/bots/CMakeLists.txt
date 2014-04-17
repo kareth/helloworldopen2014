@@ -3,7 +3,7 @@ set(BOTS_SOURCES
 )
 
 set(BOTS_HEADERS
-  bot_api.h
+  bot_interface.h
   raw_bot.h
 )
 

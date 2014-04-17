@@ -9,7 +9,7 @@
 #include "jsoncons/json.hpp"
 #include "utils/protocol.h"
 
-#include "bot_interface.h"
+#include "bots/bot_interface.h"
 
 namespace bots {
 
@@ -17,7 +17,7 @@ class RawBot {
  public:
   typedef std::vector<jsoncons::json> msg_vector;
 
-  RawBot(BotInterface* bot);
+  explicit RawBot(BotInterface* bot);
   std::vector<jsoncons::json> React(const jsoncons::json& msg);
 
  private:
@@ -33,10 +33,15 @@ class RawBot {
   msg_vector OnLapFinished(const jsoncons::json& data);
   msg_vector OnFinish(const jsoncons::json& data);
   msg_vector OnGameEnd(const jsoncons::json& data);
+  msg_vector OnTournamentEnd(const jsoncons::json& data);
 
   msg_vector OnCrash(const jsoncons::json& data);
   msg_vector OnSpawn(const jsoncons::json& data);
   msg_vector OnError(const jsoncons::json& data);
+  msg_vector OnDNF(const jsoncons::json& data);
+
+
+  msg_vector ping() const { return { utils::make_ping() }; }
 
   std::unique_ptr<BotInterface> bot_;
   const std::map<std::string, action_fun> action_map_;

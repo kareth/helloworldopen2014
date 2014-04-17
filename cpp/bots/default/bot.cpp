@@ -5,47 +5,48 @@ namespace default_bot {
 Bot::Bot() {
 }
 
-game::Command Bot::OnJoin() {
-  return game::Command();
+void Bot::JoinedGame() {
+  return;
 }
 
-game::Command Bot::OnYourCar() {
-  return game::Command();
+void Bot::YourCar(/* Car */) {
+  return;
 }
 
-game::Command Bot::OnGameInit() {
-  return game::Command();
+void Bot::NewRace(/* Race */) {
+  return;
 }
 
-game::Command Bot::OnGameStart() {
-  return game::Command();
+void Bot::GameStarted() {
+  return;
 }
-game::Command Bot::OnCarPositions()  {
+
+game::Command Bot::GetMove(/* vektor/mapa pozycji aut */)  {
   return game::Command(0.65);
 }
 
-game::Command Bot::OnLapFinished()  {
-  return game::Command();
+void Bot::CarFinishedLap(/* Car and results */)  {
+  return;
 }
 
-game::Command Bot::OnFinish()  {
-  return game::Command();
+void Bot::CarFinishedRace(/* Car */)  {
+  return;
 }
 
-game::Command Bot::OnGameEnd()  {
-  return game::Command();
+void Bot::GameEnd(/* results */)  {
+  return;
 }
 
-game::Command Bot::OnCrash()  {
-  return game::Command();
+void Bot::TournamentEnd()  {
+  return;
 }
 
-game::Command Bot::OnSpawn()  {
-  return game::Command();
+void Bot::CarCrashed(/* Car */)  {
+  return;
 }
 
-game::Command Bot::OnError()  {
-  return game::Command();
+void Bot::CarSpawned(/* Car */)  {
+  return;
 }
 
 }  // namespace default_bot

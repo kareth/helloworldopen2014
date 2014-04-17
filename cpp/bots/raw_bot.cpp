@@ -5,16 +5,18 @@ namespace bots {
 RawBot::RawBot(BotInterface* bot)
   : bot_(bot), action_map_ {
       { "join", &RawBot::OnJoin },
-      { "gameStart", &RawBot::OnGameStart },
-      { "carPositions", &RawBot::OnCarPositions },
-      { "crash", &RawBot::OnCrash },
-      { "spawn", &RawBot::OnSpawn },
-      { "gameEnd", &RawBot::OnGameEnd },
-      { "error", &RawBot::OnError },
       { "yourCar", &RawBot::OnYourCar },
       { "gameInit", &RawBot::OnGameInit },
+      { "gameStart", &RawBot::OnGameStart },
+      { "carPositions", &RawBot::OnCarPositions },
       { "lapFinished", &RawBot::OnLapFinished },
-      { "finish", &RawBot::OnFinish }
+      { "finish", &RawBot::OnFinish },
+      { "gameEnd", &RawBot::OnGameEnd },
+      { "tournamentEnd", &RawBot::OnTournamentEnd },
+      { "crash", &RawBot::OnCrash },
+      { "spawn", &RawBot::OnSpawn },
+      { "error", &RawBot::OnError },
+      { "dnf", &RawBot::OnDNF }
     }
 {
 }
@@ -46,69 +48,101 @@ RawBot::msg_vector RawBot::React(const jsoncons::json& msg) {
   }
 }
 
-// Nothing to parse
 RawBot::msg_vector RawBot::OnJoin(const jsoncons::json& data) {
   std::cout << "Server: Join" << std::endl;
-  return CommandToMsg(bot_->OnJoin());
+  bot_->JoinedGame();
+  return ping();
 }
 
-// TODO just get the color
+// TODO(anyone) just get the color
 RawBot::msg_vector RawBot::OnYourCar(const jsoncons::json& data) {
   std::cout << "Server: Your Car" << std::endl;
-  return CommandToMsg(bot_->OnYourCar());
+
+  bot_->YourCar(/* Car */);
+  return ping();
 }
 
-//TODO very important, parse track info
 RawBot::msg_vector RawBot::OnGameInit(const jsoncons::json& data) {
   std::cout << "Server: Game Init" << std::endl;
-  return CommandToMsg(bot_->OnGameInit());
+
+  // TODO(anyone) very important, parse track info
+
+  bot_->NewRace(/* Race */);
+  return ping();
 }
 
-// Nothing to parse
 RawBot::msg_vector RawBot::OnGameStart(const jsoncons::json& data) {
   std::cout << "Server: Game start" << std::endl;
-  return CommandToMsg(bot_->OnGameStart());
+
+  bot_->GameStarted();
+  return ping();
 }
 
-// TODO Parse car positions
 RawBot::msg_vector RawBot::OnCarPositions(const jsoncons::json& data) {
-  return CommandToMsg(bot_->OnCarPositions());
+  // TODO(anyone) Parse car positions
+
+  return CommandToMsg(bot_->GetMove(/* vektor/mapa pozycji aut */));
 }
 
-// TODO just color and times
 RawBot::msg_vector RawBot::OnLapFinished(const jsoncons::json& data) {
   std::cout << "Server: Lap Finished" << std::endl;
-  return CommandToMsg(bot_->OnLapFinished());
+
+  // TODO(anyone) just color and times
+
+  bot_->CarFinishedLap(/* Car and results */);
+  return ping();
 }
 
-// TODO just color of finished car
 RawBot::msg_vector RawBot::OnFinish(const jsoncons::json& data) {
   std::cout << "Server: Finish" << std::endl;
-  return CommandToMsg(bot_->OnFinish());
+
+  // TODO(anyone) just color of finished car
+
+  bot_->CarFinishedRace(/* Car */);
+  return ping();
 }
 
-// TODO Parge gmae results
 RawBot::msg_vector RawBot::OnGameEnd(const jsoncons::json& data) {
   std::cout << "Server: Game end" << std::endl;
-  return CommandToMsg(bot_->OnGameEnd());
+
+  // TODO(anyone) Parge gmae results
+
+  bot_->GameEnd(/* results */);
+  return ping();
 }
 
-// TODO Parse crash info
+RawBot::msg_vector RawBot::OnTournamentEnd(const jsoncons::json& data) {
+  std::cout << "Server: Tournament end" << std::endl;
+  bot_->TournamentEnd();
+  return ping();
+}
+
 RawBot::msg_vector RawBot::OnCrash(const jsoncons::json& data) {
   std::cout << "Server: Someone crashed" << std::endl;
-  return CommandToMsg(bot_->OnCrash());
+
+  // TODO(anyone) Parse crash info
+
+  bot_->CarCrashed(/* Car */);
+  return ping();
 }
 
-// TODO Parse spawn info
 RawBot::msg_vector RawBot::OnSpawn(const jsoncons::json& data) {
   std::cout << "Server: Someone restored from crash" << std::endl;
-  return CommandToMsg(bot_->OnSpawn());
+
+  // TODO(anyone) Parse spawn info
+
+  bot_->CarSpawned(/* Car */);
+  return ping();
 }
 
-//TODO Parse error? do we want it?
 RawBot::msg_vector RawBot::OnError(const jsoncons::json& data) {
   std::cout << "Server: Error - " << data.to_string() << std::endl;
-  return CommandToMsg(bot_->OnError());
+  return ping();
 }
 
-}  // namespace default_bot
+RawBot::msg_vector RawBot::OnDNF(const jsoncons::json& data) {
+  std::cout << "Server: Disqualification - " << data["reason"].as<std::string>() << std::endl;
+  return ping();
+}
+
+}  // namespace bots
