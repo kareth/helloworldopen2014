@@ -6,6 +6,7 @@
 
 #include "game/piece.h"
 #include "game/lane.h"
+#include "game/position.h"
 #include "jsoncons/json.hpp"
 
 using std::string;
@@ -33,7 +34,6 @@ class Track {
   // }
   void ParseFromJson(const jsoncons::json& data);
 
-  // TODO(tomek) iterator maybe?
  private:
   string id_;
   string name_;

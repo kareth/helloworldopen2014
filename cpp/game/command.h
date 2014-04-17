@@ -13,6 +13,7 @@ class Command {
  public:
   Command();
   explicit Command(double t);
+  // TODO(tomek) Can you have both throttle and switch????
   Command(double t, Switch s);
 
   Switch get_switch() const { return switch_; }

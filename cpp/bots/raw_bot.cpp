@@ -71,7 +71,6 @@ RawBot::msg_vector RawBot::OnGameInit(const jsoncons::json& data) {
   game::Race race;
   race.ParseFromJson(data["race"]);
 
-  std::cout << "Game Initialized" << std::endl;
   bot_->NewRace(race);
   return ping();
 }

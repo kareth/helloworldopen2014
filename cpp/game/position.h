@@ -24,14 +24,14 @@ class Position {
   std::string ParseFromJson(const jsoncons::json& data);
 
  private:
-  double angle_;
-  int piece_index_;
-  double piece_distance_;
+  double angle_ = -1;
+  int piece_index_ = -1;
+  double piece_distance_ = -1;
 
-  int start_lane_;
-  int end_lane_;
+  int start_lane_ = -1;
+  int end_lane_ = -1;
 
-  int lap_;
+  int lap_ = -1;
 };
 
 }  // namespace game
