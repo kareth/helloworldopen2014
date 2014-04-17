@@ -37,6 +37,7 @@ target_link_libraries(bot
   game
   bots
   default_bot
+  bots_tomek
 )
 
 add_style_check_target(bot main.cpp HWO)

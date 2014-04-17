@@ -13,7 +13,7 @@ void Bot::YourCar(const std::string& color) {
   return;
 }
 
-void Bot::NewRace(/* Race */) {
+void Bot::NewRace(const game::Race& race) {
   return;
 }
 

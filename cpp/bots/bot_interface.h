@@ -6,13 +6,18 @@
 #include "game/command.h"
 #include "game/position.h"
 
+namespace game {
+class Race;
+}
+
 namespace bots {
 
 class BotInterface {
  public:
+  virtual ~BotInterface() {}
   virtual void JoinedGame() = 0;
   virtual void YourCar(const std::string& color) = 0;
-  virtual void NewRace() = 0;
+  virtual void NewRace(const game::Race& race) = 0;
   virtual void GameStarted() = 0;
   virtual game::Command GetMove(const std::map<std::string, game::Position>& positions) = 0;
   virtual void CarFinishedLap(const std::string& color) = 0;

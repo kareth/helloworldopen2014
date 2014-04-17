@@ -1,6 +1,7 @@
 #include "bots/raw_bot.h"
 
 #include "game/position.h"
+#include "game/race.h"
 
 namespace bots {
 
@@ -39,8 +40,8 @@ RawBot::msg_vector RawBot::CommandToMsg(const game::Command& command) {
 }
 
 RawBot::msg_vector RawBot::React(const jsoncons::json& msg) {
-  const auto& msg_type = msg["msgType"].as_string();
-  const auto& data = msg["data"];
+  const auto& msg_type = msg.get("msgType", jsoncons::json("")).as_string();
+  const auto& data = msg.get("data", jsoncons::json(""));
   auto action_it = action_map_.find(msg_type);
   if (action_it != action_map_.end()) {
     return (action_it->second)(this, data);
@@ -67,9 +68,11 @@ RawBot::msg_vector RawBot::OnYourCar(const jsoncons::json& data) {
 RawBot::msg_vector RawBot::OnGameInit(const jsoncons::json& data) {
   std::cout << "Server: Game Init" << std::endl;
 
-  // TODO(anyone) very important, parse track info
+  game::Race race;
+  race.ParseFromJson(data["race"]);
 
-  bot_->NewRace(/* Race */);
+  std::cout << "Game Initialized" << std::endl;
+  bot_->NewRace(race);
   return ping();
 }
 

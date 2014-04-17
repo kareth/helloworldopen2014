@@ -7,9 +7,13 @@
 #include "bots/bot_interface.h"
 #include "bots/raw_bot.h"
 #include "bots/default/bot.h"
+#include "bots/tomek/bot.h"
 
 // Does not take ownership
-bots::BotInterface* GetRealBot() {
+bots::BotInterface* GetBot(const string& bot_name) {
+  if (bot_name == "tomek")
+    return new bots::tomek::Bot();
+
   return new default_bot::Bot();
 }
 
@@ -47,11 +51,12 @@ int main(int argc, const char* argv[]) {
     std::cout << "Host: " << host << ", port: " << port <<
       ", name: " << name << ", key:" << key << std::endl;
 
-    std::unique_ptr<bots::RawBot> bot(new bots::RawBot(GetRealBot()));
+    std::unique_ptr<bots::RawBot> bot(new bots::RawBot(GetBot(name)));
     utils::Connection connection(host, port);
 
     run(&connection, bot.get(), name, key);
   } catch (const std::exception& e) {
+    std::cerr << "EXCEPTION!!!" << std::endl;
     std::cerr << e.what() << std::endl;
     return 2;
   }

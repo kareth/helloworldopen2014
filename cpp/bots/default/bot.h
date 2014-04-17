@@ -13,18 +13,18 @@ class Bot : public bots::BotInterface {
  public:
   Bot();
 
-  void JoinedGame();
-  void YourCar(const std::string& color);
-  void NewRace();
-  void GameStarted();
-  game::Command GetMove(const std::map<std::string, game::Position>& positions);
-  void CarFinishedLap(const std::string& color);
-  void CarFinishedRace(const std::string& color);
-  void GameEnd();
-  void TournamentEnd();
+  void JoinedGame() override;
+  void YourCar(const std::string& color) override;
+  void NewRace(const game::Race& race) override;
+  void GameStarted() override;
+  game::Command GetMove(const std::map<std::string, game::Position>& positions) override;
+  void CarFinishedLap(const std::string& color) override;
+  void CarFinishedRace(const std::string& color) override;
+  void GameEnd() override;
+  void TournamentEnd() override;
 
-  void CarCrashed(const std::string& color);
-  void CarSpawned(const std::string& color);
+  void CarCrashed(const std::string& color) override;
+  void CarSpawned(const std::string& color) override;
 };
 
 }  // namespace default_bot

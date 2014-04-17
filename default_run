@@ -1,2 +1,2 @@
 #!/bin/bash
-./run testserver.helloworldopen.com 8091
+./run testserver.helloworldopen.com 8091 $@
