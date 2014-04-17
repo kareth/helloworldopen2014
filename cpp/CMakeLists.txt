@@ -9,6 +9,7 @@ option(SET_DEBUG "Compiler debugging flags" OFF)
 SET(BASEPATH "${CMAKE_SOURCE_DIR}")
 
 SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+SET(gtest_SOURCE_DIR "${BASEPATH}/gtest")
 
 INCLUDE_DIRECTORIES("${BASEPATH}")
 INCLUDE_DIRECTORIES("${BASEPATH}/jsoncons/src")
@@ -23,10 +24,10 @@ include(EnableCxx11)
 include(BuildType)
 include(StyleCheck)
 
+add_subdirectory(gtest)
 add_subdirectory(bots)
 add_subdirectory(game)
 add_subdirectory(game/data)
-add_subdirectory(gtest)
 add_subdirectory(utils)
 
 add_executable(bot main.cpp)
