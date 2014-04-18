@@ -10,6 +10,7 @@
 #include "game/command.h"
 #include "game/position.h"
 #include "game/race.h"
+#include "game/car_tracker.h"
 
 namespace bots {
 namespace tomek {
@@ -33,12 +34,11 @@ class Bot : public bots::BotInterface {
   void CarSpawned(const std::string& color) override;
 
  private:
-  std::ofstream stats_file_;
   game::Race race_;
   std::string color_;
 
-  double last_velocity_ = 0;
-  vector<game::Position> positions_;
+  // TODO(tomek) create trackers for other cars?
+  std::unique_ptr<game::CarTracker> car_tracker_;
 };
 
 }  // namespace bots

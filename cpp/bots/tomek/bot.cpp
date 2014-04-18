@@ -1,47 +1,34 @@
 #include "bots/tomek/bot.h"
 
 using game::Position;
-using game::Command;
+using game::CarTracker;
 using game::Race;
+using game::Command;
 
 namespace bots {
 namespace tomek {
 
 Bot::Bot() {
-  stats_file_.open ("bin/stats.csv");
-  stats_file_ << "piece_index,in_piece_distance,angle,velocity" << std::endl;
 }
 
 Bot::~Bot() {
-  stats_file_.close();
 }
 
 game::Command Bot::GetMove(
     const std::map<std::string, Position>& positions)  {
-  auto it = positions.find(color_);
-  if (it == positions.end()) {
-    std::cout << "Unknown position for color: " << color_ << std::endl;
-    return Command(0);
-  }
-  auto& current_position = it->second;
-  double velocity = 0;
-  if (!positions_.empty()) {
-    auto& last_position = positions_.back();
-    if (last_position.piece() != current_position.piece()) {
-      velocity = last_velocity_;
-    } else {
-      velocity = current_position.piece_distance() - last_position.piece_distance();
-    }
-  }
-  last_velocity_ = velocity;
+  car_tracker_->Record(positions.find(color_)->second);
 
-  stats_file_ << current_position.piece() << ","
-              << current_position.piece_distance() << ","
-              << current_position.angle() << ","
-              << velocity << std::endl;
+  double throttle = 0;
+  if (car_tracker_->angle() < 1) {
+    throttle = 1.0;
+  } else if (car_tracker_->angle() < 30) {
+    throttle = 0.6;
+  } else {
+    throttle = 0.1;
+  }
 
-  positions_.push_back(current_position);
-  return Command(0.6);
+  car_tracker_->RecordThrottle(throttle);
+  return Command(throttle);
 }
 
 void Bot::JoinedGame() {
@@ -53,6 +40,7 @@ void Bot::YourCar(const std::string& color) {
 
 void Bot::NewRace(const Race& race) {
   race_ = race;
+  car_tracker_.reset(new CarTracker(&race_));
 }
 
 void Bot::GameStarted() {
@@ -71,6 +59,7 @@ void Bot::TournamentEnd()  {
 }
 
 void Bot::CarCrashed(const std::string& color)  {
+  car_tracker_->RecordCarCrash();
 }
 
 void Bot::CarSpawned(const std::string& color)  {
