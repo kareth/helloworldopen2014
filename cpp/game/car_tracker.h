@@ -38,41 +38,52 @@ class ErrorTracker {
 
 // We assume following drift model
 //
-// angle = x0 * previous_angle + x1 * previous_previous_angle + x2 * previous_velocity
+// angle = x0 * previous_angle + x1 * previous_previous_angle + x2 * previous_velocity + x3
 class DriftModel {
  public:
-  DriftModel() : radius_(0.0) {}
-  DriftModel(double radius) : radius_(radius) {}
+  DriftModel() {}
+  explicit DriftModel(double radius) : radius_(radius) {
+    char filename[50];
+    sprintf (filename, "bin/drift.%lf.csv", radius);
+    file_.open (filename);
+    file_ << "p_angle,p_p_angle,p_velocity,angle" << std::endl;
+  }
 
   ~DriftModel() {
     std::cout << "==== Drift Model ====" << std::endl;
     std::cout << "radius: " << radius_ << std::endl;
-    std::cout << "x0: " << x_[0] << " x1: " << x_[1] << " x2: " << x_[2] << std::endl;
+    if (IsReady()) {
+      std::cout << "x0: " << x_[0] << " x1: " << x_[1] << " x2: " << x_[2] << " x3: " << x_[3] << std::endl;
+    }
     error_tracker_.Print();
     std::cout << std::endl;
+
+    file_.close();
   }
 
   void Record(double angle, double previous_angle,
               double previous_previous_angle, double previous_velocity) {
     if (angle == 0) return;
 
+    file_ << previous_angle << "," << previous_previous_angle << "," << previous_velocity << "," << angle << std::endl;
+
     if (IsReady()) {
       error_tracker_.Add(angle, Predict(previous_angle, previous_previous_angle, previous_velocity));
     }
 
-    if (m_.size() < 3) {
+    if (m_.size() < 4) {
       //std::cout << "radius: " << radius << "," << angle << "," << previous_angle << "," << previous_previous_angle << "," << previous_velocity << std::endl;
-      m_.push_back({previous_angle, previous_previous_angle, previous_velocity});
+      m_.push_back({previous_angle, previous_previous_angle, previous_velocity, 1});
       b_.push_back(angle);
     }
 
-    if (m_.size() == 3 && !IsReady()) {
+    if (m_.size() == 4 && !IsReady()) {
       Train();
     }
   }
 
   double Predict(double angle, double previous_angle, double velocity) {
-    return x_[0] * angle + x_[1] * previous_angle + x_[2] * velocity;
+    return x_[0] * angle + x_[1] * previous_angle + x_[2] * velocity + x_[3];
   }
 
   bool IsReady() {
@@ -86,6 +97,7 @@ class DriftModel {
   }
 
   double radius_ = 0.0;
+  std::ofstream file_;
 
   bool ready_ = false;
   // {previous_angle, previous_previous_angle, previous_velocity, angle}

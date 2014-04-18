@@ -41,7 +41,7 @@ TEST(DriftTest, Basic) {
   DriftModel drift_model_;
 
   // Record 3 first values to train the model.
-  for (int i = 0; i < 3; ++i) {
+  for (int i = 0; i < 4; ++i) {
     EXPECT_FALSE(drift_model_.IsReady());
     drift_model_.Record(angle[i + 2], angle[i + 1], angle[i], velocity[i + 1]);
   }
