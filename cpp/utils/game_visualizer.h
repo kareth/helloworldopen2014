@@ -37,6 +37,7 @@ class GameVisualizer {
       lap_times_[result.color()] = vector<int>();
 
     lap_times_[result.color()].push_back(result.lap_time());
+    Print();
   }
 
   void CarCrashed(const std::string& color) {
@@ -100,9 +101,8 @@ class GameVisualizer {
 
     for (int i = 0; i < lap_times_[color].size(); i++) {
       std::cout << std::right << std::setw(pieces_ / 2 + 3) <<
-        std::setprecision(3) << double(lap_times_[color][i]) / 1000.0;
+         double(lap_times_[color][i]) / 1000.0;
       std::cout << std::left << std::setw(pieces_ - pieces_ / 2 - 3) << "s" << "|";
-      std::cout << std::defaultfloat;
     }
   }
 

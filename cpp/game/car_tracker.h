@@ -30,10 +30,44 @@ class ErrorTracker {
     std::cout << "Error Avg: " << (error_sum_ / error_count_) << " Max: " << error_max_ << std::endl;
   }
 
+  double Average() {
+    return error_sum_ / error_count_;
+  }
+
  private:
   double error_max_ = 0.0;
   double error_sum_ = 0.0;
   int error_count_ = 0;
+};
+
+
+class SingleDriftModel {
+ public:
+  SingleDriftModel(const vector<double>& x) : x_(x) {
+  }
+
+  void Record(double angle, double previous_angle,
+              double previous_previous_angle, double previous_velocity) {
+    error_tracker_.Add(angle, Predict(previous_angle, previous_previous_angle, previous_velocity));
+  }
+
+  double Predict(double angle, double previous_angle, double velocity) {
+    return x_[0] * angle + x_[1] * previous_angle + x_[2] * velocity + x_[3];
+  }
+
+  double Accuracy() {
+    return error_tracker_.Average();
+  }
+
+  void PrintAccuracy() {
+    error_tracker_.Print();
+  }
+
+  const vector<double>& x() const { return x_; }
+
+ private:
+  vector<double> x_;
+  ErrorTracker error_tracker_;
 };
 
 // We assume following drift model
@@ -56,7 +90,12 @@ class DriftModel {
       std::cout << "x0: " << x_[0] << " x1: " << x_[1] << " x2: " << x_[2] << " x3: " << x_[3] << std::endl;
     }
     error_tracker_.Print();
+    models_[PickBestModel()]->PrintAccuracy();
+
     std::cout << std::endl;
+
+    for (int i = 0; i < models_.size(); i++)
+      delete models_[i];
 
     file_.close();
   }
@@ -71,14 +110,16 @@ class DriftModel {
       error_tracker_.Add(angle, Predict(previous_angle, previous_previous_angle, previous_velocity));
     }
 
-    if (m_.size() < 4) {
-      //std::cout << "radius: " << radius << "," << angle << "," << previous_angle << "," << previous_previous_angle << "," << previous_velocity << std::endl;
-      m_.push_back({previous_angle, previous_previous_angle, previous_velocity, 1});
-      b_.push_back(angle);
-    }
+    // Update models accuracy
+    for (auto& model : models_)
+      model->Record(angle, previous_angle, previous_previous_angle, previous_velocity);
 
-    if (m_.size() == 4 && !IsReady()) {
-      Train();
+    m_.push_back({previous_angle, previous_previous_angle, previous_velocity, 1});
+    b_.push_back(angle);
+
+    if (m_.size() >= 4) {
+      AddNewModel();
+      PickBestModel();
     }
   }
 
@@ -91,9 +132,30 @@ class DriftModel {
   }
 
  private:
-  void Train() {
-    GaussDouble(m_, b_, x_);
+  void AddNewModel() {
+    vector<double> x;
+    vector<double> b;
+    vector<vector<double>> m;
+    for (int i = m_.size() - 4; i < m_.size(); i++) {
+      m.push_back(m_[i]);
+      b.push_back(b_[i]);
+    }
+    GaussDouble(m, b, x);
+    models_.push_back(new SingleDriftModel(x));
+
+    for (int i = 0; i < m_.size(); i++)
+      models_.back()->Record(b_[i], m_[i][0], m_[i][1], m_[i][2]);
+
     ready_ = true;
+  }
+
+  int PickBestModel() {
+    int best = 0;
+    for (int i = 0; i < models_.size(); i++)
+      if (models_[i]->Accuracy() < models_[best]->Accuracy())
+        best = i;
+    x_ = models_[best]->x();
+    return best;
   }
 
   double radius_ = 0.0;
@@ -105,8 +167,9 @@ class DriftModel {
   vector<double> b_;
 
   vector<double> x_;
-
   ErrorTracker error_tracker_;
+
+  vector<SingleDriftModel*> models_;
 };
 
 // We assume following velocity model
