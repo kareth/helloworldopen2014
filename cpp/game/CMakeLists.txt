@@ -4,6 +4,7 @@ set(GAME_SOURCES
   command.cpp
   race.cpp
   track.cpp
+  result.cpp
 )
 
 set(GAME_HEADERS
@@ -15,6 +16,7 @@ set(GAME_HEADERS
   position.h
   race.h
   track.h
+  result.h
 )
 
 set(GAME_TESTS

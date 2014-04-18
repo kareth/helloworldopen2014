@@ -6,7 +6,7 @@
 namespace bots {
 
 RawBot::RawBot(BotInterface* bot)
-  : bot_(bot), action_map_ {
+  : bot_(bot), visualizer_(), action_map_ {
       { "join", &RawBot::OnJoin },
       { "yourCar", &RawBot::OnYourCar },
       { "gameInit", &RawBot::OnGameInit },
@@ -71,6 +71,7 @@ RawBot::msg_vector RawBot::OnGameInit(const jsoncons::json& data) {
   game::Race race;
   race.ParseFromJson(data["race"]);
 
+  visualizer_.set_race(race);
   bot_->NewRace(race);
   return ping();
 }
@@ -78,6 +79,7 @@ RawBot::msg_vector RawBot::OnGameInit(const jsoncons::json& data) {
 RawBot::msg_vector RawBot::OnGameStart(const jsoncons::json& data) {
   std::cout << "Server: Game start" << std::endl;
 
+  visualizer_.GameStart();
   bot_->GameStarted();
   return ping();
 }
@@ -90,31 +92,32 @@ RawBot::msg_vector RawBot::OnCarPositions(const jsoncons::json& data) {
     positions[color] = position;
   }
 
+  visualizer_.Update(positions);
   return CommandToMsg(bot_->GetMove(positions));
 }
 
 RawBot::msg_vector RawBot::OnLapFinished(const jsoncons::json& data) {
-  const auto& color = data["car"]["color"].as_string();
-  std::cout << "Server: " << ColorPrint(color) << " Finished lap" << std::endl;
+  game::Result result;
+  result.ParseFromJson(data);
 
-  // TODO(anyone) times
+  visualizer_.LapFinished(result);
 
-  bot_->CarFinishedLap(color /* + results */);
+  bot_->CarFinishedLap(result.color() /* + results */);
   return ping();
 }
 
 RawBot::msg_vector RawBot::OnFinish(const jsoncons::json& data) {
   const auto& color = data["color"].as_string();
-  std::cout << "Server: " << ColorPrint(color) << " finished the race" << std::endl;
+
+  visualizer_.CarFinishedRace(color);
 
   bot_->CarFinishedRace(color);
   return ping();
 }
 
 RawBot::msg_vector RawBot::OnGameEnd(const jsoncons::json& data) {
+  visualizer_.GameEnd();
   std::cout << "Server: Game end" << std::endl;
-
-  // TODO(anyone) Parge gmae results
 
   bot_->GameEnd(/* results */);
   return ping();
@@ -128,15 +131,14 @@ RawBot::msg_vector RawBot::OnTournamentEnd(const jsoncons::json& data) {
 
 RawBot::msg_vector RawBot::OnCrash(const jsoncons::json& data) {
   const auto& color = data["color"].as_string();
-  std::cout << "Server: " << ColorPrint(color) << " player crashed" << std::endl;
 
+  visualizer_.CarCrashed(color);
   bot_->CarCrashed(color);
   return ping();
 }
 
 RawBot::msg_vector RawBot::OnSpawn(const jsoncons::json& data) {
   const auto& color = data["color"].as_string();
-  std::cout << "Server: " << ColorPrint(color) << " restored from crash" << std::endl;
 
   bot_->CarSpawned(color);
   return ping();

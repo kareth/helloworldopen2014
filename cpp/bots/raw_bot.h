@@ -10,6 +10,7 @@
 #include "utils/protocol.h"
 
 #include "bots/bot_interface.h"
+#include "utils/game_visualizer.h"
 
 namespace bots {
 
@@ -47,6 +48,7 @@ class RawBot {
 
   std::unique_ptr<BotInterface> bot_;
   const std::map<std::string, action_fun> action_map_;
+  utils::GameVisualizer visualizer_;
 };
 
 }  // namespace bots

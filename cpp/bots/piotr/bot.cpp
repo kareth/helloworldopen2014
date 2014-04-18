@@ -62,9 +62,9 @@ game::Command Bot::GetMove(const map<string, Position>& positions)  {
 
   int straight = (race_.track().PieceFor(my_pos).type() == PieceType::kStraight);
 
-  std::cout << "Straight? " << straight << "/" << angle <<
+  /*std::cout << "Straight? " << straight << "/" << angle <<
     "; Speed: " << current_speed << " can brake? " <<
-    can_brake << std::endl;
+    can_brake << std::endl;*/
 
   if (race_.track().PieceFor(my_pos).type() == PieceType::kStraight) {
     if (can_brake) {
