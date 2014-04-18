@@ -174,12 +174,16 @@ class CrashModel {
     std::cout << "==== Crash Model ====" << std::endl;
     std::cout << "threshold: " << angle_threshold_ << std::endl;
     std::cout << (ready_ ? "with crash" : "without crash") << std::endl;
-    std::cout << std::endl;
+    std::cout << "Crashes: ";
+    for (double c : crashes_)
+      std::cout << c << ", ";
+    std::cout << std::endl << std::endl;
   }
 
   void RecordCarCrash(double angle) {
     ready_ = true;
     angle_threshold_ = fmax(angle_threshold_, angle);
+    crashes_.push_back(angle);
   }
 
   void Record(double angle) {
@@ -202,6 +206,7 @@ class CrashModel {
   // HACK(tomek) Hardcoded for finland track. Change to false and 0.
   bool ready_ = false;
   double angle_threshold_ = 0.0;
+  vector<double> crashes_;
 };
 
 template <typename T> int sgn(T val) {
