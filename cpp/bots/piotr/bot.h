@@ -7,6 +7,11 @@
 #include "game/command.h"
 #include "game/position.h"
 
+#include "game/race.h"
+#include "game/piece.h"
+
+#include "physics/speed_tracker.h"
+
 namespace bots {
 namespace piotr {
 
@@ -26,6 +31,12 @@ class Bot : public bots::BotInterface {
 
   void CarCrashed(const std::string& color) override;
   void CarSpawned(const std::string& color) override;
+
+ private:
+  double DistanceFromBent(const game::Position& position, double* angle) const;
+
+  game::Race race_;
+  std::unique_ptr<physics::SpeedTracker> speed_tracker_;
 };
 
 }  // namespace piotr

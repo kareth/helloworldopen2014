@@ -2,8 +2,9 @@ cmake_minimum_required (VERSION 2.8)
 
 project (HWO)
 
-option(SET_WARNINGS "Compiler warning flags" ON)
+option(SET_WARNINGS "Compiler warning flags" OFF)
 option(SET_DEBUG "Compiler debugging flags" OFF)
+option(SET_CPPLINT "Style Check" ON)
 
 # Allow absolute paths
 SET(BASEPATH "${CMAKE_SOURCE_DIR}")
@@ -27,18 +28,19 @@ include(StyleCheck)
 add_subdirectory(gtest)
 add_subdirectory(bots)
 add_subdirectory(game)
-add_subdirectory(game/data)
 add_subdirectory(utils)
+add_subdirectory(physics)
 
 add_executable(bot main.cpp)
 target_link_libraries(bot
   ${Boost_LIBRARIES}
-  utils
-  game
   bots
   bots_basic
   bots_tomek
   bots_piotr
+  game
+  physics
+  utils
 )
 
 add_style_check_target(bot main.cpp HWO)

@@ -24,6 +24,10 @@ class Track {
   const vector<Piece>& pieces() const { return pieces_; }
   const vector<Lane>& lanes() const { return lanes_; }
 
+  // Returns current piece for car position.
+  // offset returns current_index + offset
+  const game::Piece& PieceFor(const game::Position& position, int offset = 0) const;
+
   // The input json should point to the "track" part of the "gameInit"
   // command. E.g.
   //

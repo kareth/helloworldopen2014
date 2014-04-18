@@ -34,7 +34,7 @@ function(add_style_check_target TARGET_NAME SOURCES_LIST PROJECT)
     return()
   endif()
 
-  if(NOT SET_WARNINGS)
+  if(NOT SET_CPPLINT)
     return()
   endif()
 

@@ -14,4 +14,5 @@ add_style_check_target(bots_piotr "${BOTS_PIOTR_HEADERS}" HWO)
 target_link_libraries(bots_piotr
   ${Boost_LIBRARIES}
   utils
+  physics
   game)

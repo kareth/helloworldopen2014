@@ -41,4 +41,9 @@ void Track::ParseFromJson(const json& data) {
   }
 }
 
+const Piece& Track::PieceFor(const Position& position, int offset) const {
+  int index = (position.piece() + offset + pieces_.size()) % pieces_.size();
+  return pieces_.at(index);
+}
+
 }  // namespace game
