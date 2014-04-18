@@ -10,6 +10,7 @@ set(GAME_HEADERS
   car.h
   car_tracker.h
   command.h
+  gauss.h
   lane.h
   position.h
   race.h
@@ -18,6 +19,7 @@ set(GAME_HEADERS
 
 set(GAME_TESTS
   race_test.cpp
+  gauss_test.cpp
   track_test.cpp
   position_test.cpp
   car_tracker_test.cpp

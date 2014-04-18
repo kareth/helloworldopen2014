@@ -8,6 +8,7 @@
 
 #include "game/race.h"
 #include "game/position.h"
+#include "game/gauss.h"
 
 namespace game {
 
@@ -34,6 +35,13 @@ class ErrorTracker {
 };
 
 class DriftModel {
+ public:
+  ~DriftModel() {
+    std::cout << "==== Drift Model ====" << std::endl;
+  }
+
+  void Record(double radius, double angle, double previous_angle) {
+  }
 };
 
 // We assume following velocity model
@@ -42,7 +50,6 @@ class DriftModel {
 class VelocityModel {
  public:
   ~VelocityModel() {
-    // Dump statistics + errors
     std::cout << "==== Velocity Model ====" << std::endl;
     std::cout << "x: " << x_ << " y: " << y_ << std::endl;
     error_tracker_.Print();
@@ -57,9 +64,9 @@ class VelocityModel {
       error_tracker_.Add(velocity, Predict(previous_velocity, previous_throttle));
     }
 
-    model_.push_back({velocity, previous_velocity, previous_throttle});
+    m_.push_back({velocity, previous_velocity, previous_throttle});
 
-    if (model_.size() == 2) {
+    if (m_.size() == 2) {
       Train();
     }
   }
@@ -75,19 +82,23 @@ class VelocityModel {
 
  private:
   void Train() {
-    // TODO(tomek) use gauss.
-    y_ = model_[0][0] / model_[0][2];
-    x_ = (model_[1][0] - y_ * model_[1][2]) / model_[1][1];
+    vector<vector<double>> a{{m_[0][1],m_[0][2]},{m_[1][1],m_[1][2]}};
+    vector<double> b{m_[0][0],m_[1][0]} ;
+    vector<double> x;
+
+    GaussDouble(a, b, x);
+
+    x_ = x[0];
+    y_ = x[1];
     ready_ = true;
   }
 
-  // TODO remove it
   double x_ = 1;
   double y_ = 0;
 
   // {velocity, previous_velocity, previous_throttle}
   bool ready_ = false;
-  vector<vector<double> > model_;
+  vector<vector<double> > m_;
 
   ErrorTracker error_tracker_;
 };
