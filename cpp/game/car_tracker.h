@@ -12,6 +12,8 @@
 #include "game/gauss.h"
 #include "game/simplex.h"
 
+#define SQR(X) ((X)*(X))
+
 using std::map;
 
 namespace game {
@@ -45,22 +47,26 @@ class ErrorTracker {
 
 class SingleDriftModel {
  public:
-  SingleDriftModel(const vector<double>& x, double radius) : x_(x), radius_(radius) {
+  SingleDriftModel(const vector<double>& x) : x_(x) {
   }
 
   void Record(double angle, double previous_angle,
-              double previous_previous_angle, double previous_velocity) {
-    error_tracker_.Add(angle, Predict(previous_angle, previous_previous_angle, previous_velocity));
+              double previous_previous_angle, double previous_velocity, double radius) {
+    error_tracker_.Add(angle, Predict(previous_angle, previous_previous_angle, previous_velocity, radius));
   }
 
-  double Predict(double angle, double previous_angle, double velocity) {
-    return x_[0] * angle +
-           x_[1] * previous_angle +
-           x_[2] * velocity * velocity * cos(rad(angle)) / R(angle) +
-           x_[3] * sin(rad(angle)) +
-           x_[4] * velocity * velocity * sin(rad(angle)) * sin(rad(angle)) / R(angle) / R(angle) +
-           x_[5] * velocity * velocity / R(angle) * sqrt(1.0 - sin(rad(angle)) * sin(rad(angle)) * 100.0 / R(angle) / R(angle)) +
-           x_[6] * cos(rad(angle));
+  double Predict(double angle, double previous_angle, double velocity, double radius) {
+    double sine = sin(rad(angle)),
+           cosine = cos(rad(angle)),
+           Radius = R(angle, radius);
+    return x_[0] * angle + // 2 kolejne potrzebne do przyspieszenia kątowego
+           x_[1] * previous_angle + // jw.
+           x_[2] * SQR(velocity) * cosine / Radius + // Siła odśrodkowa
+           x_[3] * sine + // Tarcie na osii x, (z crossem z r)
+           x_[4] * SQR(velocity * sine / Radius) + // Odsrodkowa na osii x (z crossem z r)
+           // W rownaniu ponizej powinno być jeszcze * cos(rad(angle) ale z jakichs powodow to tylko psuje...
+           x_[5] * SQR(velocity) / Radius * sqrt(1.0 - SQR(10.0 * sine / Radius)) + // odsrodkowa na ossii y (z crossem z r)
+           x_[6] * cosine; // Tarcie na osii y (cost) (z crossem z r)
   }
 
   double Accuracy() {
@@ -76,13 +82,12 @@ class SingleDriftModel {
  private:
   double rad(double deg) { return deg * M_PI / 180.0; }
 
-  double R(double angle) {
-    if (radius_ < 1e-5 && radius_ > -1e-5) return 2000000000;
+  double R(double angle, double radius) {
+    if (radius < 1e-5 && radius > -1e-5) return 2000000000;
     double l = 10.0;
-    return sqrt(radius_ * radius_ + l * l - 2.0 * l * radius_ * cos(rad(90.0 + angle)));
+    return sqrt(SQR(radius) + SQR(l) - 2.0 * l * radius * cos(rad(90.0 + angle)));
   }
 
-  double radius_;
   vector<double> x_;
   ErrorTracker error_tracker_;
 };
@@ -93,21 +98,16 @@ class SingleDriftModel {
 class DriftModel {
  public:
   DriftModel() {}
-  explicit DriftModel(double radius) : radius_(radius), models_() {
-
-    //TODO hardcoded for this track
-    if (radius_ < -1e-5) real_radius_ = -radius_ - 10;
-    else if (radius_ > 1e-5) real_radius_ = radius + 10;
-
+  explicit DriftModel(int direction) : direction_(direction), models_() {
     char filename[50];
-    sprintf (filename, "bin/drift.%lf.csv", radius);
+    sprintf (filename, "bin/drift.%d.csv", direction);
     file_.open (filename);
     file_ << "p_angle,p_p_angle,p_velocity,angle" << std::endl;
   }
 
   ~DriftModel() {
     std::cout << "==== Drift Model ====" << std::endl;
-    std::cout << "radius: " << radius_ << std::endl;
+    std::cout << "direction: " << direction_ << std::endl;
     if (IsReady()) {
       for (int i = 0; i < model_size_; i++)
         std::cout << "x" << i <<": " << x_[i] << " ";
@@ -125,31 +125,36 @@ class DriftModel {
   }
 
   void Record(double angle, double previous_angle,
-              double previous_previous_angle, double previous_velocity) {
+              double previous_previous_angle, double previous_velocity, double radius) {
     if (angle == 0) return;
 
-    file_ << previous_angle << "," << previous_previous_angle << "," << previous_velocity << "," << angle;
+    file_ << previous_angle << "," << previous_previous_angle << "," << previous_velocity << "," << angle << "," << radius;
 
     if (IsReady()) {
-      double predicted = Predict(previous_angle, previous_previous_angle, previous_velocity);
+      double predicted = Predict(previous_angle, previous_previous_angle, previous_velocity, radius);
       file_ << "," << predicted - angle;
       error_tracker_.Add(angle, predicted);
     } file_ << std::endl;
 
     // Update models accuracy
     for (auto& model : models_)
-      model->Record(angle, previous_angle, previous_previous_angle, previous_velocity);
+      model->Record(angle, previous_angle, previous_previous_angle, previous_velocity, radius);
 
-    data_.push_back({previous_velocity});
+    data_.push_back({previous_velocity, radius});
+    double sine = sin(rad(previous_angle)),
+       cosine = cos(rad(previous_angle)),
+       Radius = R(previous_angle, radius);
+
     m_.push_back({
         previous_angle,
         previous_previous_angle,
-        previous_velocity * previous_velocity * cos(rad(previous_angle)) /  R(previous_angle),
-        sin(rad(previous_angle)),
-        previous_velocity * previous_velocity * sin(rad(previous_angle)) * sin(rad(previous_angle)) / R(previous_angle) / R(previous_angle),
-        previous_velocity * previous_velocity / R(previous_angle) * sqrt(1.0 - sin(rad(previous_angle)) * sin(rad(previous_angle)) * 100.0 / R(previous_angle) / R(previous_angle)),
-        cos(rad(previous_angle))
+        SQR(previous_velocity) * cosine / Radius,
+        sine,
+        SQR(previous_velocity * sine * Radius),
+        SQR(previous_velocity) / Radius * sqrt(1.0 - SQR(10.0 * sine / Radius)),
+        cosine
         });
+
     b_.push_back(angle);
 
     if (m_.size() >= model_size_) {
@@ -158,16 +163,18 @@ class DriftModel {
     }
   }
 
-  double Predict(double angle, double previous_angle, double velocity) {
-    return
-      x_[0] * angle +  // 2 kolejne potrzebne do przyspieszenia kątowego
-      x_[1] * previous_angle + // jw.
-      x_[2] * velocity * velocity * cos(rad(angle)) / R(angle) + // Siła odśrodkowa
-      x_[3] * sin(rad(angle)) +  // Tarcie na osii x, (z crossem z r)
-      x_[4] * velocity * velocity * sin(rad(angle)) * sin(rad(angle)) / R(angle) / R(angle) + // Odsrodkowa na osii x (z crossem z r)
-      // W rownaniu ponizej powinno być jeszcze * cos(rad(angle) ale z jakichs powodow to tylko psuje...
-      x_[5] * velocity * velocity / R(angle) * sqrt(1.0 - sin(rad(angle)) * sin(rad(angle)) * 100.0 / R(angle) / R(angle)) +  // odsrodkowa na ossii y (z crossem z r)
-      x_[6] * cos(rad(angle)); // Tarcie na osii y (cost) (z crossem z r)
+  double Predict(double angle, double previous_angle, double velocity, double radius) {
+    double sine = sin(rad(angle)),
+       cosine = cos(rad(angle)),
+       Radius = R(angle, radius);
+    return x_[0] * angle + // 2 kolejne potrzebne do przyspieszenia kątowego
+           x_[1] * previous_angle + // jw.
+           x_[2] * SQR(velocity) * cosine / Radius + // Siła odśrodkowa
+           x_[3] * sine + // Tarcie na osii x, (z crossem z r)
+           x_[4] * SQR(velocity * sine / Radius) + // Odsrodkowa na osii x (z crossem z r)
+           // W rownaniu ponizej powinno być jeszcze * cos(rad(angle) ale z jakichs powodow to tylko psuje...
+           x_[5] * SQR(velocity) / Radius * sqrt(1.0 - SQR(10.0 * sine / Radius)) + // odsrodkowa na ossii y (z crossem z r)
+           x_[6] * cosine; // Tarcie na osii y (cost) (z crossem z r)
   }
 
   bool IsReady() {
@@ -175,10 +182,10 @@ class DriftModel {
   }
 
  private:
-  double R(double angle) {
-    if (radius_ < 1e-5 && radius_ > -1e-5) return 2000000000;
+  double R(double angle, double radius) {
+    if (radius < 1e-5 && radius > -1e-5) return 2000000000;
     double l = 10.0;
-    return sqrt(real_radius_ * real_radius_ + l * l - 2.0 * l * real_radius_ * cos(rad(90.0 + angle)));
+    return sqrt(radius * radius + l * l - 2.0 * l * radius * cos(rad(90.0 + angle)));
   }
 
   void AddNewModel() {
@@ -193,11 +200,10 @@ class DriftModel {
         }
         // Simplex::Optimize(m, b, x);
         GaussDouble(m, b, x);
-        models_.push_back(new SingleDriftModel(x, real_radius_));
+        models_.push_back(new SingleDriftModel(x));
 
         for (int i = 0; i < m_.size(); i++)
-          models_.back()->Record(b_[i], m_[i][0], m_[i][1], data_[i][0]);
-
+          models_.back()->Record(b_[i], m_[i][0], m_[i][1], data_[i][0], data_[i][1]);
       }
     }
 
@@ -213,13 +219,13 @@ class DriftModel {
     x_ = models_[best]->x();
     return best;
   }
+
   const int model_size_ = 7;
   const int model_window_ = 7; // Max Amount of recent data used for simplex
 
   double rad(double deg) { return deg * M_PI / 180.0; }
 
-  double radius_ = 0.0;
-  double real_radius_;
+  int direction_;
   std::ofstream file_;
 
   bool ready_ = false;
@@ -376,7 +382,13 @@ class CarTracker {
     // TODO last position
     auto pos = position;
     if (positions_.size() > 0) pos = positions_.back();
-    GetDriftModel(pos)->Record(angle, angle_, previous_angle_, velocity_);
+
+    auto& piece = race_->track().pieces().at(pos.piece());
+    double radius = abs(piece.angle());
+    if (radius < -1e-5) radius -= 10.0;
+    if (radius > 1e-5) radius += 10.0;
+
+    GetDriftModel(pos)->Record(angle, angle_, previous_angle_, velocity_, radius);
 
     // Update state
     previous_angle_ = angle_;
@@ -389,11 +401,12 @@ class CarTracker {
 
   DriftModel* GetDriftModel(const Position& position) {
     auto& piece = race_->track().pieces().at(position.piece());
-    double radius = piece.radius() * sgn(piece.angle());
-    if (drift_model_[radius] == nullptr) {
-      drift_model_[radius].reset(new DriftModel(radius));
+    int direction = sgn(piece.angle());
+
+    if (drift_model_[direction] == nullptr) {
+      drift_model_[direction].reset(new DriftModel(direction));
     }
-    return drift_model_[radius].get();
+    return drift_model_[direction].get();
   }
 
   void RecordThrottle(double throttle) {
@@ -422,9 +435,13 @@ class CarTracker {
 
   double angle() const { return angle_; }
 
-  Position Predict(const Position& position, int throttle, bool change_lane) {
-    // TODO ignoring change_lane
-    return Position();
+  Position Predict(const Position& position, const Position& previous_position, int throttle, bool change_lane) {
+    /*GetDriftModel(position)->Predict(
+        position.angle(),
+        previous_position.angle(),
+        race_->DistanceBetween(position, position);
+        );
+*/
   }
 
  private:
