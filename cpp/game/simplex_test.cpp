@@ -38,7 +38,9 @@ TEST(SimplexTest, BasicOptimizeWithNegative) {
   vector<double> b{0.1, -5};
   vector<double> x;
 
-  Simplex::Optimize(a, b, x);
+  double error = Simplex::Optimize(a, b, x);
+
+  EXPECT_DOUBLE_EQ(0, error);
 
   ASSERT_EQ(2, x.size());
   EXPECT_NEAR(-51, x[0], 1e-9);
@@ -50,7 +52,9 @@ TEST(SimplexTest, OptimizeWithErrors) {
   vector<double> b{0.1, -5, 10};
   vector<double> x;
 
-  Simplex::Optimize(a, b, x);
+  double error = Simplex::Optimize(a, b, x);
+
+  EXPECT_NE(0, error);
 
   ASSERT_EQ(2, x.size());
   EXPECT_NEAR(33.066666666666663, x[0], 1e-9);
