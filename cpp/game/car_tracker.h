@@ -57,7 +57,8 @@ class SingleDriftModel {
            x_[2] * velocity * velocity * cos(rad(angle)) / R(angle) +
            x_[3] * sin(rad(angle)) +
            x_[4] * velocity * velocity * sin(rad(angle)) * sin(rad(angle)) / R(angle) / R(angle) +
-           x_[5] * velocity * velocity / R(angle) * sqrt(1.0 - sin(rad(angle)) * sin(rad(angle)) / R(angle) / R(angle));
+           x_[5] * velocity * velocity / R(angle) * sqrt(1.0 - sin(rad(angle)) * sin(rad(angle)) / R(angle) / R(angle)) +
+           x_[6] * cos(rad(angle));
   }
 
   double Accuracy() {
@@ -145,6 +146,7 @@ class DriftModel {
         sin(rad(previous_angle)),
         previous_velocity * previous_velocity * sin(rad(previous_angle)) * sin(rad(previous_angle)) / R(previous_angle) / R(previous_angle),
         previous_velocity * previous_velocity / R(previous_angle) * sqrt(1.0 - sin(rad(previous_angle)) * sin(rad(previous_angle)) / R(previous_angle) / R(previous_angle)),
+        cos(rad(previous_angle)),
         1
         });
     b_.push_back(angle);
@@ -162,7 +164,8 @@ class DriftModel {
       x_[2] * velocity * velocity * cos(rad(angle)) / R(angle) + // Siła odśrodkowa
       x_[3] * sin(rad(angle)) +  // Siła oporu związana z obrotem
       x_[4] * velocity * velocity * sin(rad(angle)) * sin(rad(angle)) / R(angle) / R(angle) +
-      x_[5] * velocity * velocity / R(angle) * sqrt(1.0 - sin(rad(angle)) * sin(rad(angle)) / R(angle) / R(angle));
+      x_[5] * velocity * velocity / R(angle) * sqrt(1.0 - sin(rad(angle)) * sin(rad(angle)) / R(angle) / R(angle)) +
+      x_[6] * cos(rad(angle));
   }
 
   bool IsReady() {
@@ -202,7 +205,7 @@ class DriftModel {
     x_ = models_[best]->x();
     return best;
   }
-  const int model_size_ = 6;
+  const int model_size_ = 7;
 
   double rad(double deg) { return deg * M_PI / 180.0; }
 
