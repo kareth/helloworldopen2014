@@ -52,7 +52,7 @@ class SingleDriftModel {
   }
 
   double Predict(double angle, double previous_angle, double velocity) {
-    return x_[0] * angle + x_[1] * previous_angle + x_[2] * velocity * velocity * cos(rad(angle)) / R(angle) + x_[3] * sin(rad(angle)) + x_[4];
+    return x_[0] * angle + x_[1] * previous_angle + x_[2] * velocity * velocity * cos(rad(angle)) / R(angle) + x_[3] * sin(rad(angle));
   }
 
   double Accuracy() {
@@ -100,7 +100,7 @@ class DriftModel {
     std::cout << "==== Drift Model ====" << std::endl;
     std::cout << "radius: " << radius_ << std::endl;
     if (IsReady()) {
-      std::cout << "x0: " << x_[0] << " x1: " << x_[1] << " x2: " << x_[2] << " x3: " << x_[3] << " x4: " << x_[4] << std::endl;
+      std::cout << "x0: " << x_[0] << " x1: " << x_[1] << " x2: " << x_[2] << " x3: " << x_[3] << std::endl;
     }
     error_tracker_.Print();
     models_[PickBestModel()]->PrintAccuracy();
@@ -148,8 +148,7 @@ class DriftModel {
       x_[0] * angle +
       x_[1] * previous_angle +
       x_[2] * velocity * velocity * cos(rad(angle)) / R(angle) +
-      x_[3] * sin(rad(angle)) +
-      x_[4];
+      x_[3] * sin(rad(angle));
   }
 
   bool IsReady() {
