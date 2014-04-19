@@ -1,5 +1,5 @@
-#ifndef CPP_GAME_GAUSS_H_
-#define CPP_GAME_GAUSS_H_
+#ifndef CPP_GAME_SIMPLEX_H_
+#define CPP_GAME_SIMPLEX_H_
 
 #include <map>
 #include <cstdio>
@@ -37,4 +37,4 @@ double Optimize(vector<vector<double>>& a, vector<double>& b, vector<double>& x)
 
 }  // namespace Simplex
 
-#endif  // CPP_GAME_GAUSS_H_
+#endif  // CPP_GAME_SIMPLEX_H_

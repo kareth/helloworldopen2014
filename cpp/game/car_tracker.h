@@ -9,6 +9,7 @@
 #include "game/race.h"
 #include "game/position.h"
 #include "game/gauss.h"
+#include "game/simplex.h"
 
 using std::map;
 
@@ -183,10 +184,11 @@ class DriftModel {
     vector<double> x;
     vector<double> b;
     vector<vector<double>> m;
-    for (int i = m_.size() - model_size_; i < m_.size(); i++) {
+    for (int i = fmax(0, m_.size() - model_window_); i < m_.size(); i++) {
       m.push_back(m_[i]);
       b.push_back(b_[i]);
     }
+    //Simplex::Optimize(m, b, x);
     GaussDouble(m, b, x);
     models_.push_back(new SingleDriftModel(x, real_radius_));
 
@@ -206,6 +208,7 @@ class DriftModel {
     return best;
   }
   const int model_size_ = 7;
+  const int model_window_ = 7; // Max Amount of recent data used for simplex
 
   double rad(double deg) { return deg * M_PI / 180.0; }
 
