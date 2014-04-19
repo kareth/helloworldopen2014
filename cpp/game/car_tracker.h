@@ -52,7 +52,12 @@ class SingleDriftModel {
   }
 
   double Predict(double angle, double previous_angle, double velocity) {
-    return x_[0] * angle + x_[1] * previous_angle + x_[2] * velocity * velocity * cos(rad(angle)) / R(angle) + x_[3] * sin(rad(angle));
+    return x_[0] * angle +
+           x_[1] * previous_angle +
+           x_[2] * velocity * velocity * cos(rad(angle)) / R(angle) +
+           x_[3] * sin(rad(angle)) +
+           x_[4] * velocity * velocity * sin(rad(angle)) * sin(rad(angle)) / R(angle) / R(angle) +
+           x_[5] * velocity * velocity / R(angle) * sqrt(1.0 - sin(rad(angle)) * sin(rad(angle)) / R(angle) / R(angle));
   }
 
   double Accuracy() {
@@ -101,7 +106,9 @@ class DriftModel {
     std::cout << "==== Drift Model ====" << std::endl;
     std::cout << "radius: " << radius_ << std::endl;
     if (IsReady()) {
-      std::cout << "x0: " << x_[0] << " x1: " << x_[1] << " x2: " << x_[2] << " x3: " << x_[3] << std::endl;
+      for (int i = 0; i < model_size_; i++)
+        std::cout << "x" << i <<": " << x_[i] << " ";
+      std::cout << std::endl;
     }
     error_tracker_.Print();
     models_[PickBestModel()]->PrintAccuracy();
@@ -136,11 +143,13 @@ class DriftModel {
         previous_previous_angle,
         previous_velocity * previous_velocity * cos(rad(previous_angle)) /  R(previous_angle),
         sin(rad(previous_angle)),
+        previous_velocity * previous_velocity * sin(rad(previous_angle)) * sin(rad(previous_angle)) / R(previous_angle) / R(previous_angle),
+        previous_velocity * previous_velocity / R(previous_angle) * sqrt(1.0 - sin(rad(previous_angle)) * sin(rad(previous_angle)) / R(previous_angle) / R(previous_angle)),
         1
         });
     b_.push_back(angle);
 
-    if (m_.size() >= 4) {
+    if (m_.size() >= model_size_) {
       AddNewModel();
       PickBestModel();
     }
@@ -151,7 +160,9 @@ class DriftModel {
       x_[0] * angle +  // 2 kolejne potrzebne do przyspieszenia kątowego
       x_[1] * previous_angle + // jw.
       x_[2] * velocity * velocity * cos(rad(angle)) / R(angle) + // Siła odśrodkowa
-      x_[3] * sin(rad(angle));  // Siła oporu związana z obrotem
+      x_[3] * sin(rad(angle)) +  // Siła oporu związana z obrotem
+      x_[4] * velocity * velocity * sin(rad(angle)) * sin(rad(angle)) / R(angle) / R(angle) +
+      x_[5] * velocity * velocity / R(angle) * sqrt(1.0 - sin(rad(angle)) * sin(rad(angle)) / R(angle) / R(angle));
   }
 
   bool IsReady() {
@@ -169,7 +180,7 @@ class DriftModel {
     vector<double> x;
     vector<double> b;
     vector<vector<double>> m;
-    for (int i = m_.size() - 4; i < m_.size(); i++) {
+    for (int i = m_.size() - model_size_; i < m_.size(); i++) {
       m.push_back(m_[i]);
       b.push_back(b_[i]);
     }
@@ -179,7 +190,7 @@ class DriftModel {
     for (int i = 0; i < m_.size(); i++)
       models_.back()->Record(b_[i], m_[i][0], m_[i][1], data_[i][0]);
 
-    if (m_.size() >= 5)
+    if (m_.size() >= model_size_ + 1)
       ready_ = true;
   }
 
@@ -191,6 +202,7 @@ class DriftModel {
     x_ = models_[best]->x();
     return best;
   }
+  const int model_size_ = 6;
 
   double rad(double deg) { return deg * M_PI / 180.0; }
 
@@ -349,7 +361,10 @@ class CarTracker {
     // Update Models
     crash_model_.Record(angle);
     velocity_model_.Record(velocity, velocity_, throttle_);
-    GetDriftModel(position)->Record(angle, angle_, previous_angle_, velocity_);
+    // TODO last position
+    auto pos = position;
+    if (positions_.size() > 0) pos = positions_.back();
+    GetDriftModel(pos)->Record(angle, angle_, previous_angle_, velocity_);
 
     // Update state
     previous_angle_ = angle_;
