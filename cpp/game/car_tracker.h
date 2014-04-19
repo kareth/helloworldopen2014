@@ -59,7 +59,7 @@ class SingleDriftModel {
            x_[2] * velocity * velocity * cos(rad(angle)) / R(angle) +
            x_[3] * sin(rad(angle)) +
            x_[4] * velocity * velocity * sin(rad(angle)) * sin(rad(angle)) / R(angle) / R(angle) +
-           x_[5] * velocity * velocity / R(angle) * sqrt(1.0 - sin(rad(angle)) * sin(rad(angle)) / R(angle) / R(angle)) +
+           x_[5] * velocity * velocity / R(angle) * sqrt(1.0 - sin(rad(angle)) * sin(rad(angle)) * 100.0 / R(angle) / R(angle)) +
            x_[6] * cos(rad(angle));
   }
 
@@ -147,9 +147,8 @@ class DriftModel {
         previous_velocity * previous_velocity * cos(rad(previous_angle)) /  R(previous_angle),
         sin(rad(previous_angle)),
         previous_velocity * previous_velocity * sin(rad(previous_angle)) * sin(rad(previous_angle)) / R(previous_angle) / R(previous_angle),
-        previous_velocity * previous_velocity / R(previous_angle) * sqrt(1.0 - sin(rad(previous_angle)) * sin(rad(previous_angle)) / R(previous_angle) / R(previous_angle)),
-        cos(rad(previous_angle)),
-        1
+        previous_velocity * previous_velocity / R(previous_angle) * sqrt(1.0 - sin(rad(previous_angle)) * sin(rad(previous_angle)) * 100.0 / R(previous_angle) / R(previous_angle)),
+        cos(rad(previous_angle))
         });
     b_.push_back(angle);
 
@@ -164,10 +163,11 @@ class DriftModel {
       x_[0] * angle +  // 2 kolejne potrzebne do przyspieszenia kątowego
       x_[1] * previous_angle + // jw.
       x_[2] * velocity * velocity * cos(rad(angle)) / R(angle) + // Siła odśrodkowa
-      x_[3] * sin(rad(angle)) +  // Siła oporu związana z obrotem
-      x_[4] * velocity * velocity * sin(rad(angle)) * sin(rad(angle)) / R(angle) / R(angle) +
-      x_[5] * velocity * velocity / R(angle) * sqrt(1.0 - sin(rad(angle)) * sin(rad(angle)) / R(angle) / R(angle)) +
-      x_[6] * cos(rad(angle));
+      x_[3] * sin(rad(angle)) +  // Tarcie na osii x, (z crossem z r)
+      x_[4] * velocity * velocity * sin(rad(angle)) * sin(rad(angle)) / R(angle) / R(angle) + // Odsrodkowa na osii x (z crossem z r)
+      // W rownaniu ponizej powinno być jeszcze * cos(rad(angle) ale z jakichs powodow to tylko psuje...
+      x_[5] * velocity * velocity / R(angle) * sqrt(1.0 - sin(rad(angle)) * sin(rad(angle)) * 100.0 / R(angle) / R(angle)) +  // odsrodkowa na ossii y (z crossem z r)
+      x_[6] * cos(rad(angle)); // Tarcie na osii y (cost) (z crossem z r)
   }
 
   bool IsReady() {
@@ -182,19 +182,40 @@ class DriftModel {
   }
 
   void AddNewModel() {
-    vector<double> x;
-    vector<double> b;
-    vector<vector<double>> m;
-    for (int i = std::max(0, (int)m_.size() - model_window_); i < m_.size(); i++) {
-      m.push_back(m_[i]);
-      b.push_back(b_[i]);
-    }
-    Simplex::Optimize(m, b, x);
-    //GaussDouble(m, b, x);
-    models_.push_back(new SingleDriftModel(x, real_radius_));
+    {
+      vector<double> x;
+      vector<double> b;
+      vector<vector<double>> m;
+      for (int i = fmax(0, m_.size() - model_window_); i < m_.size(); i++) {
+        m.push_back(m_[i]);
+        b.push_back(b_[i]);
+      }
+      Simplex::Optimize(m, b, x);
+      //GaussDouble(m, b, x);
+      models_.push_back(new SingleDriftModel(x, real_radius_));
 
-    for (int i = 0; i < m_.size(); i++)
-      models_.back()->Record(b_[i], m_[i][0], m_[i][1], data_[i][0]);
+      for (int i = 0; i < m_.size(); i++)
+        models_.back()->Record(b_[i], m_[i][0], m_[i][1], data_[i][0]);
+    }
+
+    for (int increment = 2; increment < 12; increment += 2) {
+      if (m_.size() >= increment * model_window_) {
+        vector<double> x;
+        vector<double> b;
+        vector<vector<double>> m;
+        for (int i = fmax(0, m_.size() - model_window_); i < m_.size(); i += increment) {
+          m.push_back(m_[i]);
+          b.push_back(b_[i]);
+        }
+        Simplex::Optimize(m, b, x);
+        //GaussDouble(m, b, x);
+        models_.push_back(new SingleDriftModel(x, real_radius_));
+
+        for (int i = 0; i < m_.size(); i++)
+          models_.back()->Record(b_[i], m_[i][0], m_[i][1], data_[i][0]);
+
+      }
+    }
 
     if (m_.size() >= model_size_ + 1)
       ready_ = true;
