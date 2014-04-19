@@ -2,6 +2,7 @@ set(GAME_SOURCES
   car.cpp
   position.cpp
   command.cpp
+  gauss.cpp
   race.cpp
   track.cpp
   result.cpp

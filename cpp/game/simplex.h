@@ -15,13 +15,6 @@ using std::vector;
 
 namespace game {
 
-// Solves following equation:
-// x[0] * a[0][0] + x[1] * a[0][1] = b[0]
-// x[0] * a[1][0] + x[1] * a[1][1] = b[1]
-// x[0] * a[2][0] + x[1] * a[2][1] = b[1]
-//
-// Note: input vectors will be destroyed.
-int GaussDouble(vector< vector<double> >& a, vector<double>& b, vector<double>& x);
 
 }  // namespace game
 
