@@ -43,7 +43,7 @@ class ErrorTracker {
 
 class SingleDriftModel {
  public:
-  SingleDriftModel(const vector<double>& x) : x_(x) {
+  SingleDriftModel(const vector<double>& x, double radius) : x_(x), radius_(radius) {
   }
 
   void Record(double angle, double previous_angle,
@@ -52,7 +52,7 @@ class SingleDriftModel {
   }
 
   double Predict(double angle, double previous_angle, double velocity) {
-    return x_[0] * angle + x_[1] * previous_angle + x_[2] * velocity + x_[3];
+    return x_[0] * angle + x_[1] * previous_angle + x_[2] * velocity * velocity * cos(rad(angle)) / R(angle) + x_[3] * sin(rad(angle));
   }
 
   double Accuracy() {
@@ -66,6 +66,14 @@ class SingleDriftModel {
   const vector<double>& x() const { return x_; }
 
  private:
+  double rad(double deg) { return deg * M_PI / 180.0; }
+
+  double R(double angle) {
+    double l = 10.0;
+    return sqrt(radius_ * radius_ + l * l - 2.0 * l * radius_ * cos(rad(90.0 + angle)));
+  }
+
+  double radius_;
   vector<double> x_;
   ErrorTracker error_tracker_;
 };
@@ -76,7 +84,12 @@ class SingleDriftModel {
 class DriftModel {
  public:
   DriftModel() {}
-  explicit DriftModel(double radius) : radius_(radius) {
+  explicit DriftModel(double radius) : radius_(radius), models_() {
+
+    //TODO hardcoded for this track
+    if (radius_ < -1e-5) real_radius_ = -radius_ - 10;
+    else real_radius_ = radius + 10;
+
     char filename[50];
     sprintf (filename, "bin/drift.%lf.csv", radius);
     file_.open (filename);
@@ -114,7 +127,14 @@ class DriftModel {
     for (auto& model : models_)
       model->Record(angle, previous_angle, previous_previous_angle, previous_velocity);
 
-    m_.push_back({previous_angle, previous_previous_angle, previous_velocity, 1});
+    data_.push_back({previous_velocity});
+    m_.push_back({
+        previous_angle,
+        previous_previous_angle,
+        previous_velocity * previous_velocity * cos(rad(previous_angle)) /  R(previous_angle),
+        sin(rad(previous_angle)),
+        1
+        });
     b_.push_back(angle);
 
     if (m_.size() >= 4) {
@@ -124,7 +144,11 @@ class DriftModel {
   }
 
   double Predict(double angle, double previous_angle, double velocity) {
-    return x_[0] * angle + x_[1] * previous_angle + x_[2] * velocity + x_[3];
+    return
+      x_[0] * angle +
+      x_[1] * previous_angle +
+      x_[2] * velocity * velocity * cos(rad(angle)) / R(angle) +
+      x_[3] * sin(rad(angle));
   }
 
   bool IsReady() {
@@ -132,6 +156,11 @@ class DriftModel {
   }
 
  private:
+  double R(double angle) {
+    double l = 10.0;
+    return sqrt(real_radius_ * real_radius_ + l * l - 2.0 * l * real_radius_ * cos(rad(90.0 + angle)));
+  }
+
   void AddNewModel() {
     vector<double> x;
     vector<double> b;
@@ -141,12 +170,13 @@ class DriftModel {
       b.push_back(b_[i]);
     }
     GaussDouble(m, b, x);
-    models_.push_back(new SingleDriftModel(x));
+    models_.push_back(new SingleDriftModel(x, real_radius_));
 
     for (int i = 0; i < m_.size(); i++)
-      models_.back()->Record(b_[i], m_[i][0], m_[i][1], m_[i][2]);
+      models_.back()->Record(b_[i], m_[i][0], m_[i][1], data_[i][0]);
 
-    ready_ = true;
+    if (m_.size() >= 5)
+      ready_ = true;
   }
 
   int PickBestModel() {
@@ -158,12 +188,16 @@ class DriftModel {
     return best;
   }
 
+  double rad(double deg) { return deg * M_PI / 180.0; }
+
   double radius_ = 0.0;
+  double real_radius_;
   std::ofstream file_;
 
   bool ready_ = false;
   // {previous_angle, previous_previous_angle, previous_velocity, angle}
   vector<vector<double> > m_;
+  vector<vector<double> > data_;
   vector<double> b_;
 
   vector<double> x_;
