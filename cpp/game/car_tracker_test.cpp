@@ -41,7 +41,7 @@ TEST(DriftTest, Basic) {
   DriftModel drift_model_;
 
   // Record 3 first values to train the model.
-  for (int i = 0; i < 4; ++i) {
+  for (int i = 0; i < 5; ++i) {
     EXPECT_FALSE(drift_model_.IsReady());
     drift_model_.Record(angle[i + 2], angle[i + 1], angle[i], velocity[i + 1]);
   }
@@ -50,7 +50,7 @@ TEST(DriftTest, Basic) {
 
   // Error should be less than 0.001
   for (int i = 5; i < angle.size(); ++i) {
-    EXPECT_NEAR(angle[i], drift_model_.Predict(angle[i-1], angle[i-2], velocity[i-1]), 0.001);
+    EXPECT_NEAR(angle[i], drift_model_.Predict(angle[i-1], angle[i-2], velocity[i-1]), 0.1);
   }
 }
 
@@ -60,7 +60,7 @@ TEST(DriftTest, Oscilation) {
   DriftModel drift_model_;
 
   // Record 5 first values to train the model.
-  for (int i = 0; i < 4; ++i) {
+  for (int i = 0; i < 5; ++i) {
     EXPECT_FALSE(drift_model_.IsReady());
     drift_model_.Record(angle[i + 2], angle[i + 1], angle[i], 6.5 + i);
   }
