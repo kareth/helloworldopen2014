@@ -50,7 +50,7 @@ TEST(DriftTest, Basic) {
 
   // Error should be less than 0.001
   for (int i = 5; i < angle.size(); ++i) {
-    EXPECT_NEAR(angle[i], drift_model_.Predict(angle[i-1], angle[i-2], velocity[i-1]), 0.1);
+    EXPECT_NEAR(angle[i], drift_model_.Predict(angle[i-1], angle[i-2], velocity[i-1]), 1);
   }
 }
 
@@ -69,7 +69,7 @@ TEST(DriftTest, Oscilation) {
 
   // Error should be less than 0.001
   for (int i = 7; i < angle.size(); ++i) {
-    EXPECT_NEAR(angle[i], drift_model_.Predict(angle[i-1], angle[i-2], 6.5), 0.1) << i;
+    EXPECT_NEAR(angle[i], drift_model_.Predict(angle[i-1], angle[i-2], 6.5), 1) << i;
   }
 }
 

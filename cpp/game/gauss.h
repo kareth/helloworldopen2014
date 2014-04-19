@@ -21,7 +21,7 @@ namespace game {
 // x[0] * a[2][0] + x[1] * a[2][1] = b[1]
 //
 // Note: input vectors will be destroyed.
-int GaussDouble(vector< vector<double> >& a, vector<double>& b, vector<double>& x);
+int GaussDouble(vector<vector<double>>& a, vector<double>& b, vector<double>& x);
 
 }  // namespace game
 

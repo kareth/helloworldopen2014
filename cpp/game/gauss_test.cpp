@@ -19,6 +19,17 @@ TEST(GaussTest, Basic) {
   EXPECT_DOUBLE_EQ(0.2, x[1]);
 }
 
+TEST(GaussTest, Basic1) {
+  vector<vector<double> > a{{0, 0.5}, {0.1, 0.5}};
+  vector<double> b{0.1, -5};
+  vector<double> x;
+  GaussDouble(a, b, x);
+
+  ASSERT_EQ(2, x.size());
+  EXPECT_DOUBLE_EQ(-51, x[0]);
+  EXPECT_DOUBLE_EQ(0.2, x[1]);
+}
+
 static double sin_degree(double x) {
   return sin(x / 180.0 * M_PI);
 }

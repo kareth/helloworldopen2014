@@ -5,6 +5,7 @@ set(GAME_SOURCES
   gauss.cpp
   race.cpp
   track.cpp
+  simplex.cpp
   result.cpp
 )
 
@@ -14,6 +15,7 @@ set(GAME_HEADERS
   command.h
   gauss.h
   lane.h
+  simplex.h
   position.h
   race.h
   track.h
@@ -23,6 +25,7 @@ set(GAME_HEADERS
 set(GAME_TESTS
   race_test.cpp
   gauss_test.cpp
+  simplex_test.cpp
   track_test.cpp
   position_test.cpp
   car_tracker_test.cpp
