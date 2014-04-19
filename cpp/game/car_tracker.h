@@ -69,6 +69,7 @@ class SingleDriftModel {
   double rad(double deg) { return deg * M_PI / 180.0; }
 
   double R(double angle) {
+    if (radius_ < 1e-5 && radius_ > -1e-5) return 2000000000;
     double l = 10.0;
     return sqrt(radius_ * radius_ + l * l - 2.0 * l * radius_ * cos(rad(90.0 + angle)));
   }
@@ -88,7 +89,7 @@ class DriftModel {
 
     //TODO hardcoded for this track
     if (radius_ < -1e-5) real_radius_ = -radius_ - 10;
-    else real_radius_ = radius + 10;
+    else if (radius_ > 1e-5) real_radius_ = radius + 10;
 
     char filename[50];
     sprintf (filename, "bin/drift.%lf.csv", radius);
@@ -117,11 +118,13 @@ class DriftModel {
               double previous_previous_angle, double previous_velocity) {
     if (angle == 0) return;
 
-    file_ << previous_angle << "," << previous_previous_angle << "," << previous_velocity << "," << angle << std::endl;
+    file_ << previous_angle << "," << previous_previous_angle << "," << previous_velocity << "," << angle;
 
     if (IsReady()) {
-      error_tracker_.Add(angle, Predict(previous_angle, previous_previous_angle, previous_velocity));
-    }
+      double predicted = Predict(previous_angle, previous_previous_angle, previous_velocity);
+      file_ << "," << predicted - angle;
+      error_tracker_.Add(angle, predicted);
+    } file_ << std::endl;
 
     // Update models accuracy
     for (auto& model : models_)
@@ -145,10 +148,10 @@ class DriftModel {
 
   double Predict(double angle, double previous_angle, double velocity) {
     return
-      x_[0] * angle +
-      x_[1] * previous_angle +
-      x_[2] * velocity * velocity * cos(rad(angle)) / R(angle) +
-      x_[3] * sin(rad(angle));
+      x_[0] * angle +  // 2 kolejne potrzebne do przyspieszenia kątowego
+      x_[1] * previous_angle + // jw.
+      x_[2] * velocity * velocity * cos(rad(angle)) / R(angle) + // Siła odśrodkowa
+      x_[3] * sin(rad(angle));  // Siła oporu związana z obrotem
   }
 
   bool IsReady() {
@@ -157,6 +160,7 @@ class DriftModel {
 
  private:
   double R(double angle) {
+    if (radius_ < 1e-5 && radius_ > -1e-5) return 2000000000;
     double l = 10.0;
     return sqrt(real_radius_ * real_radius_ + l * l - 2.0 * l * real_radius_ * cos(rad(90.0 + angle)));
   }
