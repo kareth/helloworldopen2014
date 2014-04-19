@@ -31,7 +31,9 @@ vector<double> simplex(vector<vector<double>> &A, vector<double> &b, vector<doub
 // Note: input vectors will be destroyed.
 //
 // a and b are input parameters, x is the output.
-void Optimize(vector<vector<double>>& a, vector<double>& b, vector<double>& x);
+//
+// Returns the error if couldn't find perfect solution.
+double Optimize(vector<vector<double>>& a, vector<double>& b, vector<double>& x);
 
 }  // namespace Simplex
 
