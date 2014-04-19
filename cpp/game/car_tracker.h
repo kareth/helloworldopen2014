@@ -5,6 +5,7 @@
 #include <fstream>
 #include <string>
 #include <map>
+#include <algorithm>
 
 #include "game/race.h"
 #include "game/position.h"
@@ -184,12 +185,12 @@ class DriftModel {
     vector<double> x;
     vector<double> b;
     vector<vector<double>> m;
-    for (int i = fmax(0, m_.size() - model_window_); i < m_.size(); i++) {
+    for (int i = std::max(0, (int)m_.size() - model_window_); i < m_.size(); i++) {
       m.push_back(m_[i]);
       b.push_back(b_[i]);
     }
-    //Simplex::Optimize(m, b, x);
-    GaussDouble(m, b, x);
+    Simplex::Optimize(m, b, x);
+    //GaussDouble(m, b, x);
     models_.push_back(new SingleDriftModel(x, real_radius_));
 
     for (int i = 0; i < m_.size(); i++)

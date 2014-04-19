@@ -35,6 +35,7 @@ static VT doit(int k){
       best=b[ l=i ]/A[i][e];
     if (l==-1) {
       // rozwiazanie nieograniczone,zwracam cokolwiek
+      // std::cout << "Rozwiazanie nieograniczone" << std::endl;
       return VT();
     }
     pivot(k,l,e);
@@ -104,6 +105,7 @@ double Optimize(vector<vector<double>>& a, vector<double>& b, vector<double>& x)
 
   // No solution :(
   if (res.size() == 0) {
+    x = vector<double>(a[0].size(), 0);
     std::cout << "ERROR: simplex returned no solution ???" << std::endl;
     return -1;
   }
