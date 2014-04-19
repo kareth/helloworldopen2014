@@ -18,7 +18,7 @@ game::Command Bot::GetMove(
     const std::map<std::string, Position>& positions)  {
   car_tracker_->Record(positions.find(color_)->second);
 
-  double throttle = 0.9;
+  double throttle = 0.65;
   //if (car_tracker_->angle() < 1) {
   //  throttle = 1.0;
   //} else if (car_tracker_->angle() < 30) {

@@ -182,23 +182,7 @@ class DriftModel {
   }
 
   void AddNewModel() {
-    {
-      vector<double> x;
-      vector<double> b;
-      vector<vector<double>> m;
-      for (int i = fmax(0, m_.size() - model_window_); i < m_.size(); i++) {
-        m.push_back(m_[i]);
-        b.push_back(b_[i]);
-      }
-      Simplex::Optimize(m, b, x);
-      //GaussDouble(m, b, x);
-      models_.push_back(new SingleDriftModel(x, real_radius_));
-
-      for (int i = 0; i < m_.size(); i++)
-        models_.back()->Record(b_[i], m_[i][0], m_[i][1], data_[i][0]);
-    }
-
-    for (int increment = 2; increment < 12; increment += 2) {
+    for (int increment = 1; increment < 12; increment += 2) {
       if (m_.size() >= increment * model_window_) {
         vector<double> x;
         vector<double> b;
@@ -207,8 +191,8 @@ class DriftModel {
           m.push_back(m_[i]);
           b.push_back(b_[i]);
         }
-        Simplex::Optimize(m, b, x);
-        //GaussDouble(m, b, x);
+        // Simplex::Optimize(m, b, x);
+        GaussDouble(m, b, x);
         models_.push_back(new SingleDriftModel(x, real_radius_));
 
         for (int i = 0; i < m_.size(); i++)
@@ -437,6 +421,11 @@ class CarTracker {
   double velocity() const { return velocity_; }
 
   double angle() const { return angle_; }
+
+  Position Predict(const Position& position, int throttle, bool change_lane) {
+    // TODO ignoring change_lane
+
+  }
 
  private:
   std::ofstream stats_file_;
