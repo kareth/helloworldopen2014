@@ -2,6 +2,10 @@
 
 #include "game/track.h"
 #include "jsoncons/json.hpp"
+#include <algorithm>
+#include <fstream>
+#include <string>
+
 
 using jsoncons::json;
 
@@ -50,7 +54,10 @@ double Track::LaneRadius(int piece, int lane) const {
   if (pieces_[piece].radius() < 1e-5)
     return 0;
 
-  return pieces_[piece].radius() - lanes_[lane].distance_from_center();
+  if (pieces_[piece].angle() > 1e-5)
+    return pieces_[piece].radius() - lanes_[lane].distance_from_center();
+  else
+    return pieces_[piece].radius() + lanes_[lane].distance_from_center();
 }
 
 double Track::LaneLength(int piece, int lane) const {

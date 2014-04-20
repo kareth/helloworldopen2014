@@ -361,7 +361,8 @@ class CarTracker {
       if (prev_position.piece() == position.piece()) {
         velocity = position.piece_distance() - prev_position.piece_distance();
       } else {
-        velocity = velocity_model_.Predict(velocity_, throttle_);
+      velocity = position.piece_distance() - prev_position.piece_distance() +
+          race_->track().LaneLength(prev_position.piece(), position.start_lane());
       }
     }
 
@@ -375,11 +376,7 @@ class CarTracker {
     auto pos = position;
     if (positions_.size() > 0) pos = positions_.back();
 
-    auto& piece = race_->track().pieces().at(pos.piece());
-    double radius = abs(piece.radius());
-    if (piece.angle() < -1e-5) radius -= 10.0;
-    if (piece.angle() > 1e-5) radius += 10.0;
-
+    double radius = race_->track().LaneRadius(pos.piece(), pos.start_lane());
     GetDriftModel(pos)->Record(angle, angle_, previous_angle_, velocity_, radius);
 
     // Update state
