@@ -43,7 +43,7 @@ RawBot::msg_vector RawBot::React(const jsoncons::json& msg) {
   if (action_it != action_map_.end()) {
     return (action_it->second)(this, msg);
   } else {
-    std::cout << "Unknown message type: " << msg_type << std::endl;
+    std::cout << "Unknown message type: " << msg_type << "\n\n\n\n" << std::endl;
     return { utils::make_ping() };
   }
 }
@@ -95,7 +95,7 @@ RawBot::msg_vector RawBot::OnCarPositions(const jsoncons::json& msg) {
   const auto& data = msg.get("data", jsoncons::json(""));
   const int game_tick = msg.get("gameTick", jsoncons::json(0)).as_int();
   if (game_tick != last_game_tick_ + 1) {
-    std::cerr << "unexpected game tick: " << game_tick << " last: " << last_game_tick_ << std::endl;
+    //std::cerr << "unexpected game tick: " << game_tick << " last: " << last_game_tick_ << std::endl;
     return ping();
   }
   last_game_tick_ = game_tick;

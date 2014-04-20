@@ -56,14 +56,11 @@ class SingleDriftModel {
   }
 
   double Predict(double angle, double previous_angle, double velocity, double radius) {
-    double sine = sin(rad(angle)),
-           cosine = cos(rad(angle)),
-           Radius = R(angle, radius);
+    double Radius = R(angle, radius);
     return x_[0] * angle +
            x_[1] * previous_angle +
-           x_[2] * angle * velocity +
-           x_[3] * velocity +
-           x_[4] * SQR(velocity) * velocity / Radius;
+           x_[2] * velocity * angle +
+           x_[3] * velocity * fmax(0, 424.2017117 * velocity / sqrt(Radius) - 239.9595605);
   }
 
   double Accuracy() {
@@ -82,9 +79,6 @@ class SingleDriftModel {
   double R(double angle, double radius) {
     if (radius < 1e-5 && radius > -1e-5) return 2000000000;
     return radius;
-
-    double l = 10.0;
-    return sqrt(SQR(radius) + SQR(l) - 2.0 * l * radius * cos(rad(90.0 + angle)));
   }
 
   vector<double> x_;
@@ -142,22 +136,18 @@ class DriftModel {
 
     if (m_.size() >= model_size_) {
       AddNewModel();
-      PickBestModel();
+      //PickBestModel();
     }
   }
 
   void SaveEntry(double angle, double previous_angle, double previous_previous_angle, double previous_velocity, double radius) {
     data_.push_back({previous_velocity, radius});
-    double sine = sin(rad(previous_angle)),
-       cosine = cos(rad(previous_angle)),
-       Radius = R(previous_angle, radius);
-
+    double Radius = R(previous_angle, radius);
     m_.push_back({
-        previous_angle,
-        previous_previous_angle,
-        previous_angle * previous_velocity,
-        previous_velocity,
-        SQR(previous_velocity) * previous_velocity / Radius
+        previous_angle +
+        previous_previous_angle +
+        previous_velocity * previous_angle,
+        previous_velocity * fmax(0, 424.2017117 * previous_velocity / sqrt(Radius) - 239.9595605)
         });
 
     b_.push_back(angle);
@@ -173,16 +163,16 @@ class DriftModel {
   }
 
   void AddModel(const vector<double> &x) {
+    // TODO kareth
     models_.push_back(new SingleDriftModel(x));
+    best_model_ = models_.back();
+    manual_ = true;
   }
 
  private:
   double R(double angle, double radius) {
     if (radius < 1e-5 && radius > -1e-5) return 2000000000;
     return radius;
-
-    double l = 10.0;
-    return sqrt(radius * radius + l * l - 2.0 * l * radius * cos(rad(90.0 + angle)));
   }
 
   void AddNewModel() {
@@ -209,13 +199,14 @@ class DriftModel {
   }
 
   void PickBestModel() {
+    if (manual_) return;
     for (int i = 0; i < models_.size(); i++)
       if (best_model_ == nullptr || models_[i]->Accuracy() < best_model_->Accuracy())
         best_model_ = models_[i];
   }
 
-  const int model_size_ = 5;
-  const int model_window_ = 5; // Max Amount of recent data used for simplex
+  const int model_size_ = 4;
+  const int model_window_ = 4; // Max Amount of recent data used for simplex
 
   double rad(double deg) { return deg * M_PI / 180.0; }
 
@@ -232,6 +223,7 @@ class DriftModel {
 
   vector<SingleDriftModel*> models_;
   SingleDriftModel* best_model_ = nullptr;
+  int manual_ = false;
 };
 
 // We assume following velocity model
@@ -345,12 +337,14 @@ class CarTracker {
     stats_file_.open ("bin/stats.csv");
     stats_file_ << "piece_index,radius,in_piece_distance,angle,velocity,throttle" << std::endl;
 
-    /*drift_model_[0].reset(new DriftModel(0));
-    drift_model_[0]->AddModel({1.9, -0.9, 0.00125, 0, 0});
-    drift_model_[1].reset(new DriftModel(1));
-    drift_model_[1]->AddModel({1.89212, -0.9, 0, -0.0204154, 0.108018});
-    drift_model_[-1].reset(new DriftModel(-1));
-    drift_model_[-1]->AddModel({1.89212, -0.9, 0, 0.0469626, -0.224815});*/
+    if (race_->track().id() == "keimola") {
+      drift_model_[0].reset(new DriftModel(0));
+      drift_model_[0]->AddModel({1.9, -0.9, -0.00125, 0});
+      drift_model_[1].reset(new DriftModel(1));
+      drift_model_[1]->AddModel({1.9, -0.9, -0.00125, 0.00125});
+      drift_model_[-1].reset(new DriftModel(-1));
+      drift_model_[-1]->AddModel({1.9, -0.9, -0.00125, -0.00125});
+    }
   }
 
   ~CarTracker() {
