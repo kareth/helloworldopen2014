@@ -46,4 +46,20 @@ const Piece& Track::PieceFor(const Position& position, int offset) const {
   return pieces_.at(index);
 }
 
+double Track::LaneRadius(int piece, int lane) const {
+  if (pieces_[piece].radius() < 1e-5)
+    return 0;
+
+  return pieces_[piece].radius() - lanes_[lane].distance_from_center();
+}
+
+double Track::LaneLength(int piece, int lane) const {
+  if (pieces_[piece].radius() < 1e-5)
+    return pieces_[piece].length();
+
+  double radius = LaneRadius(piece, lane);
+  double angle = pieces_[piece].angle();
+  return 2.0 * M_PI * radius * (fabs(angle) / 360.0);
+}
+
 }  // namespace game

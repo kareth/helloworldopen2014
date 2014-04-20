@@ -65,7 +65,7 @@ class SingleDriftModel {
            x_[3] * sine + // Tarcie na osii x, (z crossem z r)
            x_[4] * SQR(velocity * sine / Radius) + // Odsrodkowa na osii x (z crossem z r)
            // W rownaniu ponizej powinno być jeszcze * cos(rad(angle) ale z jakichs powodow to tylko psuje...
-           x_[5] * SQR(velocity) / Radius * sqrt(1.0 - SQR(10.0 * sine / Radius)) + // odsrodkowa na ossii y (z crossem z r)
+           x_[5] * SQR(velocity) / Radius * cosine * sqrt(1.0 - SQR(10.0 * sine / Radius)) + // odsrodkowa na ossii y (z crossem z r)
            x_[6] * cosine; // Tarcie na osii y (cost) (z crossem z r)
   }
 
@@ -102,7 +102,7 @@ class DriftModel {
     char filename[50];
     sprintf (filename, "bin/drift.%d.csv", direction);
     file_.open (filename);
-    file_ << "p_angle,p_p_angle,p_velocity,angle" << std::endl;
+    file_ << "p_angle,p_p_angle,p_velocity,angle,radius" << std::endl;
   }
 
   ~DriftModel() {
@@ -110,11 +110,11 @@ class DriftModel {
     std::cout << "direction: " << direction_ << std::endl;
     if (IsReady()) {
       for (int i = 0; i < model_size_; i++)
-        std::cout << "x" << i <<": " << x_[i] << " ";
+        std::cout << "x" << i <<": " << best_model_->x()[i] << " ";
       std::cout << std::endl;
     }
     error_tracker_.Print();
-    models_[PickBestModel()]->PrintAccuracy();
+    best_model_->PrintAccuracy();
 
     std::cout << std::endl;
 
@@ -124,8 +124,7 @@ class DriftModel {
     file_.close();
   }
 
-  void Record(double angle, double previous_angle,
-              double previous_previous_angle, double previous_velocity, double radius) {
+  void Record(double angle, double previous_angle, double previous_previous_angle, double previous_velocity, double radius) {
     if (angle == 0) return;
 
     file_ << previous_angle << "," << previous_previous_angle << "," << previous_velocity << "," << angle << "," << radius;
@@ -140,6 +139,15 @@ class DriftModel {
     for (auto& model : models_)
       model->Record(angle, previous_angle, previous_previous_angle, previous_velocity, radius);
 
+    SaveEntry(angle, previous_angle, previous_previous_angle, previous_velocity, radius);
+
+    if (m_.size() >= model_size_) {
+      AddNewModel();
+      PickBestModel();
+    }
+  }
+
+  void SaveEntry(double angle, double previous_angle, double previous_previous_angle, double previous_velocity, double radius) {
     data_.push_back({previous_velocity, radius});
     double sine = sin(rad(previous_angle)),
        cosine = cos(rad(previous_angle)),
@@ -151,30 +159,16 @@ class DriftModel {
         SQR(previous_velocity) * cosine / Radius,
         sine,
         SQR(previous_velocity * sine * Radius),
-        SQR(previous_velocity) / Radius * sqrt(1.0 - SQR(10.0 * sine / Radius)),
+        SQR(previous_velocity) / Radius * cosine * sqrt(1.0 - SQR(10.0 * sine / Radius)),
         cosine
         });
 
     b_.push_back(angle);
-
-    if (m_.size() >= model_size_) {
-      AddNewModel();
-      PickBestModel();
-    }
   }
 
   double Predict(double angle, double previous_angle, double velocity, double radius) {
-    double sine = sin(rad(angle)),
-       cosine = cos(rad(angle)),
-       Radius = R(angle, radius);
-    return x_[0] * angle + // 2 kolejne potrzebne do przyspieszenia kątowego
-           x_[1] * previous_angle + // jw.
-           x_[2] * SQR(velocity) * cosine / Radius + // Siła odśrodkowa
-           x_[3] * sine + // Tarcie na osii x, (z crossem z r)
-           x_[4] * SQR(velocity * sine / Radius) + // Odsrodkowa na osii x (z crossem z r)
-           // W rownaniu ponizej powinno być jeszcze * cos(rad(angle) ale z jakichs powodow to tylko psuje...
-           x_[5] * SQR(velocity) / Radius * sqrt(1.0 - SQR(10.0 * sine / Radius)) + // odsrodkowa na ossii y (z crossem z r)
-           x_[6] * cosine; // Tarcie na osii y (cost) (z crossem z r)
+    if (!IsReady()) return angle;
+    return best_model_->Predict(angle, previous_angle, velocity, radius);
   }
 
   bool IsReady() {
@@ -189,7 +183,7 @@ class DriftModel {
   }
 
   void AddNewModel() {
-    for (int increment = 1; increment < 12; increment += 2) {
+    for (int increment = 1; increment < 20; increment += 5) {
       if (m_.size() >= increment * model_window_) {
         vector<double> x;
         vector<double> b;
@@ -211,13 +205,10 @@ class DriftModel {
       ready_ = true;
   }
 
-  int PickBestModel() {
-    int best = 0;
+  void PickBestModel() {
     for (int i = 0; i < models_.size(); i++)
-      if (models_[i]->Accuracy() < models_[best]->Accuracy())
-        best = i;
-    x_ = models_[best]->x();
-    return best;
+      if (best_model_ == nullptr || models_[i]->Accuracy() < best_model_->Accuracy())
+        best_model_ = models_[i];
   }
 
   const int model_size_ = 7;
@@ -234,10 +225,10 @@ class DriftModel {
   vector<vector<double> > data_;
   vector<double> b_;
 
-  vector<double> x_;
   ErrorTracker error_tracker_;
 
   vector<SingleDriftModel*> models_;
+  SingleDriftModel* best_model_ = nullptr;
 };
 
 // We assume following velocity model
@@ -348,7 +339,7 @@ class CarTracker {
  public:
   CarTracker(const Race* race) : race_(race) {
     stats_file_.open ("bin/stats.csv");
-    stats_file_ << "piece_index,in_piece_distance,angle,velocity" << std::endl;
+    stats_file_ << "piece_index,in_piece_distance,angle,velocity,throttle" << std::endl;
   }
 
   ~CarTracker() {
@@ -384,9 +375,9 @@ class CarTracker {
     if (positions_.size() > 0) pos = positions_.back();
 
     auto& piece = race_->track().pieces().at(pos.piece());
-    double radius = abs(piece.angle());
-    if (radius < -1e-5) radius -= 10.0;
-    if (radius > 1e-5) radius += 10.0;
+    double radius = abs(piece.radius());
+    if (piece.angle() < -1e-5) radius -= 10.0;
+    if (piece.angle() > 1e-5) radius += 10.0;
 
     GetDriftModel(pos)->Record(angle, angle_, previous_angle_, velocity_, radius);
 
@@ -419,7 +410,8 @@ class CarTracker {
     stats_file_ << position.piece() << ","
                 << position.piece_distance() << ","
                 << angle_ << ","
-                << velocity_ << std::endl;
+                << velocity_ << ","
+                << throttle_ << std::endl;
   }
 
   void RecordCarCrash() {
@@ -436,13 +428,60 @@ class CarTracker {
   double angle() const { return angle_; }
 
   Position Predict(const Position& position, const Position& previous_position, int throttle, bool change_lane) {
-    /*GetDriftModel(position)->Predict(
+    if (!GetDriftModel(position)->IsReady() ||
+        !velocity_model_.IsReady())
+      return position;
+
+    // TODO swapping lanes prolongs track :D
+    // TODO no lane swapping management
+
+    double radius = race_->track().LaneRadius(previous_position.piece(), previous_position.start_lane());
+    double velocity;
+
+    if (position.piece() == previous_position.piece())
+      velocity = position.piece_distance() - previous_position.piece_distance();
+    else
+      velocity = position.piece_distance() - previous_position.piece_distance() +
+          race_->track().LaneLength(position.piece(), position.start_lane());
+
+    Position result;
+
+    result.set_angle(GetDriftModel(position)->Predict(
         position.angle(),
         previous_position.angle(),
-        race_->DistanceBetween(position, position);
-        );
-*/
+        velocity,
+        radius
+        ));
+
+
+    double new_velocity = velocity_model_.Predict(velocity, throttle);
+    double new_position = position.piece_distance() + new_velocity;
+
+    int lap = position.lap();
+
+    if (new_position > race_->track().LaneLength(position.piece(), position.start_lane())) {
+      int piece = position.piece() + 1;
+      if (piece >= race_->track().pieces().size()) {
+        piece %= race_->track().pieces().size();
+        lap++;
+      }
+      result.set_piece(piece);
+      result.set_piece_distance(new_position - race_->track().LaneLength(position.piece(), position.start_lane()));
+    } else {
+      result.set_piece(position.piece());
+      result.set_piece_distance(new_position);
+    }
+
+    result.set_lap(lap);
+
+    // TODO(kareth)
+    result.set_start_lane(position.start_lane());
+    result.set_end_lane(position.end_lane());
+
+    return result;
   }
+
+  const vector<Position>& positions() { return positions_; }
 
  private:
   std::ofstream stats_file_;

@@ -15,6 +15,7 @@ add_style_check_target(bots "${BOTS_HEADERS}" HWO)
 add_subdirectory(basic)
 add_subdirectory(tomek)
 add_subdirectory(piotr)
+add_subdirectory(kareth)
 
 target_link_libraries(bots
   ${Boost_LIBRARIES}

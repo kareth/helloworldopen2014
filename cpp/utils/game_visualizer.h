@@ -16,6 +16,7 @@ class GameVisualizer {
   GameVisualizer() : lap_times_() {}
 
   void Print() {
+    return;
     if (print_) {
       if (visible_)
         CarriageReturn(positions_.size() * kPlayerLines);

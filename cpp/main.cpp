@@ -10,6 +10,7 @@
 #include "bots/basic/bot.h"
 #include "bots/tomek/bot.h"
 #include "bots/piotr/bot.h"
+#include "bots/kareth/bot.h"
 
 DEFINE_string(track, "keimola", "The track to join the race");
 DEFINE_int32(num_players, 1, "The number of players that will race (including you)");
@@ -25,6 +26,8 @@ bots::BotInterface* GetBot(const string& bot_name) {
     return new bots::tomek::Bot();
   if (bot_name == "piotr")
     return new bots::piotr::Bot();
+  if (bot_name == "kareth")
+    return new bots::kareth::Bot();
 
   return new bots::basic::Bot();
 }

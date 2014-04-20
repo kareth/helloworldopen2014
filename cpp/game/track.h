@@ -19,6 +19,9 @@ class Track {
   Track() {
   }
 
+  double LaneRadius(int piece, int lane) const;
+  double LaneLength(int piece, int lane) const;
+
   const string& id() const { return id_; }
   const string& name() const { return name_; }
   const vector<Piece>& pieces() const { return pieces_; }
