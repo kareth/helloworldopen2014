@@ -1,24 +1,25 @@
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 2.8.12.2)
 
 project (HWO)
 
 option(SET_WARNINGS "Compiler warning flags" OFF)
 option(SET_DEBUG "Compiler debugging flags" OFF)
-option(SET_CPPLINT "Style Check" ON)
+option(SET_CPPLINT "Style Check" OFF)
 
 # Allow absolute paths
 SET(BASEPATH "${CMAKE_SOURCE_DIR}")
 
-SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 SET(gtest_SOURCE_DIR "${BASEPATH}/gtest")
+
+FIND_PACKAGE(Threads REQUIRED)
+FIND_PACKAGE(Boost 1.54.0 COMPONENTS system REQUIRED)
+
+enable_testing()
 
 INCLUDE_DIRECTORIES("${BASEPATH}")
 INCLUDE_DIRECTORIES("${BASEPATH}/jsoncons/src")
-
-enable_testing()
-include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
-
-find_package(Boost 1.54.0 COMPONENTS system REQUIRED)
+INCLUDE_DIRECTORIES(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 
 include(EnableCxx11)
@@ -26,6 +27,7 @@ include(BuildType)
 include(StyleCheck)
 
 add_subdirectory(gtest)
+add_subdirectory(gflags)
 add_subdirectory(bots)
 add_subdirectory(game)
 add_subdirectory(utils)
@@ -41,6 +43,7 @@ target_link_libraries(bot
   game
   physics
   utils
+  gflags
 )
 
 add_style_check_target(bot main.cpp HWO)

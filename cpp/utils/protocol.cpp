@@ -16,6 +16,20 @@ jsoncons::json make_join(const std::string& name, const std::string& key) {
   return make_request("join", data);
 }
 
+jsoncons::json make_join_race(const std::string& name, const std::string& key,
+                              const std::string& track, int players) {
+  jsoncons::json bot;
+  bot["name"] = name;
+  bot["key"] = key;
+
+  jsoncons::json data;
+  data["trackName"] = track;
+  data["carCount"] = players;
+  data["botId"] = bot;
+
+  return make_request("joinRace", data);
+}
+
 jsoncons::json make_ping() {
   return make_request("ping", jsoncons::null_type());
 }

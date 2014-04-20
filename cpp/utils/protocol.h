@@ -11,6 +11,8 @@ namespace utils {
 
 jsoncons::json make_request(const std::string& msg_type, const jsoncons::json& data);
 jsoncons::json make_join(const std::string& name, const std::string& key);
+jsoncons::json make_join_race(const std::string& name, const std::string& key,
+                              const std::string& track, int players);
 jsoncons::json make_ping();
 jsoncons::json make_switch(game::Switch s);
 jsoncons::json make_throttle(double throttle);

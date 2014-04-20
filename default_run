@@ -1,2 +1,4 @@
 #!/bin/bash
-./run testserver.helloworldopen.com 8091 $@
+source ./config
+
+(cd $PL && ./run --key="$BOTKEY" $@)

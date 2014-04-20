@@ -424,7 +424,7 @@ class CarTracker {
 
   Position Predict(const Position& position, int throttle, bool change_lane) {
     // TODO ignoring change_lane
-
+    return Position();
   }
 
  private:

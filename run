@@ -7,4 +7,4 @@ if [ ! -z "$3" ]; then
   export BOTNAME="$3"
 fi
 
-(cd $PL && ./run $1 $2 "$BOTNAME" "$BOTKEY")
+(cd $PL && ./cpp/plusbot $1 $2 "$BOTNAME" "$BOTKEY")
