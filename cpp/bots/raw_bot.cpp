@@ -8,6 +8,7 @@ namespace bots {
 RawBot::RawBot(BotInterface* bot)
   : bot_(bot), visualizer_(), action_map_ {
       { "join", &RawBot::OnJoin },
+      { "joinRace", &RawBot::OnJoin },
       { "yourCar", &RawBot::OnYourCar },
       { "gameInit", &RawBot::OnGameInit },
       { "gameStart", &RawBot::OnGameStart },
