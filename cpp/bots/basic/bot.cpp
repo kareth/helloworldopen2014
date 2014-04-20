@@ -22,7 +22,7 @@ void Bot::GameStarted() {
   return;
 }
 
-game::Command Bot::GetMove(const std::map<std::string, game::Position>& positions)  {
+game::Command Bot::GetMove(const std::map<std::string, game::Position>& positions, int game_tick) {
   return game::Command(0.65);
 }
 

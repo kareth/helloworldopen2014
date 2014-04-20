@@ -25,7 +25,7 @@ RawBot::RawBot(BotInterface* bot)
 {
 }
 
-RawBot::msg_vector RawBot::CommandToMsg(const game::Command& command) {
+RawBot::msg_vector RawBot::CommandToMsg(const game::Command& command, int game_tick) {
   msg_vector result;
 
   if (command.SwitchSet())
@@ -34,31 +34,32 @@ RawBot::msg_vector RawBot::CommandToMsg(const game::Command& command) {
   if (command.ThrottleSet())
     result.push_back(utils::make_throttle(command.get_throttle()));
 
-  if (result.size() == 0)
-    result.push_back(utils::make_ping());
-
   return result;
 }
 
 RawBot::msg_vector RawBot::React(const jsoncons::json& msg) {
   const auto& msg_type = msg.get("msgType", jsoncons::json("")).as_string();
-  const auto& data = msg.get("data", jsoncons::json(""));
   auto action_it = action_map_.find(msg_type);
   if (action_it != action_map_.end()) {
-    return (action_it->second)(this, data);
+    return (action_it->second)(this, msg);
   } else {
     std::cout << "Unknown message type: " << msg_type << std::endl;
     return { utils::make_ping() };
   }
 }
 
-RawBot::msg_vector RawBot::OnJoin(const jsoncons::json& data) {
+RawBot::msg_vector RawBot::OnJoin(const jsoncons::json& msg) {
+  TransitionState(State::kWaitingForJoin, State::kJoin);
+
   std::cout << "Server: Join" << std::endl;
   bot_->JoinedGame();
   return ping();
 }
 
-RawBot::msg_vector RawBot::OnYourCar(const jsoncons::json& data) {
+RawBot::msg_vector RawBot::OnYourCar(const jsoncons::json& msg) {
+  TransitionState(State::kJoin, State::kYourCar);
+  const auto& data = msg.get("data", jsoncons::json(""));
+
   const auto& color = data["color"].as_string();
   std::cout << "Server: Your Car - " << ColorPrint(color) << std::endl;
 
@@ -66,7 +67,10 @@ RawBot::msg_vector RawBot::OnYourCar(const jsoncons::json& data) {
   return ping();
 }
 
-RawBot::msg_vector RawBot::OnGameInit(const jsoncons::json& data) {
+RawBot::msg_vector RawBot::OnGameInit(const jsoncons::json& msg) {
+  TransitionState(State::kYourCar, State::kGameInit);
+  const auto& data = msg.get("data", jsoncons::json(""));
+
   std::cout << "Server: Game Init" << std::endl;
 
   game::Race race;
@@ -77,7 +81,9 @@ RawBot::msg_vector RawBot::OnGameInit(const jsoncons::json& data) {
   return ping();
 }
 
-RawBot::msg_vector RawBot::OnGameStart(const jsoncons::json& data) {
+RawBot::msg_vector RawBot::OnGameStart(const jsoncons::json& msg) {
+  TransitionState(State::kGameInit, State::kGameStart);
+
   std::cout << "Server: Game start" << std::endl;
 
   visualizer_.GameStart();
@@ -85,7 +91,14 @@ RawBot::msg_vector RawBot::OnGameStart(const jsoncons::json& data) {
   return ping();
 }
 
-RawBot::msg_vector RawBot::OnCarPositions(const jsoncons::json& data) {
+RawBot::msg_vector RawBot::OnCarPositions(const jsoncons::json& msg) {
+  const auto& data = msg.get("data", jsoncons::json(""));
+  const int game_tick = msg.get("gameTick", jsoncons::json(0)).as_int();
+  if (game_tick != last_game_tick_ + 1) {
+    std::cerr << "unexpected game tick: " << game_tick << " last: " << last_game_tick_ << std::endl;
+  }
+  last_game_tick_ = game_tick;
+
   std::map<std::string, game::Position> positions;
   for (auto it = data.begin_elements(); it != data.end_elements(); ++it) {
     game::Position position;
@@ -94,10 +107,12 @@ RawBot::msg_vector RawBot::OnCarPositions(const jsoncons::json& data) {
   }
 
   visualizer_.Update(positions);
-  return CommandToMsg(bot_->GetMove(positions));
+  return CommandToMsg(bot_->GetMove(positions, game_tick), game_tick);
 }
 
-RawBot::msg_vector RawBot::OnLapFinished(const jsoncons::json& data) {
+RawBot::msg_vector RawBot::OnLapFinished(const jsoncons::json& msg) {
+  const auto& data = msg.get("data", jsoncons::json(""));
+
   game::Result result;
   result.ParseFromJson(data);
 
@@ -107,7 +122,8 @@ RawBot::msg_vector RawBot::OnLapFinished(const jsoncons::json& data) {
   return ping();
 }
 
-RawBot::msg_vector RawBot::OnFinish(const jsoncons::json& data) {
+RawBot::msg_vector RawBot::OnFinish(const jsoncons::json& msg) {
+  const auto& data = msg.get("data", jsoncons::json(""));
   const auto& color = data["color"].as_string();
 
   visualizer_.CarFinishedRace(color);
@@ -116,7 +132,7 @@ RawBot::msg_vector RawBot::OnFinish(const jsoncons::json& data) {
   return ping();
 }
 
-RawBot::msg_vector RawBot::OnGameEnd(const jsoncons::json& data) {
+RawBot::msg_vector RawBot::OnGameEnd(const jsoncons::json& msg) {
   visualizer_.GameEnd();
   std::cout << "Server: Game end" << std::endl;
 
@@ -124,13 +140,14 @@ RawBot::msg_vector RawBot::OnGameEnd(const jsoncons::json& data) {
   return ping();
 }
 
-RawBot::msg_vector RawBot::OnTournamentEnd(const jsoncons::json& data) {
+RawBot::msg_vector RawBot::OnTournamentEnd(const jsoncons::json& msg) {
   std::cout << "Server: Tournament end" << std::endl;
   bot_->TournamentEnd();
   return ping();
 }
 
-RawBot::msg_vector RawBot::OnCrash(const jsoncons::json& data) {
+RawBot::msg_vector RawBot::OnCrash(const jsoncons::json& msg) {
+  const auto& data = msg.get("data", jsoncons::json(""));
   const auto& color = data["color"].as_string();
 
   visualizer_.CarCrashed(color);
@@ -138,19 +155,22 @@ RawBot::msg_vector RawBot::OnCrash(const jsoncons::json& data) {
   return ping();
 }
 
-RawBot::msg_vector RawBot::OnSpawn(const jsoncons::json& data) {
+RawBot::msg_vector RawBot::OnSpawn(const jsoncons::json& msg) {
+  const auto& data = msg.get("data", jsoncons::json(""));
   const auto& color = data["color"].as_string();
 
   bot_->CarSpawned(color);
   return ping();
 }
 
-RawBot::msg_vector RawBot::OnError(const jsoncons::json& data) {
+RawBot::msg_vector RawBot::OnError(const jsoncons::json& msg) {
+  const auto& data = msg.get("data", jsoncons::json(""));
   std::cout << "Server: Error - " << data.to_string() << std::endl;
   return ping();
 }
 
-RawBot::msg_vector RawBot::OnDNF(const jsoncons::json& data) {
+RawBot::msg_vector RawBot::OnDNF(const jsoncons::json& msg) {
+  const auto& data = msg.get("data", jsoncons::json(""));
   std::cout << "Server: Disqualification - " << data["reason"].as<std::string>() << std::endl;
   return ping();
 }
@@ -167,6 +187,13 @@ std::string RawBot::ColorPrint(const std::string& color) const {
     return colors[color] + color + colors["normal"];
   else
     return color;
+}
+
+void RawBot::TransitionState(State from, State to) {
+  if (state_ != from)
+    std::cerr << "Incorrect state. state_=" << state_ << " from=" << from << " to=" << to << std::endl;
+
+  state_ = to;
 }
 
 }  // namespace bots

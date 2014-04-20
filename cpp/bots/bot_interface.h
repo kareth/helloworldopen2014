@@ -20,8 +20,7 @@ class BotInterface {
   virtual void NewRace(const game::Race& race) = 0;
   virtual void GameStarted() = 0;
 
-  // TODO(piotr) Add game_tick!
-  virtual game::Command GetMove(const std::map<std::string, game::Position>& positions) = 0;
+  virtual game::Command GetMove(const std::map<std::string, game::Position>& positions, int game_tick) = 0;
   virtual void CarFinishedLap(const std::string& color) = 0;
   virtual void CarFinishedRace(const std::string& color) = 0;
   virtual void GameEnd() = 0;

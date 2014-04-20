@@ -15,17 +15,10 @@ Bot::~Bot() {
 }
 
 game::Command Bot::GetMove(
-    const std::map<std::string, Position>& positions)  {
+    const std::map<std::string, Position>& positions, int game_tick)  {
   car_tracker_->Record(positions.find(color_)->second);
 
   double throttle = 0.65;
-  //if (car_tracker_->angle() < 1) {
-  //  throttle = 1.0;
-  //} else if (car_tracker_->angle() < 30) {
-  //  throttle = 0.6;
-  //} else {
-  //  throttle = 0.1;
-  //}
 
   car_tracker_->RecordThrottle(throttle);
   return Command(throttle);

@@ -24,7 +24,15 @@ class RawBot {
  private:
   typedef std::function<msg_vector(RawBot*, const jsoncons::json&)> action_fun;
 
-  msg_vector CommandToMsg(const game::Command& command);
+  enum State {
+    kWaitingForJoin = 0,
+    kJoin = 1,
+    kYourCar = 2,
+    kGameInit = 3,
+    kGameStart = 4,
+  };
+
+  msg_vector CommandToMsg(const game::Command& command, int game_tick);
 
   msg_vector OnJoin(const jsoncons::json& data);
   msg_vector OnYourCar(const jsoncons::json& data);
@@ -41,7 +49,7 @@ class RawBot {
   msg_vector OnError(const jsoncons::json& data);
   msg_vector OnDNF(const jsoncons::json& data);
 
-  msg_vector ping() const { return { utils::make_ping() }; }
+  msg_vector ping() const { return { }; }
 
   // Prints color with color in terminal
   std::string ColorPrint(const std::string& color) const;
@@ -49,6 +57,11 @@ class RawBot {
   std::unique_ptr<BotInterface> bot_;
   const std::map<std::string, action_fun> action_map_;
   utils::GameVisualizer visualizer_;
+
+  void TransitionState(State from, State to);
+
+  State state_ = State::kWaitingForJoin;
+  int last_game_tick_ = -1;
 };
 
 }  // namespace bots

@@ -34,8 +34,14 @@ jsoncons::json make_ping() {
   return make_request("ping", jsoncons::null_type());
 }
 
-jsoncons::json make_throttle(double throttle) {
-  return make_request("throttle", throttle);
+jsoncons::json make_throttle(double throttle, int game_tick) {
+  jsoncons::json r;
+  r["msgType"] = "throttle";
+  r["data"] = throttle;
+  if (game_tick != -1) {
+    r["gameTick"] = game_tick;
+  }
+  return r;
 }
 
 jsoncons::json make_switch(game::Switch s) {

@@ -15,7 +15,7 @@ jsoncons::json make_join_race(const std::string& name, const std::string& key,
                               const std::string& track, int players);
 jsoncons::json make_ping();
 jsoncons::json make_switch(game::Switch s);
-jsoncons::json make_throttle(double throttle);
+jsoncons::json make_throttle(double throttle, int game_tick=-1);
 
 }  // namespace utils
 

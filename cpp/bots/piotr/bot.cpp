@@ -34,7 +34,7 @@ void Bot::GameStarted() {
   return;
 }
 
-game::Command Bot::GetMove(const map<string, Position>& positions)  {
+game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick)  {
   speed_tracker_->Update(positions);
 
   const auto& my_pos = positions.begin()->second;
