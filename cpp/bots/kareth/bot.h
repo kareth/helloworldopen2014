@@ -34,9 +34,12 @@ class Bot : public bots::BotInterface {
   void CarSpawned(const std::string& color) override;
 
  private:
+  double Optimize(const game::Position& previous, const game::Position& current);
   game::Race race_;
 
   std::string color_;
+  bool started_ = false;
+  bool crashed_ = false;
 
   std::unique_ptr<game::CarTracker> car_tracker_;
 };

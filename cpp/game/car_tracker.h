@@ -274,6 +274,7 @@ class VelocityModel {
   void Train() {
     GaussDouble(m_, b_, x_);
     ready_ = true;
+    // std::cout << "\n\n\n\nVelocity: " << x_[0] << " " << x_[1] << "\n\n\n\n";
   }
 
   bool ready_ = false;
@@ -442,7 +443,7 @@ class CarTracker {
       velocity = position.piece_distance() - previous_position.piece_distance();
     else
       velocity = position.piece_distance() - previous_position.piece_distance() +
-          race_->track().LaneLength(position.piece(), position.start_lane());
+          race_->track().LaneLength(previous_position.piece(), position.start_lane());
 
     Position result;
 
@@ -466,7 +467,7 @@ class CarTracker {
         lap++;
       }
       result.set_piece(piece);
-      result.set_piece_distance(new_position - race_->track().LaneLength(position.piece(), position.start_lane()));
+      result.set_piece_distance(new_position - race_->track().LaneLength(previous_position.piece(), position.start_lane()));
     } else {
       result.set_piece(position.piece());
       result.set_piece_distance(new_position);
