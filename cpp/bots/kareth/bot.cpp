@@ -17,7 +17,7 @@ Bot::Bot() {
   srand(time(0));
 }
 
-game::Command Bot::GetMove(const map<string, Position>& positions)  {
+game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick)  {
   Position position = positions.at(color_);
   Position previous;
   if (car_tracker_->positions().size() == 0)
@@ -30,15 +30,17 @@ game::Command Bot::GetMove(const map<string, Position>& positions)  {
   if (crashed_) {
     return Command(0);
   }
+
   double throttle;
   if (position.lap() == 0) {
-    if (position.piece() < 8)
-      throttle = 1;
-    else
-      throttle = fmin(100.0, double(rand() % 65) + double(rand() % 65)) / 100.0;
+    throttle = 1;
+  } else if (position.lap() == 1) {
+    throttle = 0.6;
   } else {
-    throttle = Optimize(previous, position);
+    throttle = 0.8;
   }
+
+  //throttle = Optimize(previous, position);
 
   //auto predicted = car_tracker_->Predict(position, previous, throttle, 0);
 
@@ -47,15 +49,15 @@ game::Command Bot::GetMove(const map<string, Position>& positions)  {
 }
 
 double Bot::Optimize(const Position& previous, const Position& current) {
-  int window_size = 40;
-  vector<double> t(window_size, 1);
+  int window_size = 70;
+  vector<double> t(window_size, 0.9);
   vector<Position> positions {previous, current};
 
   for (int i = 0; i < window_size; i++) {
     Position predicted = car_tracker_->Predict(positions[i+1], positions[i], t[i], 0);
     positions.push_back(predicted);
 
-    if (fabs(predicted.angle()) >= 57) {
+    if (fabs(predicted.angle()) >= 50) {
       bool found = false;
       for (int j = i; j >= 0; j--) {
         if (t[j] > 1e-5) {
@@ -73,19 +75,12 @@ double Bot::Optimize(const Position& previous, const Position& current) {
         for (int j = 0; j < positions.size(); j++)
           std::cout << "(" << positions[j].piece_distance() << ", " << positions[j].angle() << ")  ";
         std::cout << "\n\n\n\n";
-        if (race_.track().pieces()[current.piece()].type() == game::PieceType::kStraight) {
-          if (car_tracker_->velocity() < 6.7)
-            return 1;
-          else if (car_tracker_->velocity() <= 7.0)
-            return 0.7;
-          return 0;
-        }
         return 0;
       }
     }
 
-
     // wyrownaj.
+    /*
     int pos = i;
     double sum = 0;
     while (pos > 0 && t[pos] < 1e-5) pos--;
@@ -97,6 +92,7 @@ double Bot::Optimize(const Position& previous, const Position& current) {
 
     for (int j = pos; j <= i; j++)
       t[j] = ile;
+      */
 
   }
 

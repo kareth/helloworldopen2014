@@ -59,14 +59,11 @@ class SingleDriftModel {
     double sine = sin(rad(angle)),
            cosine = cos(rad(angle)),
            Radius = R(angle, radius);
-    return x_[0] * angle + // 2 kolejne potrzebne do przyspieszenia kątowego
-           x_[1] * previous_angle + // jw.
-           x_[2] * SQR(velocity) * cosine / Radius + // Siła odśrodkowa
-           x_[3] * sine + // Tarcie na osii x, (z crossem z r)
-           x_[4] * SQR(velocity * sine / Radius) + // Odsrodkowa na osii x (z crossem z r)
-           // W rownaniu ponizej powinno być jeszcze * cos(rad(angle) ale z jakichs powodow to tylko psuje...
-           x_[5] * SQR(velocity) / Radius * cosine * sqrt(1.0 - SQR(10.0 * sine / Radius)) + // odsrodkowa na ossii y (z crossem z r)
-           x_[6] * cosine; // Tarcie na osii y (cost) (z crossem z r)
+    return x_[0] * angle +
+           x_[1] * previous_angle +
+           x_[2] * angle * velocity +
+           x_[3] * velocity +
+           x_[4] * SQR(velocity) * velocity / Radius;
   }
 
   double Accuracy() {
@@ -84,6 +81,8 @@ class SingleDriftModel {
 
   double R(double angle, double radius) {
     if (radius < 1e-5 && radius > -1e-5) return 2000000000;
+    return radius;
+
     double l = 10.0;
     return sqrt(SQR(radius) + SQR(l) - 2.0 * l * radius * cos(rad(90.0 + angle)));
   }
@@ -156,11 +155,9 @@ class DriftModel {
     m_.push_back({
         previous_angle,
         previous_previous_angle,
-        SQR(previous_velocity) * cosine / Radius,
-        sine,
-        SQR(previous_velocity * sine * Radius),
-        SQR(previous_velocity) / Radius * cosine * sqrt(1.0 - SQR(10.0 * sine / Radius)),
-        cosine
+        previous_angle * previous_velocity,
+        previous_velocity,
+        SQR(previous_velocity) * previous_velocity / Radius
         });
 
     b_.push_back(angle);
@@ -175,9 +172,15 @@ class DriftModel {
     return ready_;
   }
 
+  void AddModel(const vector<double> &x) {
+    models_.push_back(new SingleDriftModel(x));
+  }
+
  private:
   double R(double angle, double radius) {
     if (radius < 1e-5 && radius > -1e-5) return 2000000000;
+    return radius;
+
     double l = 10.0;
     return sqrt(radius * radius + l * l - 2.0 * l * radius * cos(rad(90.0 + angle)));
   }
@@ -192,7 +195,7 @@ class DriftModel {
           m.push_back(m_[i]);
           b.push_back(b_[i]);
         }
-        // Simplex::Optimize(m, b, x);
+        //Simplex::Optimize(m, b, x);
         GaussDouble(m, b, x);
         models_.push_back(new SingleDriftModel(x));
 
@@ -211,8 +214,8 @@ class DriftModel {
         best_model_ = models_[i];
   }
 
-  const int model_size_ = 7;
-  const int model_window_ = 7; // Max Amount of recent data used for simplex
+  const int model_size_ = 5;
+  const int model_window_ = 5; // Max Amount of recent data used for simplex
 
   double rad(double deg) { return deg * M_PI / 180.0; }
 
@@ -340,7 +343,14 @@ class CarTracker {
  public:
   CarTracker(const Race* race) : race_(race) {
     stats_file_.open ("bin/stats.csv");
-    stats_file_ << "piece_index,in_piece_distance,angle,velocity,throttle" << std::endl;
+    stats_file_ << "piece_index,radius,in_piece_distance,angle,velocity,throttle" << std::endl;
+
+    /*drift_model_[0].reset(new DriftModel(0));
+    drift_model_[0]->AddModel({1.9, -0.9, 0.00125, 0, 0});
+    drift_model_[1].reset(new DriftModel(1));
+    drift_model_[1]->AddModel({1.89212, -0.9, 0, -0.0204154, 0.108018});
+    drift_model_[-1].reset(new DriftModel(-1));
+    drift_model_[-1]->AddModel({1.89212, -0.9, 0, 0.0469626, -0.224815});*/
   }
 
   ~CarTracker() {
@@ -391,7 +401,6 @@ class CarTracker {
   DriftModel* GetDriftModel(const Position& position) {
     auto& piece = race_->track().pieces().at(position.piece());
     int direction = sgn(piece.angle());
-
     if (drift_model_[direction] == nullptr) {
       drift_model_[direction].reset(new DriftModel(direction));
     }
@@ -406,6 +415,7 @@ class CarTracker {
     const auto& position = positions_.back();
 
     stats_file_ << position.piece() << ","
+                << race_->track().LaneRadius(position.piece(), position.start_lane()) << ","
                 << position.piece_distance() << ","
                 << angle_ << ","
                 << velocity_ << ","
@@ -494,7 +504,7 @@ class CarTracker {
   VelocityModel velocity_model_;
   // We need separate drift models for different pieces. We group them by
   // radius (straight pieces assume radius 0).
-  map<double, std::unique_ptr<DriftModel>> drift_model_;
+  map<int, std::unique_ptr<DriftModel>> drift_model_;
 
   vector<Position> positions_;
   double throttle_ = 0;
