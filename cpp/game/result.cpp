@@ -5,7 +5,7 @@ namespace game {
 Result::Result() : color_() {
 }
 
-std::string Result::ParseFromJson(const jsoncons::json& data) {
+void Result::ParseFromJson(const jsoncons::json& data) {
   color_ = data["car"]["color"].as_string();
 
   auto& lap_time = data["lapTime"];

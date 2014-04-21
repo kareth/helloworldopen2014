@@ -12,7 +12,7 @@ class Result {
  public:
   Result();
 
-  std::string ParseFromJson(const jsoncons::json& data);
+  void ParseFromJson(const jsoncons::json& data);
 
   const std::string& color() const { return color_; }
   int lap() const { return lap_; }
