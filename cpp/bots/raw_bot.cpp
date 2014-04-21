@@ -38,7 +38,9 @@ RawBot::~RawBot() {
   if (FLAGS_dump_history) {
     std::ofstream file;
     file.open("bin/history.json");
-    file << pretty_print(history) << std::endl;
+    jsoncons::output_format format;
+    history.to_stream(file, format);
+    file << std::endl;
     file.close();
   }
 }

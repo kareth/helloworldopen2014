@@ -1,11 +1,12 @@
 #ifndef CPP_GAME_CAR_TRACKER_H_
 #define CPP_GAME_CAR_TRACKER_H_
 
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <map>
 #include <algorithm>
+#include <fstream>
+#include <iostream>
+#include <limits>
+#include <map>
+#include <string>
 
 #include "game/car_predictor.h"
 #include "game/crash_model.h"
@@ -117,7 +118,8 @@ class CarTracker : public CarPredictor {
   void LogState() {
     const auto& position = positions_.back();
 
-    stats_file_ << position.piece() << ","
+    stats_file_ << std::setprecision(std::numeric_limits<double>::digits10)
+                << position.piece() << ","
                 << race_->track().LaneRadius(position.piece(), position.start_lane()) << ","
                 << position.piece_distance() << ","
                 << angle_ << ","
