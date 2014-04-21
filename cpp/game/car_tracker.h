@@ -7,6 +7,7 @@
 #include <map>
 #include <algorithm>
 
+#include "game/car_predictor.h"
 #include "game/crash_model.h"
 #include "game/drift_model.h"
 #include "game/error_tracker.h"
@@ -26,7 +27,7 @@ template <typename T> int sgn(T val) {
     return (T(0) < val) - (val < T(0));
 }
 
-class CarTracker {
+class CarTracker : public CarPredictor {
  public:
   CarTracker(const Race* race) : race_(race) {
     stats_file_.open ("bin/stats.csv");
@@ -60,8 +61,8 @@ class CarTracker {
       if (prev_position.piece() == position.piece()) {
         velocity = position.piece_distance() - prev_position.piece_distance();
       } else {
-      velocity = position.piece_distance() - prev_position.piece_distance() +
-          race_->track().LaneLength(prev_position.piece(), position.start_lane());
+        velocity = position.piece_distance() - prev_position.piece_distance() +
+          race_->track().LaneLength(prev_position.piece(), prev_position.start_lane());
       }
     }
 
@@ -123,6 +124,11 @@ class CarTracker {
   double velocity() const { return velocity_; }
 
   double angle() const { return angle_; }
+
+  CarState Predict(const CarState& state, const Command& command) {
+    // TODO(tomek)
+    return CarState();
+  }
 
   Position Predict(const Position& position, const Position& previous_position, int throttle, bool change_lane) {
     if (!GetDriftModel(position)->IsReady() ||
@@ -187,6 +193,7 @@ class CarTracker {
   double angle_ = 0;
   double previous_angle_ = 0;
 
+  // Does not own the pointer.
   const Race* race_;
 
   CrashModel crash_model_;
@@ -196,6 +203,7 @@ class CarTracker {
   map<int, std::unique_ptr<DriftModel>> drift_model_;
 
   vector<Position> positions_;
+  vector<CarState> states_;
   double throttle_ = 0;
 };
 

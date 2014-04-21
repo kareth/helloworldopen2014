@@ -1,38 +1,39 @@
 set(GAME_SOURCES
   car.cpp
-  position.cpp
   command.cpp
   gauss.cpp
+  position.cpp
   race.cpp
-  track.cpp
-  simplex.cpp
   result.cpp
+  simplex.cpp
+  track.cpp
 )
 
 set(GAME_HEADERS
   car.h
+  car_predictor.h
   car_tracker.h
-  crash_model.h
   command.h
+  crash_model.h
   drift_model.h
-  velocity_model.h
   error_tracker.h
   gauss.h
   lane.h
-  simplex.h
   position.h
   race.h
-  track.h
   result.h
+  simplex.h
+  track.h
+  velocity_model.h
 )
 
 set(GAME_TESTS
-  race_test.cpp
+  car_tracker_test.cpp
   gauss_test.cpp
+  position_test.cpp
+  race_test.cpp
   simplex_test.cpp
   track_test.cpp
-  position_test.cpp
-  car_tracker_test.cpp
 )
 
 add_library(game ${GAME_SOURCES})

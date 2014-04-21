@@ -29,8 +29,15 @@ class CrashModel {
     crashes_.push_back(angle);
   }
 
+  // TODO(zurkowski) Do we need this?
   void Record(double angle) {
     angle_threshold_ = fmax(angle_threshold_, angle);
+  }
+
+  // Returns the angle that is definitely safe. If the car has higher angle
+  // than this value, then it is possible it will crash.
+  double safe_angle() const {
+    return angle_threshold_;
   }
 
   // WillCrash?
@@ -39,6 +46,8 @@ class CrashModel {
     return angle < angle_threshold_;
   }
 
+
+  // Returns true if there was at least one crash.
   bool IsReady() const {
     return ready_;
   }

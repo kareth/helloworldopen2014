@@ -34,7 +34,8 @@ bots::BotInterface* GetBot(const string& bot_name) {
 
 void run(utils::Connection* connection, bots::RawBot* bot,
     const std::string& name, const std::string& key) {
-  connection->send_requests({ utils::make_join_race("NFC-" + name, key, FLAGS_track, FLAGS_num_players) });
+  connection->send_requests(
+      { utils::make_join_race("NFC-" + name, key, FLAGS_track, FLAGS_num_players) });
 
   for (;;) {
     boost::system::error_code error;

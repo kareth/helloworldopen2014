@@ -1,6 +1,15 @@
 #ifndef CPP_GAME_VELOCITY_MODEL_H_
 #define CPP_GAME_VELOCITY_MODEL_H_
 
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <map>
+#include <algorithm>
+
+#include "game/gauss.h"
+#include "game/error_tracker.h"
+
 namespace game {
 
 // We assume following velocity model
@@ -46,18 +55,18 @@ class VelocityModel {
   void Train() {
     GaussDouble(m_, b_, x_);
     ready_ = true;
-    // std::cout << "\n\n\n\nVelocity: " << x_[0] << " " << x_[1] << "\n\n\n\n";
   }
 
   bool ready_ = false;
 
   // Variables used to train the model
-  // {previous_velocity, previous_throttle} {velocity}
-  vector<vector<double> > m_;
-  vector<double> b_;
+  // {previous_velocity, previous_throttle}
+  std::vector<vector<double> > m_;
+  // {velocity}
+  std::vector<double> b_;
 
   // Model used for prediction.
-  vector<double> x_;
+  std::vector<double> x_;
 
   ErrorTracker error_tracker_;
 };
