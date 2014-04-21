@@ -31,16 +31,8 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
     return Command(0);
   }
 
-  double throttle;
-  if (position.lap() == 0) {
-    throttle = 1;
-  } else if (position.lap() == 1) {
-    throttle = 0.6;
-  } else {
-    throttle = 0.8;
-  }
+  double throttle = Optimize(previous, position);
 
-  //throttle = Optimize(previous, position);
 
   //auto predicted = car_tracker_->Predict(position, previous, throttle, 0);
 
@@ -49,21 +41,29 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 }
 
 double Bot::Optimize(const Position& previous, const Position& current) {
-  int window_size = 70;
-  vector<double> t(window_size, 0.9);
+  int window_size = 80;
+  vector<double> thr(window_size, 1);
   vector<Position> positions {previous, current};
+  //std::cout << "start" << std::endl;
+  int crash = -1;
 
   for (int i = 0; i < window_size; i++) {
-    Position predicted = car_tracker_->Predict(positions[i+1], positions[i], t[i], 0);
+    //std::cout << "p" << i << " " << thr[i] << " "<< thr.size() << std::endl;
+    while (positions.size() > i + 2)
+      positions.pop_back();
+
+    Position predicted = car_tracker_->Predict(positions[i+1], positions[i], thr[i], 0);
     positions.push_back(predicted);
 
-    if (fabs(predicted.angle()) >= 50) {
+    if (fabs(predicted.angle()) >= 58) {
+      crash = i;
       bool found = false;
       for (int j = i; j >= 0; j--) {
-        if (t[j] > 1e-5) {
-          t[j] = fmax(0, t[j]-0.1);
-          i = j-1;
-          positions.resize(i + 3);
+        if (thr[j] > 1e-2) {
+          //std::cout << "found! " << j << " " << thr[j] << std::endl;
+          thr[j] -= 0.2;
+          if (thr[j] < 0) thr[j] = 0;
+          i = j - 1;
           found = true;
           break;
         }
@@ -71,7 +71,7 @@ double Bot::Optimize(const Position& previous, const Position& current) {
       if (found) {
         continue;
       } else {
-        std::cout << "\n\n\n\nFAIL to stop drifting";
+        std::cout << "\n\n\n\nFAIL to stop drifting (" << positions.size() << " " << i <<")";
         for (int j = 0; j < positions.size(); j++)
           std::cout << "(" << positions[j].piece_distance() << ", " << positions[j].angle() << ")  ";
         std::cout << "\n\n\n\n";
@@ -79,29 +79,34 @@ double Bot::Optimize(const Position& previous, const Position& current) {
       }
     }
 
+    if (crash != -1 && i >= crash) crash = -1;
+
     // wyrownaj.
-    /*
-    int pos = i;
-    double sum = 0;
-    while (pos > 0 && t[pos] < 1e-5) pos--;
-    while (pos > 0 && t[pos] > 1e-5) {sum += t[pos]; pos--; }
-    if (t[pos] < 1e-5) pos++;
-    else sum += t[pos];
 
-    double ile = sum / double(i - pos + 1.0);
+    if (crash == -1) {
+      int pos = i;
+      double sum = 0;
+      while (pos > 0 && thr[pos] < 1e-5) pos--;
+      while (pos > 0 && thr[pos] > 1e-5) {sum += thr[pos]; pos--; }
+      if (thr[pos] < 1e-5) pos++;
+      else sum += thr[pos];
 
-    for (int j = pos; j <= i; j++)
-      t[j] = ile;
-      */
+      double ile = sum / double(i - pos + 1.0);
+
+      for (int j = pos; j <= i; j++)
+        thr[j] = ile;
+    }
 
   }
 
+  /*
   double sum = 0;
   for(int i = 0; i < window_size; i++)
-    sum += t[i];
-  return sum/window_size;
+    sum += thr[i];
 
-  return t[0];
+  return sum/double(window_size);*/
+
+  return thr[0];
 }
 
 void Bot::JoinedGame() {

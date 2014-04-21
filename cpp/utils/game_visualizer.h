@@ -136,7 +136,8 @@ class GameVisualizer {
       if (c.color() == color) {
         std::cout << colors[color];
         std::string name = c.name();
-        name[0] += 'A'-'a';
+        if (name[0] >= 'a' && name[0] <= 'z')
+          name[0] += 'A'-'a';
 
         int left = (kHeaderLength + name.size()) / 2;
         int right = kHeaderLength - left;
