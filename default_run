@@ -1,4 +1,4 @@
 #!/bin/bash
 source ./config
 
-(cd $PL && ./run --key="$BOTKEY" $@)
+(cd $PL && ./bin/bot --key="$BOTKEY" $@)

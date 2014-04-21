@@ -2,19 +2,18 @@
 
 mkdir -p bin
 
-if type cmake >/dev/null 2>&1 && [ $1 != "skip_cmake" ]; then
-
-  # Build using cmake
+function build_with_cmake() {
   cd bin
   cmake ..
   make -j4
   make test
   cd ..
+}
 
-else
-
+function build_without_cmake() {
+  date
   # Build without cmake
-  flags="-std=c++11 -I jsoncons/src/ -l pthread -l boost_system -o bin/plusbot"
+  flags="-std=c++11 -I jsoncons/src/ -l pthread -l boost_system -o bin/bot"
   g++ $flags \
     main.cpp \
     utils/protocol.cpp utils/connection.cpp utils/game_visualizer.cpp \
@@ -22,5 +21,10 @@ else
     game/car.cpp game/command.cpp game/gauss.cpp game/position.cpp game/race.cpp game/result.cpp game/simplex.cpp game/track.cpp \
     gflags/gflags.cc gflags/gflags_reporting.cc gflags/gflags_completions.cc \
     physics/speed_tracker.cpp
+}
 
+if type cmake >/dev/null 2>&1 && [ "$1" != "skip_cmake" ]; then
+  build_with_cmake
+else
+  build_without_cmake
 fi
