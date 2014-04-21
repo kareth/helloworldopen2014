@@ -35,8 +35,8 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 
   //double throttle = 0.60 + double(rand() % 40)/99.0;
 
-  //double throttle = Optimize(previous, position);
-  double throttle = BinaryPossibilitiesOptimize(previous, position);
+  double throttle = Optimize(previous, position);
+  //double throttle = BinaryPossibilitiesOptimize(previous, position);
   if (game_tick < 10) throttle = 1;
 
   //throttle = 1;
@@ -51,7 +51,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 }
 
 double Bot::Optimize(const Position& previous, const Position& current) {
-  int window_size = 45;
+  int window_size = 35;
   vector<double> thr(window_size, 1);
   vector<Position> positions {previous, current};
   //std::cout << "start" << std::endl;
@@ -105,7 +105,7 @@ double Bot::Optimize(const Position& previous, const Position& current) {
       double ile = sum / double(i - pos + 1.0);
 
       for (int j = pos; j <= i; j++)
-        thr[j] = (ile + 4.0 * thr[j]) / 5.0;
+        thr[j] = (ile + thr[j]) / 2.0;
     }
   }
 

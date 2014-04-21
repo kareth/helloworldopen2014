@@ -26,11 +26,10 @@ class SingleDriftModel {
   }
 
   double Predict(double angle, double previous_angle, double velocity, double radius) {
-    double Radius = R(angle, radius);
     return x_[0] * angle +
            x_[1] * previous_angle +
            x_[2] * velocity * angle +
-           x_[3] * velocity * fmax(0, 424.2017117 * velocity / sqrt(Radius) - 239.9595605);
+           x_[3] * velocity * fmax(0, sqrt(double(180000) * velocity * velocity * InvRadius(angle, radius)) - 240);
   }
 
   double Accuracy() {
@@ -46,9 +45,9 @@ class SingleDriftModel {
  private:
   double rad(double deg) { return deg * M_PI / 180.0; }
 
-  double R(double angle, double radius) {
-    if (radius < 1e-5 && radius > -1e-5) return 2000000000;
-    return radius;
+  double InvRadius(double angle, double radius) {
+    if (radius < 1e-5 && radius > -1e-5) return 0;
+    return 1.0 / radius;
   }
 
   vector<double> x_;
@@ -110,12 +109,11 @@ class DriftModel {
 
   void SaveEntry(double angle, double previous_angle, double previous_previous_angle, double previous_velocity, double radius) {
     data_.push_back({previous_velocity, radius});
-    double Radius = R(previous_angle, radius);
     m_.push_back({
         previous_angle +
         previous_previous_angle +
         previous_velocity * previous_angle,
-        previous_velocity * fmax(0, 424.2017117 * previous_velocity / sqrt(Radius) - 239.9595605)
+        previous_velocity * fmax(0, sqrt(double(180000) * previous_velocity * previous_velocity * InvRadius(previous_angle, radius)) - double(240))
         });
 
     b_.push_back(angle);
@@ -139,9 +137,9 @@ class DriftModel {
   }
 
  private:
-  double R(double angle, double radius) {
-    if (radius < 1e-5 && radius > -1e-5) return 2000000000;
-    return radius;
+  double InvRadius(double angle, double radius) {
+    if (radius < 1e-5 && radius > -1e-5) return 0;
+    return 1.0 / radius;
   }
 
   void AddNewModel() {
