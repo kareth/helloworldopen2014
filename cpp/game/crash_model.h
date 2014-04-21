@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -16,9 +15,11 @@ class CrashModel {
     std::cout << "==== Crash Model ====" << std::endl;
     std::cout << "threshold: " << angle_threshold_ << std::endl;
     std::cout << (ready_ ? "with crash" : "without crash") << std::endl;
-    std::cout << "Crashes: ";
-    for (double c : crashes_)
-      std::cout << c << ", ";
+    if (crashes_.size() > 0) {
+      std::cout << "Crashes: ";
+      for (double c : crashes_)
+        std::cout << c << ", ";
+    }
     std::cout << std::endl << std::endl;
   }
 
@@ -44,10 +45,13 @@ class CrashModel {
 
  private:
 
-  // The angle that will not cause crash.
-  // HACK(tomek) Hardcoded for finland track. Change to false and 0.
+  // True if the model is ready (there was at least one crash.
   bool ready_ = false;
+
+  // The angle that will not cause crash.
   double angle_threshold_ = 0.0;
+
+  // The list of angles just before the crash.
   std::vector<double> crashes_;
 };
 
