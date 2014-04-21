@@ -13,6 +13,7 @@ set(GAME_HEADERS
   car.h
   car_tracker.h
   command.h
+  error_tracker.h
   gauss.h
   lane.h
   simplex.h
