@@ -40,7 +40,8 @@ target_link_libraries(bot
   bots_basic
   bots_tomek
   bots_piotr
-  bots_kareth
+  bots_greedy
+  bots_stepping
   game
   physics
   utils

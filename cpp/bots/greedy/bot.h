@@ -1,5 +1,5 @@
-#ifndef CPP_BOTS_KARETH_BOT_H_
-#define CPP_BOTS_KARETH_BOT_H_
+#ifndef CPP_BOTS_GREEDY_BOT_H_
+#define CPP_BOTS_GREEDY_BOT_H_
 
 #include <string>
 #include <map>
@@ -14,7 +14,7 @@
 #include "game/car_tracker.h"
 
 namespace bots {
-namespace kareth {
+namespace greedy {
 
 class Bot : public bots::BotInterface {
  public:
@@ -35,8 +35,7 @@ class Bot : public bots::BotInterface {
 
  private:
   double Optimize(const game::Position& previous, const game::Position& current);
-  double BinaryPossibilitiesOptimize(const game::Position& previous, const game::Position& current);
-  
+
   game::Race race_;
 
   std::string color_;
@@ -46,7 +45,7 @@ class Bot : public bots::BotInterface {
   std::unique_ptr<game::CarTracker> car_tracker_;
 };
 
-}  // namespace kareth
+}  // namespace greedy
 }  // namespace bots
 
-#endif  // CPP_BOTS_KARETH_BOT_H_
+#endif  // CPP_BOTS_GREEDY_BOT_H_

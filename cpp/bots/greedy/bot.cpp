@@ -1,4 +1,4 @@
-#include "bots/kareth/bot.h"
+#include "bots/greedy/bot.h"
 #include <cstring>
 
 using std::string;
@@ -11,7 +11,7 @@ using game::Race;
 using game::Command;
 
 namespace bots {
-namespace kareth {
+namespace greedy {
 
 Bot::Bot() {
   srand(time(0));
@@ -33,18 +33,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
     return Command(0);
   }
 
-  //double throttle = 0.60 + double(rand() % 40)/99.0;
-
   double throttle = Optimize(previous, position);
-  //double throttle = BinaryPossibilitiesOptimize(previous, position);
-  if (game_tick < 10) throttle = 1;
-
-  //throttle = 1;
-  //if (car_tracker_->velocity() > 6)
-  //  throttle = 0.6;
-
-
-  //auto predicted = car_tracker_->Predict(position, previous, throttle, 0);
 
   car_tracker_->RecordThrottle(throttle);
   return Command(throttle);
@@ -80,57 +69,6 @@ double Bot::Optimize(const Position& previous, const Position& current) {
     }
   }
   return thr[0];
-}
-
-double Bot::BinaryPossibilitiesOptimize(const Position& previous, const Position& current) {
-  int groups = 17;
-  int group_size = 1;
-
-  int best = 0;
-  double best_value = 0;
-  double throttle;
-
-  vector<Position> positions;
-
-  for (int mask = 0; mask < (1 << groups); mask++) {
-    positions.clear();
-    positions.push_back(previous);
-    positions.push_back(current);
-    int fail = false;
-    double distance = 0;
-
-    for (int g = 0; g < groups; g++) {
-      if (mask & (1 << g))
-        throttle = 1;
-      else
-        throttle = 0;
-
-      for (int t = 0; t < group_size; t++) {
-        auto predicted = car_tracker_->Predict(positions.back(), positions[positions.size() - 2], throttle, 0);
-        positions.push_back(predicted);
-        distance += race_.track().Distance(positions.back(), positions[positions.size() - 2]);
-        if (positions.back().angle() >= 55) {
-          fail = true;
-          break;
-        }
-      }
-
-      if (fail == true)
-        break;
-    }
-
-    if (fail == false) {
-      if (distance > best_value) {
-        best = mask;
-        best_value = distance;
-      }
-    }
-  }
-  for (int i = 0; i < groups; i++)
-    std::cout << ((best & (1 << i)) > 0) << " ";
-  std::cout << "(" << current.piece() << ")" << std::endl;
-
-  return (best & 1);
 }
 
 void Bot::JoinedGame() {
@@ -173,5 +111,5 @@ void Bot::CarSpawned(const string& color)  {
     crashed_ = false;
 }
 
-}  // namespace kareth
+}  // namespace greedy
 }  // namespace bots
