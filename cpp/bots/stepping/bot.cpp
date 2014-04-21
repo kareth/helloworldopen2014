@@ -42,23 +42,28 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 
 // Returns optimal throttlle:
 double Bot::Optimize(const Position& previous, const Position& current) {
-  int groups = 15;
-  int group_size = 2;
+  // Length of time units in 0/1 search
+  vector<int> groups
+      { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 }
+  //    1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19  <-- counter
+
+  // Optimal
+  // { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 } 7.53 keimola
 
   double distance;
   double best_distance = 0;
-  int best_mask = 0;
   double throttle = 0;
+  int best_mask = 0;
 
   double l = 0, r = 1, m;
 
   // Find most optimal first tick
 
-  while (r - l > 1e-1) {
+  /*while (r - l > 1e-1) {
     m = (l + r) / 2.0;
 
     Position next = car_tracker_->Predict(current, previous, m, 0);
-    int mask = FindBestMask(current, next, groups, group_size, &distance);
+    int mask = FindBestMask(current, next, groups, &distance);
     distance += race_.track().Distance(next, current);
 
     if (mask == -1) {
@@ -71,11 +76,11 @@ double Bot::Optimize(const Position& previous, const Position& current) {
         best_mask = mask;
       }
     }
-  }
+  }*/
 
   // Check fullspeed
   Position next = car_tracker_->Predict(current, previous, 1, 0);
-  int mask = FindBestMask(current, next, groups, group_size, &distance);
+  int mask = FindBestMask(current, next, groups, &distance);
   distance += race_.track().Distance(next, current);
   if (mask != -1 && distance > best_distance) {
     throttle = 1;
@@ -84,7 +89,7 @@ double Bot::Optimize(const Position& previous, const Position& current) {
 
   // Log predictions
   std::cout << std::setw(12) << throttle << " ";
-  for (int i = 0; i < groups; i++)
+  for (int i = 0; i < groups.size(); i++)
     std::cout << ((best_mask & (1 << i)) > 0) << " ";
   std::cout << "(" << current.piece() << ")" << std::endl;
 
@@ -94,13 +99,13 @@ double Bot::Optimize(const Position& previous, const Position& current) {
 // Finds most optimal(by means of distance travelled) mask
 // @returns mask or -1 if impossible
 // @param distance total distance travelled
-int Bot::FindBestMask(const Position& previous, const Position& current, int groups, int group_size, double* distance) {
+int Bot::FindBestMask(const Position& previous, const Position& current, const vector<int>& groups, double* distance) {
   int best_mask = -1;
   *distance = 0;
 
-  for (int mask = 0; mask < (1 << groups); mask++) {
+  for (int mask = 0; mask < (1 << (groups.size())); mask++) {
     double mask_distance;
-    if (CheckMask(mask, previous, current, groups, group_size, &mask_distance) && mask_distance > *distance) {
+    if (CheckMask(mask, previous, current, groups, &mask_distance) && mask_distance > *distance) {
       *distance = mask_distance;
       best_mask = mask;
     }
@@ -111,17 +116,17 @@ int Bot::FindBestMask(const Position& previous, const Position& current, int gro
 // Checks whether given throttle setup wont crash
 // @returns false if car crashes
 // @param distance total distance travelled
-bool Bot::CheckMask(int mask, const Position& previous, const Position& current, int groups, int group_size, double* distance) {
+bool Bot::CheckMask(int mask, const Position& previous, const Position& current, const vector<int>& groups, double* distance) {
   vector<Position> positions {previous, current};
   int now = 1;
   *distance = 0;
 
-  for (int g = 0; g < groups; g++) {
-    for (int t = 0; t < group_size; t++) {
+  for (int g = 0; g < groups.size(); g++) {
+    for (int t = 0; t < groups[g]; t++) {
       positions[now ^ 1] = car_tracker_->Predict(positions[now], positions[now ^ 1], ((mask & (1 << g)) > 0), 0);
       now ^= 1;
       (*distance) += race_.track().Distance(positions[now], positions[now ^ 1]);
-      if (fabs(positions[now].angle()) >= 60 - 1e-8)
+      if (fabs(positions[now].angle()) >= 60 - 1e-9)
         return false;
     }
   }

@@ -35,8 +35,8 @@ class Bot : public bots::BotInterface {
 
  private:
   double Optimize(const game::Position& previous, const game::Position& current);
-  int FindBestMask(const game::Position& previous, const game::Position& current, int groups, int group_size, double* distance);
-  bool CheckMask(int mask, const game::Position& previous, const game::Position& current, int groups, int group_size, double* distance);
+  int FindBestMask(const game::Position& previous, const game::Position& current, const std::vector<int>& groups, double* distance);
+  bool CheckMask(int mask, const game::Position& previous, const game::Position& current, const std::vector<int>& groups, double* distance);
 
   game::Race race_;
 
