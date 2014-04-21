@@ -3,7 +3,29 @@
 #include "game/car_tracker.h"
 #include "gtest/gtest.h"
 
+using jsoncons::json;
+
 namespace game {
+
+class CarTrackerTest : public testing::Test {
+ protected:
+  void SetUp() {
+    json game_init_json = json::parse_file("data/gameInit.json");
+    const auto& race_json = game_init_json["data"]["race"];
+
+    race_.ParseFromJson(race_json);
+    car_tracker_.reset(new CarTracker(&race_));
+  }
+  Race race_;
+  std::unique_ptr<CarTracker> car_tracker_;
+};
+
+TEST_F(CarTrackerTest, Basic) {
+  Position position;
+  // car_tracker_->Record(position);
+
+  // TODO
+}
 
 class VelocityModelTest : public testing::Test {
  protected:

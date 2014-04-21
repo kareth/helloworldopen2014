@@ -1,5 +1,6 @@
 #include "bots/tomek/bot.h"
 #include <cstring>
+#include <limits>
 
 using game::Position;
 using game::CarTracker;
@@ -20,15 +21,24 @@ game::Command Bot::GetMove(
     const std::map<std::string, Position>& positions, int game_tick)  {
   car_tracker_->Record(positions.find(color_)->second);
 
-  double throttle = 0.65;
-  throttle = 0.50 + double(rand() % 22)/99.0;
-  //if (car_tracker_->angle() < 1) {
-  //  throttle = 1.0;
-  //} else if (car_tracker_->angle() < 30) {
-  //  throttle = 0.6;
-  //} else {
-  //  throttle = 0.1;
-  //}
+  double throttle = 1;
+  // throttle = 0.50 + double(rand() % 22)/99.0;
+  // if (car_tracker_->angle() < 1) {
+  //   throttle = 1.0;
+  // } else if (car_tracker_->angle() < 30) {
+  //   throttle = 0.6;
+  // } else {
+  //   throttle = 0.1;
+  // }
+  // if (positions.find(color_)->second.angle() > 10) {
+  //   throttle = 0;
+  //   count_++;
+  // }
+
+  // if (count_ > 0 && count_ < 5) {
+  //   std::cout << game_tick << " " <<  std::setprecision(std::numeric_limits<long double>::digits10) << positions.find(color_)->second.angle() << std::endl;
+  //   count_++;
+  // }
 
   car_tracker_->RecordThrottle(throttle);
   return Command(throttle);

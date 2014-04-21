@@ -19,7 +19,8 @@ class VelocityModel {
  public:
   ~VelocityModel() {
     std::cout << "==== Velocity Model ====" << std::endl;
-    std::cout << "x0: " << x_[0] << " x1: " << x_[1] << std::endl;
+    for (int i = 0; i < x_.size(); ++i)
+      std::cout << "x" << i <<": " << x_[i] << " ";
     error_tracker_.Print();
     std::cout << std::endl;
   }

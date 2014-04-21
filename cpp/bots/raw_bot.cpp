@@ -1,7 +1,14 @@
 #include "bots/raw_bot.h"
 
+#include <iostream>
+#include <fstream>
+
 #include "game/position.h"
 #include "game/race.h"
+
+DEFINE_bool(dump_history, false, "");
+
+using jsoncons::json;
 
 namespace bots {
 
@@ -23,6 +30,17 @@ RawBot::RawBot(BotInterface* bot)
       { "dnf", &RawBot::OnDNF }
     }
 {
+  history["positions"] = json(json::an_array);
+  history["commands"] = json(json::an_array);
+}
+
+RawBot::~RawBot() {
+  if (FLAGS_dump_history) {
+    std::ofstream file;
+    file.open("bin/history.json");
+    file << pretty_print(history) << std::endl;
+    file.close();
+  }
 }
 
 RawBot::msg_vector RawBot::CommandToMsg(const game::Command& command, int game_tick) {
@@ -32,7 +50,7 @@ RawBot::msg_vector RawBot::CommandToMsg(const game::Command& command, int game_t
     result.push_back(utils::make_switch(command.get_switch()));
 
   if (command.ThrottleSet())
-    result.push_back(utils::make_throttle(command.get_throttle()));
+    result.push_back(utils::make_throttle(command.get_throttle(), game_tick));
 
   return result;
 }
@@ -108,7 +126,14 @@ RawBot::msg_vector RawBot::OnCarPositions(const jsoncons::json& msg) {
   }
 
   visualizer_.Update(positions);
-  return CommandToMsg(bot_->GetMove(positions, game_tick), game_tick);
+  auto command = CommandToMsg(bot_->GetMove(positions, game_tick), game_tick);
+
+  if (FLAGS_dump_history) {
+    history["positions"].add(data[0]);
+    history["commands"].add(command);
+  }
+
+  return command;
 }
 
 RawBot::msg_vector RawBot::OnLapFinished(const jsoncons::json& msg) {

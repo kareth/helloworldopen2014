@@ -37,6 +37,8 @@ class Bot : public bots::BotInterface {
   game::Race race_;
   std::string color_;
 
+  int count_ = 0;
+
   // TODO(tomek) create trackers for other cars?
   std::unique_ptr<game::CarTracker> car_tracker_;
 };

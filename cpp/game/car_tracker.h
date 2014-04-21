@@ -199,6 +199,13 @@ class CarTracker : public CarPredictor {
 
   const vector<Position>& positions() { return positions_; }
 
+  const CarState& current_state() {
+    static CarState default_state;
+    if (states_.size() > 0) {
+    }
+    return default_state;
+  }
+
  private:
   std::ofstream stats_file_;
 

@@ -19,6 +19,8 @@ class RawBot {
   typedef std::vector<jsoncons::json> msg_vector;
 
   explicit RawBot(BotInterface* bot);
+  ~RawBot();
+
   std::vector<jsoncons::json> React(const jsoncons::json& msg);
 
  private:
@@ -62,6 +64,7 @@ class RawBot {
 
   State state_ = State::kWaitingForJoin;
   int last_game_tick_ = -1;
+  jsoncons::json history;
 };
 
 }  // namespace bots
