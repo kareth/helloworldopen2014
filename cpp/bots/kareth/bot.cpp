@@ -20,10 +20,12 @@ Bot::Bot() {
 game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick)  {
   Position position = positions.at(color_);
   Position previous;
-  if (car_tracker_->positions().size() == 0)
+
+  if (car_tracker_->positions().size() == 0) {
     previous = position;
-  else
+  } else {
     previous = car_tracker_->positions().back();
+  }
 
   car_tracker_->Record(position);
 
@@ -31,7 +33,15 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
     return Command(0);
   }
 
-  double throttle = Optimize(previous, position);
+  //double throttle = 0.60 + double(rand() % 40)/99.0;
+
+  //double throttle = Optimize(previous, position);
+  double throttle = BinaryPossibilitiesOptimize(previous, position);
+  if (game_tick < 10) throttle = 1;
+
+  //throttle = 1;
+  //if (car_tracker_->velocity() > 6)
+  //  throttle = 0.6;
 
 
   //auto predicted = car_tracker_->Predict(position, previous, throttle, 0);
@@ -41,7 +51,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 }
 
 double Bot::Optimize(const Position& previous, const Position& current) {
-  int window_size = 80;
+  int window_size = 45;
   vector<double> thr(window_size, 1);
   vector<Position> positions {previous, current};
   //std::cout << "start" << std::endl;
@@ -55,7 +65,8 @@ double Bot::Optimize(const Position& previous, const Position& current) {
     Position predicted = car_tracker_->Predict(positions[i+1], positions[i], thr[i], 0);
     positions.push_back(predicted);
 
-    if (fabs(predicted.angle()) >= 58) {
+    if (fabs(predicted.angle()) >= 57) {
+      //std::cout << "crash" << std::endl;
       crash = i;
       bool found = false;
       for (int j = i; j >= 0; j--) {
@@ -94,9 +105,8 @@ double Bot::Optimize(const Position& previous, const Position& current) {
       double ile = sum / double(i - pos + 1.0);
 
       for (int j = pos; j <= i; j++)
-        thr[j] = ile;
+        thr[j] = (ile + 4.0 * thr[j]) / 5.0;
     }
-
   }
 
   /*
@@ -105,8 +115,60 @@ double Bot::Optimize(const Position& previous, const Position& current) {
     sum += thr[i];
 
   return sum/double(window_size);*/
+  //std::cout << thr[0] << std::endl;
 
   return thr[0];
+}
+
+double Bot::BinaryPossibilitiesOptimize(const Position& previous, const Position& current) {
+  int groups = 17;
+  int group_size = 1;
+
+  int best = 0;
+  double best_value = 0;
+  double throttle;
+
+  vector<Position> positions;
+
+  for (int mask = 0; mask < (1 << groups); mask++) {
+    positions.clear();
+    positions.push_back(previous);
+    positions.push_back(current);
+    int fail = false;
+    double distance = 0;
+
+    for (int g = 0; g < groups; g++) {
+      if (mask & (1 << g))
+        throttle = 1;
+      else
+        throttle = 0;
+
+      for (int t = 0; t < group_size; t++) {
+        auto predicted = car_tracker_->Predict(positions.back(), positions[positions.size() - 2], throttle, 0);
+        positions.push_back(predicted);
+        distance += race_.track().Distance(positions.back(), positions[positions.size() - 2]);
+        if (positions.back().angle() >= 60) {
+          fail = true;
+          break;
+        }
+      }
+
+      if (fail == true)
+        break;
+    }
+
+    if (fail == false) {
+      if (distance > best_value) {
+        best = mask;
+        best_value = distance;
+      }
+    }
+  }
+  for (int i = 0; i < groups; i++)
+    std::cout << ((best & (1 << i)) > 0) << " ";
+  std::cout << "(" << current.piece() << ")" << std::endl;
+
+  return (best & 1);
 }
 
 void Bot::JoinedGame() {

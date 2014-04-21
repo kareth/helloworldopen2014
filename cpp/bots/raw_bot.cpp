@@ -64,7 +64,7 @@ RawBot::msg_vector RawBot::React(const jsoncons::json& msg) {
     return (action_it->second)(this, msg);
   } else {
     std::cout << "Unknown message type: " << msg_type << "\n\n\n\n" << std::endl;
-    return { utils::make_ping() };
+    return ping();
   }
 }
 

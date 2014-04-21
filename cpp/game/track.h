@@ -19,6 +19,7 @@ class Track {
   Track() {
   }
 
+  double Distance(const Position& position, const Position& previous) const;
   double LaneRadius(int piece, int lane) const;
   double LaneLength(int piece, int lane) const;
 
@@ -40,6 +41,7 @@ class Track {
   //   "pieces": []
   // }
   void ParseFromJson(const jsoncons::json& data);
+
 
  private:
   string id_;

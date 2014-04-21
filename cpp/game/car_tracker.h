@@ -46,7 +46,7 @@ class CarTracker : public CarPredictor {
     stats_file_.open ("bin/stats.csv");
     stats_file_ << "piece_index,radius,in_piece_distance,angle,velocity,throttle" << std::endl;
 
-    if (race_->track().id() == "keimola") {
+    if (race_->track().id() == "germany" || race_->track().id() == "keimola") {
       drift_model_[0].reset(new DriftModel(0));
       drift_model_[0]->AddModel({1.9, -0.9, -0.00125, 0});
       drift_model_[1].reset(new DriftModel(1));
@@ -154,13 +154,7 @@ class CarTracker : public CarPredictor {
     // TODO no lane swapping management
 
     double radius = race_->track().LaneRadius(previous_position.piece(), previous_position.start_lane());
-    double velocity;
-
-    if (position.piece() == previous_position.piece())
-      velocity = position.piece_distance() - previous_position.piece_distance();
-    else
-      velocity = position.piece_distance() - previous_position.piece_distance() +
-          race_->track().LaneLength(previous_position.piece(), position.start_lane());
+    double velocity = race_->track().Distance(position, previous_position);
 
     Position result;
 
@@ -170,7 +164,6 @@ class CarTracker : public CarPredictor {
         velocity,
         radius
         ));
-
 
     double new_velocity = velocity_model_.Predict(velocity, throttle);
     double new_position = position.piece_distance() + new_velocity;

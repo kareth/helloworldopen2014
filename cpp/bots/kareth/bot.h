@@ -35,6 +35,8 @@ class Bot : public bots::BotInterface {
 
  private:
   double Optimize(const game::Position& previous, const game::Position& current);
+  double BinaryPossibilitiesOptimize(const game::Position& previous, const game::Position& current);
+  
   game::Race race_;
 
   std::string color_;

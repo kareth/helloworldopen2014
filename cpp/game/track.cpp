@@ -69,4 +69,12 @@ double Track::LaneLength(int piece, int lane) const {
   return 2.0 * M_PI * radius * (fabs(angle) / 360.0);
 }
 
+double Track::Distance(const Position& position, const Position& previous) const {
+  if (position.piece() == previous.piece())
+    return position.piece_distance() - previous.piece_distance();
+  else
+    return position.piece_distance() - previous.piece_distance() +
+        LaneLength(position.piece(), position.start_lane());
+}
+
 }  // namespace game

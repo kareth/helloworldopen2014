@@ -39,6 +39,7 @@ game::Command Bot::GetMove(
   //   std::cout << game_tick << " " <<  std::setprecision(std::numeric_limits<long double>::digits10) << positions.find(color_)->second.angle() << std::endl;
   //   count_++;
   // }
+  throttle = 0.50 + double(rand() % 22)/99.0;
 
   car_tracker_->RecordThrottle(throttle);
   return Command(throttle);
