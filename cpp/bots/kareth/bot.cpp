@@ -51,29 +51,21 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 }
 
 double Bot::Optimize(const Position& previous, const Position& current) {
-  int window_size = 35;
+  int window_size = 120;
   vector<double> thr(window_size, 1);
   vector<Position> positions {previous, current};
-  //std::cout << "start" << std::endl;
-  int crash = -1;
 
   for (int i = 0; i < window_size; i++) {
-    //std::cout << "p" << i << " " << thr[i] << " "<< thr.size() << std::endl;
-    while (positions.size() > i + 2)
-      positions.pop_back();
-
     Position predicted = car_tracker_->Predict(positions[i+1], positions[i], thr[i], 0);
     positions.push_back(predicted);
 
-    if (fabs(predicted.angle()) >= 57) {
-      //std::cout << "crash" << std::endl;
-      crash = i;
+    if (fabs(predicted.angle()) >= 60) {
       bool found = false;
+      // Look for something to slow down
       for (int j = i; j >= 0; j--) {
+        positions.pop_back();
         if (thr[j] > 1e-2) {
-          //std::cout << "found! " << j << " " << thr[j] << std::endl;
-          thr[j] -= 0.2;
-          if (thr[j] < 0) thr[j] = 0;
+          thr[j] -= fmax(0, thr[j] - 0.005);
           i = j - 1;
           found = true;
           break;
@@ -82,41 +74,11 @@ double Bot::Optimize(const Position& previous, const Position& current) {
       if (found) {
         continue;
       } else {
-        std::cout << "\n\n\n\nFAIL to stop drifting (" << positions.size() << " " << i <<")";
-        for (int j = 0; j < positions.size(); j++)
-          std::cout << "(" << positions[j].piece_distance() << ", " << positions[j].angle() << ")  ";
-        std::cout << "\n\n\n\n";
+        std::cout << "FAILED to stop drifting";
         return 0;
       }
     }
-
-    if (crash != -1 && i >= crash) crash = -1;
-
-    // wyrownaj.
-
-    if (crash == -1) {
-      int pos = i;
-      double sum = 0;
-      while (pos > 0 && thr[pos] < 1e-5) pos--;
-      while (pos > 0 && thr[pos] > 1e-5) {sum += thr[pos]; pos--; }
-      if (thr[pos] < 1e-5) pos++;
-      else sum += thr[pos];
-
-      double ile = sum / double(i - pos + 1.0);
-
-      for (int j = pos; j <= i; j++)
-        thr[j] = (ile + thr[j]) / 2.0;
-    }
   }
-
-  /*
-  double sum = 0;
-  for(int i = 0; i < window_size; i++)
-    sum += thr[i];
-
-  return sum/double(window_size);*/
-  //std::cout << thr[0] << std::endl;
-
   return thr[0];
 }
 
@@ -147,7 +109,7 @@ double Bot::BinaryPossibilitiesOptimize(const Position& previous, const Position
         auto predicted = car_tracker_->Predict(positions.back(), positions[positions.size() - 2], throttle, 0);
         positions.push_back(predicted);
         distance += race_.track().Distance(positions.back(), positions[positions.size() - 2]);
-        if (positions.back().angle() >= 60) {
+        if (positions.back().angle() >= 55) {
           fail = true;
           break;
         }

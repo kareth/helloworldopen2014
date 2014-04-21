@@ -70,11 +70,12 @@ double Track::LaneLength(int piece, int lane) const {
 }
 
 double Track::Distance(const Position& position, const Position& previous) const {
-  if (position.piece() == previous.piece())
+  if (position.piece() == previous.piece()) {
     return position.piece_distance() - previous.piece_distance();
-  else
+  } else {
     return position.piece_distance() - previous.piece_distance() +
-        LaneLength(position.piece(), position.start_lane());
+        LaneLength(previous.piece(), previous.start_lane());
+  }
 }
 
 }  // namespace game

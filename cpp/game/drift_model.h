@@ -113,7 +113,6 @@ class DriftModel {
         previous_angle +
         previous_previous_angle +
         previous_velocity * previous_angle,
-        previous_velocity * fmax(0, sqrt(double(180000) * previous_velocity * previous_velocity * InvRadius(previous_angle, radius)) - double(240))
         });
 
     b_.push_back(angle);

@@ -145,7 +145,7 @@ class CarTracker : public CarPredictor {
     return CarState();
   }
 
-  Position Predict(const Position& position, const Position& previous_position, int throttle, bool change_lane) {
+  Position Predict(const Position& position, const Position& previous_position, double throttle, bool change_lane) {
     if (!GetDriftModel(position)->IsReady() ||
         !velocity_model_.IsReady())
       return position;
@@ -153,17 +153,19 @@ class CarTracker : public CarPredictor {
     // TODO swapping lanes prolongs track :D
     // TODO no lane swapping management
 
-    double radius = race_->track().LaneRadius(previous_position.piece(), previous_position.start_lane());
+    double radius = race_->track().LaneRadius(position.piece(), position.start_lane());
     double velocity = race_->track().Distance(position, previous_position);
 
     Position result;
 
-    result.set_angle(GetDriftModel(position)->Predict(
+    double angle = GetDriftModel(position)->Predict(
         position.angle(),
         previous_position.angle(),
         velocity,
         radius
-        ));
+        );
+
+    result.set_angle(angle);
 
     double new_velocity = velocity_model_.Predict(velocity, throttle);
     double new_position = position.piece_distance() + new_velocity;
@@ -177,7 +179,7 @@ class CarTracker : public CarPredictor {
         lap++;
       }
       result.set_piece(piece);
-      result.set_piece_distance(new_position - race_->track().LaneLength(previous_position.piece(), position.start_lane()));
+      result.set_piece_distance(new_position - race_->track().LaneLength(position.piece(), position.start_lane()));
     } else {
       result.set_piece(position.piece());
       result.set_piece_distance(new_position);
