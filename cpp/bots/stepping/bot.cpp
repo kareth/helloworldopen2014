@@ -46,20 +46,56 @@ double Bot::Optimize(const Position& previous, const Position& current) {
   int group_size = 2;
 
   double distance;
-  int mask = FindBestMask(previous, current, groups, group_size, &distance);
+  double best_distance = 0;
+  int best_mask = 0;
+  double throttle = 0;
 
+  double l = 0, r = 1, m;
+
+  // Find most optimal first tick
+
+  while (r - l > 1e-1) {
+    m = (l + r) / 2.0;
+
+    Position next = car_tracker_->Predict(current, previous, m, 0);
+    int mask = FindBestMask(current, next, groups, group_size, &distance);
+    distance += race_.track().Distance(next, current);
+
+    if (mask == -1) {
+      r = m;
+    } else {
+      l = m;
+      if (distance > best_distance) {
+        best_distance = distance;
+        throttle = m;
+        best_mask = mask;
+      }
+    }
+  }
+
+  // Check fullspeed
+  Position next = car_tracker_->Predict(current, previous, 1, 0);
+  int mask = FindBestMask(current, next, groups, group_size, &distance);
+  distance += race_.track().Distance(next, current);
+  if (mask != -1 && distance > best_distance) {
+    throttle = 1;
+    best_mask = mask;
+  }
+
+  // Log predictions
+  std::cout << std::setw(12) << throttle << " ";
   for (int i = 0; i < groups; i++)
-    std::cout << ((mask & (1 << i)) > 0) << " ";
+    std::cout << ((best_mask & (1 << i)) > 0) << " ";
   std::cout << "(" << current.piece() << ")" << std::endl;
 
-  return (mask & 1);
+  return throttle;
 }
 
 // Finds most optimal(by means of distance travelled) mask
 // @returns mask or -1 if impossible
 // @param distance total distance travelled
 int Bot::FindBestMask(const Position& previous, const Position& current, int groups, int group_size, double* distance) {
-  int best_mask = 0;
+  int best_mask = -1;
   *distance = 0;
 
   for (int mask = 0; mask < (1 << groups); mask++) {
