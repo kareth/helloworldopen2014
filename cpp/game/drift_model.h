@@ -77,12 +77,10 @@ class DriftModel {
       std::cout << std::endl;
     }
     error_tracker_.Print();
-    best_model_->PrintAccuracy();
-
+    if (best_model_ != nullptr) {
+      best_model_->PrintAccuracy();
+    }
     std::cout << std::endl;
-
-    for (int i = 0; i < models_.size(); i++)
-      delete models_[i];
 
     file_.close();
   }
@@ -134,9 +132,10 @@ class DriftModel {
 
   void AddModel(const vector<double> &x) {
     // TODO kareth
-    models_.push_back(new SingleDriftModel(x));
-    best_model_ = models_.back();
+    models_.push_back(std::unique_ptr<SingleDriftModel>(new SingleDriftModel(x)));
+    best_model_ = models_.back().get();
     manual_ = true;
+    ready_ = true;
   }
 
  private:
@@ -157,7 +156,7 @@ class DriftModel {
         }
         //Simplex::Optimize(m, b, x);
         GaussDouble(m, b, x);
-        models_.push_back(new SingleDriftModel(x));
+        models_.push_back(std::unique_ptr<SingleDriftModel>(new SingleDriftModel(x)));
 
         for (int i = 0; i < m_.size(); i++)
           models_.back()->Record(b_[i], m_[i][0], m_[i][1], data_[i][0], data_[i][1]);
@@ -170,9 +169,9 @@ class DriftModel {
 
   void PickBestModel() {
     if (manual_) return;
-    for (int i = 0; i < models_.size(); i++)
-      if (best_model_ == nullptr || models_[i]->Accuracy() < best_model_->Accuracy())
-        best_model_ = models_[i];
+    for (auto& model : models_)
+      if (best_model_ == nullptr || model->Accuracy() < best_model_->Accuracy())
+        best_model_ = model.get();
   }
 
   const int model_size_ = 4;
@@ -191,7 +190,7 @@ class DriftModel {
 
   ErrorTracker error_tracker_;
 
-  vector<SingleDriftModel*> models_;
+  vector<std::unique_ptr<SingleDriftModel>> models_;
   SingleDriftModel* best_model_ = nullptr;
   int manual_ = false;
 };

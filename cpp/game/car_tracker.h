@@ -27,6 +27,18 @@ template <typename T> int sgn(T val) {
     return (T(0) < val) - (val < T(0));
 }
 
+// Usage:
+//
+// CarTracker car_tracker(race);
+//
+// OnStep() {
+//   car_tracker.Record(position);
+//
+//   // perform computation to choose best command
+//   Command command = ...
+//
+//   car_tracker.RecordCommand(command);
+// }
 class CarTracker : public CarPredictor {
  public:
   CarTracker(const Race* race) : race_(race) {
@@ -97,6 +109,7 @@ class CarTracker : public CarPredictor {
     return drift_model_[direction].get();
   }
 
+  // TODO change to RecordCommand
   void RecordThrottle(double throttle) {
     throttle_ = throttle;
   }
@@ -200,8 +213,10 @@ class CarTracker : public CarPredictor {
   VelocityModel velocity_model_;
   // We need separate drift models for different pieces. We group them by
   // radius (straight pieces assume radius 0).
+  // TODO fix drift model to make it independent on radius (sign)
   map<int, std::unique_ptr<DriftModel>> drift_model_;
 
+  // TODO deprecated, use states instead
   vector<Position> positions_;
   vector<CarState> states_;
   double throttle_ = 0;
