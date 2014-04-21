@@ -12,7 +12,7 @@ SET(BASEPATH "${CMAKE_SOURCE_DIR}")
 SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 SET(gtest_SOURCE_DIR "${BASEPATH}/gtest")
 
-FIND_PACKAGE(Threads REQUIRED)
+# FIND_PACKAGE(Threads REQUIRED)
 FIND_PACKAGE(Boost 1.54.0 COMPONENTS system REQUIRED)
 
 enable_testing()
@@ -40,6 +40,7 @@ target_link_libraries(bot
   bots_basic
   bots_tomek
   bots_piotr
+  bots_kareth
   game
   physics
   utils

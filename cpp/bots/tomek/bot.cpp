@@ -1,4 +1,5 @@
 #include "bots/tomek/bot.h"
+#include <cstring>
 
 using game::Position;
 using game::CarTracker;
@@ -9,6 +10,7 @@ namespace bots {
 namespace tomek {
 
 Bot::Bot() {
+  srand(time(0));
 }
 
 Bot::~Bot() {
@@ -19,6 +21,14 @@ game::Command Bot::GetMove(
   car_tracker_->Record(positions.find(color_)->second);
 
   double throttle = 0.65;
+  throttle = 0.50 + double(rand() % 22)/99.0;
+  //if (car_tracker_->angle() < 1) {
+  //  throttle = 1.0;
+  //} else if (car_tracker_->angle() < 30) {
+  //  throttle = 0.6;
+  //} else {
+  //  throttle = 0.1;
+  //}
 
   car_tracker_->RecordThrottle(throttle);
   return Command(throttle);
