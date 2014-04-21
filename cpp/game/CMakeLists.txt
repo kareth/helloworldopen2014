@@ -12,7 +12,10 @@ set(GAME_SOURCES
 set(GAME_HEADERS
   car.h
   car_tracker.h
+  crash_model.h
   command.h
+  drift_model.h
+  velocity_model.h
   error_tracker.h
   gauss.h
   lane.h

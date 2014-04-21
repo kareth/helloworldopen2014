@@ -7,119 +7,20 @@
 #include <map>
 #include <algorithm>
 
+#include "game/crash_model.h"
 #include "game/drift_model.h"
 #include "game/error_tracker.h"
 #include "game/gauss.h"
 #include "game/position.h"
 #include "game/race.h"
 #include "game/simplex.h"
+#include "game/velocity_model.h"
 
 #define SQR(X) ((X)*(X))
 
 using std::map;
 
 namespace game {
-
-// We assume following velocity model
-//
-// velocity = x0 * previous_velocity + x1 * throttle
-class VelocityModel {
- public:
-  ~VelocityModel() {
-    std::cout << "==== Velocity Model ====" << std::endl;
-    std::cout << "x0: " << x_[0] << " x1: " << x_[1] << std::endl;
-    error_tracker_.Print();
-    std::cout << std::endl;
-  }
-
-  // velocity = x * previous_velocity + y * previous_throttle
-  void Record(double velocity, double previous_velocity, double previous_throttle) {
-    if (velocity == 0) return;
-
-    if (IsReady()) {
-      error_tracker_.Add(velocity, Predict(previous_velocity, previous_throttle));
-    }
-
-    if (m_.size() < 2) {
-      m_.push_back({previous_velocity, previous_throttle});
-      b_.push_back(velocity);
-    }
-
-    if (m_.size() == 2 && !IsReady()) {
-      Train();
-    }
-  }
-
-  // Returns predicted new velocity based on velocity and applied throttle.
-  double Predict(double velocity, double throttle) {
-    return x_[0] * velocity + x_[1] * throttle;
-  }
-
-  bool IsReady() {
-    return ready_;
-  }
-
- private:
-  void Train() {
-    GaussDouble(m_, b_, x_);
-    ready_ = true;
-    // std::cout << "\n\n\n\nVelocity: " << x_[0] << " " << x_[1] << "\n\n\n\n";
-  }
-
-  bool ready_ = false;
-
-  // Variables used to train the model
-  // {previous_velocity, previous_throttle} {velocity}
-  vector<vector<double> > m_;
-  vector<double> b_;
-
-  // Model used for prediction.
-  vector<double> x_;
-
-  ErrorTracker error_tracker_;
-};
-
-
-class CrashModel {
- public:
-  ~CrashModel() {
-    std::cout << "==== Crash Model ====" << std::endl;
-    std::cout << "threshold: " << angle_threshold_ << std::endl;
-    std::cout << (ready_ ? "with crash" : "without crash") << std::endl;
-    std::cout << "Crashes: ";
-    for (double c : crashes_)
-      std::cout << c << ", ";
-    std::cout << std::endl << std::endl;
-  }
-
-  void RecordCarCrash(double angle) {
-    ready_ = true;
-    angle_threshold_ = fmax(angle_threshold_, angle);
-    crashes_.push_back(angle);
-  }
-
-  void Record(double angle) {
-    angle_threshold_ = fmax(angle_threshold_, angle);
-  }
-
-  // WillCrash?
-  bool Predict(double angle) const {
-    if (ready_) return false;
-    return angle < angle_threshold_;
-  }
-
-  bool IsReady() const {
-    return ready_;
-  }
-
- private:
-
-  // The angle that will not cause crash.
-  // HACK(tomek) Hardcoded for finland track. Change to false and 0.
-  bool ready_ = false;
-  double angle_threshold_ = 0.0;
-  vector<double> crashes_;
-};
 
 template <typename T> int sgn(T val) {
     return (T(0) < val) - (val < T(0));
