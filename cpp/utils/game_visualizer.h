@@ -9,6 +9,10 @@
 
 #include "game/result.h"
 
+#include "gflags/gflags.h"
+
+DECLARE_bool(disable_visualizer);
+
 namespace utils {
 
 class GameVisualizer {
@@ -16,6 +20,7 @@ class GameVisualizer {
   GameVisualizer() : lap_times_() {}
 
   void Print() {
+    if (FLAGS_disable_visualizer) return;
     if (print_) {
       if (visible_)
         CarriageReturn(positions_.size() * kPlayerLines);
@@ -28,11 +33,13 @@ class GameVisualizer {
   }
 
   void Update(std::map<std::string, game::Position> positions) {
+    if (FLAGS_disable_visualizer) return;
     positions_ = positions;
     Print();
   }
 
   void LapFinished(const game::Result& result) {
+    if (FLAGS_disable_visualizer) return;
     if (lap_times_.find(result.color()) == lap_times_.end())
       lap_times_[result.color()] = vector<int>();
 
@@ -41,6 +48,7 @@ class GameVisualizer {
   }
 
   void CarCrashed(const std::string& color) {
+    if (FLAGS_disable_visualizer) return;
     if (crashes_.find(color) == crashes_.end())
       crashes_[color] = vector<std::pair<int, int>>();
 
@@ -49,6 +57,7 @@ class GameVisualizer {
   }
 
   void GameEnd() {
+    if (FLAGS_disable_visualizer) return;
     lap_times_.clear();
     print_ = false;
     std::cout << std::endl;

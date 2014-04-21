@@ -1,6 +1,7 @@
 set(UTILS_SOURCES
   connection.cpp
   protocol.cpp
+  game_visualizer.cpp
 )
 
 set(UTILS_HEADERS
