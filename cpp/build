@@ -1,9 +1,26 @@
 #!/bin/bash
 
 mkdir -p bin
-cd bin
 
-cmake ..
+if type cmake >/dev/null 2>&1 && [ $1 != "skip_cmake" ]; then
 
-make -j4
-make test
+  # Build using cmake
+  cd bin
+  cmake ..
+  make -j4
+  make test
+  cd ..
+
+else
+
+  # Build without cmake
+  flags="-std=c++11 -I jsoncons/src/ -l pthread -l boost_system -o bin/plusbot"
+  g++ $flags \
+    main.cpp \
+    utils/protocol.cpp utils/connection.cpp utils/game_visualizer.cpp \
+    bots/raw_bot.cpp bots/tomek/bot.cpp bots/piotr/bot.cpp bots/basic/bot.cpp bots/kareth/bot.cpp \
+    game/car.cpp game/command.cpp game/gauss.cpp game/position.cpp game/race.cpp game/result.cpp game/simplex.cpp game/track.cpp \
+    gflags/gflags.cc gflags/gflags_reporting.cc gflags/gflags_completions.cc \
+    physics/speed_tracker.cpp
+
+fi
