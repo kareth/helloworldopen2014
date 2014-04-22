@@ -19,6 +19,7 @@ class Track {
   Track() {
   }
 
+  bool IsLastStraight(const Position& position) const;
   double Distance(const Position& position, const Position& previous) const;
   double LaneRadius(int piece, int lane) const;
   double LaneLength(int piece, int lane) const;

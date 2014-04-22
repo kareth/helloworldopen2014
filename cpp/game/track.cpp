@@ -78,4 +78,11 @@ double Track::Distance(const Position& position, const Position& previous) const
   }
 }
 
+bool Track::IsLastStraight(const Position& position) const {
+  for (int i = pieces_.size() - 1; i >= position.piece(); i--)
+    if (pieces_[i].type() == PieceType::kBent)
+      return false;
+  return true;
+}
+
 }  // namespace game
