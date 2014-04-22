@@ -140,6 +140,8 @@ class CarTracker : public CarPredictor {
 
   double velocity() const { return velocity_; }
 
+  double throttle() const { return throttle_; }
+
   double angle() const { return angle_; }
 
   CarState Predict(const CarState& state, const Command& command) {

@@ -50,5 +50,8 @@ void Bot::CarSpawned(const std::string& color)  {
   return;
 }
 
+void Bot::OnTurbo(const game::Turbo& turbo) {
+}
+
 }  // namespace basic
 }  // namespace bots

@@ -124,5 +124,8 @@ void Bot::CarSpawned(const string& color)  {
   return;
 }
 
+void Bot::OnTurbo(const game::Turbo& turbo) {
+}
+
 }  // namespace piotr
 }  // namespace bots

@@ -111,5 +111,8 @@ void Bot::CarSpawned(const string& color)  {
     crashed_ = false;
 }
 
+void Bot::OnTurbo(const game::Turbo& turbo) {
+}
+
 }  // namespace greedy
 }  // namespace bots

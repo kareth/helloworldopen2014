@@ -44,7 +44,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 double Bot::Optimize(const Position& previous, const Position& current) {
   // Length of time units in 0/1 search
   vector<int> groups
-      { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+      { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
   //    1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19  <-- counter
 
   // Optimal
@@ -55,11 +55,19 @@ double Bot::Optimize(const Position& previous, const Position& current) {
   double throttle = 0;
   int best_mask = 0;
 
+  // Check no-speed
+  /*Position next = car_tracker_->Predict(current, previous, 0, 0);
+  int mask = FindBestMask(current, next, groups, &distance);
+  distance += race_.track().Distance(next, current);
+  if (mask != -1 && distance > best_distance) {
+    throttle = 0;
+    best_mask = mask;
+  }*/
+
+  // Check (0, 1)
   double l = 0, r = 1, m;
 
-  // Find most optimal first tick
-
-  while (r - l > 6e-1) {
+  /*while (r - l > 3e-1) {
     m = (l + r) / 2.0;
 
     Position next = car_tracker_->Predict(current, previous, m, 0);
@@ -76,30 +84,28 @@ double Bot::Optimize(const Position& previous, const Position& current) {
         best_mask = mask;
       }
     }
-  }
+  }*/
 
   // Check fullspeed
-  Position next = car_tracker_->Predict(current, previous, 1, 0);
-  int mask = FindBestMask(current, next, groups, &distance);
-  distance += race_.track().Distance(next, current);
-  if (mask != -1 && distance > best_distance) {
-    throttle = mask & 1;
-    best_mask = mask;
-  }
-
-  // Check no-speed
-  next = car_tracker_->Predict(current, previous, 0, 0);
+  /*next = car_tracker_->Predict(current, previous, 1, 0);
   mask = FindBestMask(current, next, groups, &distance);
   distance += race_.track().Distance(next, current);
   if (mask != -1 && distance > best_distance) {
-    throttle = mask & 1;
+    throttle = 1;
     best_mask = mask;
-  }
+  }*/
+
+  best_mask = FindBestMask(previous, current, groups, &distance);
+  throttle = best_mask & 1;
+
 
   // Log predictions
   std::cout << std::setw(12) << throttle << " ";
-  for (int i = 0; i < groups.size(); i++)
-    std::cout << ((best_mask & (1 << i)) > 0) << " ";
+  if (best_mask == -1)
+    std::cout << "No successful mask";
+  else
+    for (int i = 0; i < groups.size(); i++)
+      std::cout << ((best_mask & (1 << i)) > 0) << " ";
   std::cout << "(" << current.piece() << ")" << std::endl;
 
   return throttle;
@@ -109,6 +115,9 @@ double Bot::Optimize(const Position& previous, const Position& current) {
 // @returns mask or -1 if impossible
 // @param distance total distance travelled
 int Bot::FindBestMask(const Position& previous, const Position& current, const vector<int>& groups, double* distance) {
+  if (previous.angle() >= 60 - 1e-9 || current.angle() >= 60 - 1e-9)
+    return -1;
+
   int best_mask = -1;
   *distance = 0;
 
@@ -135,7 +144,7 @@ bool Bot::CheckMask(int mask, const Position& previous, const Position& current,
       positions[now ^ 1] = car_tracker_->Predict(positions[now], positions[now ^ 1], ((mask & (1 << g)) > 0), 0);
       now ^= 1;
       (*distance) += race_.track().Distance(positions[now], positions[now ^ 1]);
-      if (fabs(positions[now].angle()) >= 60 - 1e-4)
+      if (fabs(positions[now].angle()) >= 60 - 1e-9)
         return false;
     }
   }
@@ -171,6 +180,11 @@ void Bot::TournamentEnd()  {
 }
 
 void Bot::CarCrashed(const string& color)  {
+  auto& previous = car_tracker_->positions()[car_tracker_->positions().size() - 2];
+  auto& current = car_tracker_->positions().back();
+  auto next = car_tracker_->Predict(current, previous, car_tracker_->throttle(), 0);
+  printf("Crash! %lf %lf %lf\n", previous.angle(), current.angle(), next.angle());
+
   if (color == color_) {
     crashed_ = true;
     car_tracker_->RecordCarCrash();
@@ -180,6 +194,9 @@ void Bot::CarCrashed(const string& color)  {
 void Bot::CarSpawned(const string& color)  {
   if (color == color_)
     crashed_ = false;
+}
+
+void Bot::OnTurbo(const game::Turbo& turbo) {
 }
 
 }  // namespace stepping

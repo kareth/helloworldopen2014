@@ -5,6 +5,7 @@
 #include <map>
 #include "game/command.h"
 #include "game/position.h"
+#include "game/turbo.h"
 
 namespace game {
 class Race;
@@ -28,6 +29,8 @@ class BotInterface {
 
   virtual void CarCrashed(const std::string& color) = 0;
   virtual void CarSpawned(const std::string& color) = 0;
+
+  virtual void OnTurbo(const game::Turbo& turbo) = 0;
 };
 
 }  // namespace bots

@@ -88,5 +88,8 @@ void Bot::CarCrashed(const std::string& color)  {
 void Bot::CarSpawned(const std::string& color)  {
 }
 
+void Bot::OnTurbo(const game::Turbo& turbo) {
+}
+
 }  // namespace bots
 }  // namespace tomek

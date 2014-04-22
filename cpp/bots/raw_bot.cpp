@@ -6,6 +6,8 @@
 #include "game/position.h"
 #include "game/race.h"
 
+#include "game/turbo.h"
+
 DEFINE_bool(dump_history, false, "");
 
 using jsoncons::json;
@@ -224,8 +226,11 @@ void RawBot::TransitionState(State from, State to) {
   state_ = to;
 }
 
-RawBot::msg_vector RawBot::OnTurboAvailable(const jsoncons::json& data) {
-  std::cout << "Turboooooo!";
+RawBot::msg_vector RawBot::OnTurboAvailable(const jsoncons::json& msg) {
+  game::Turbo turbo;
+  turbo.ParseFromJson(msg.get("data", jsoncons::json("")));
+  bot_->OnTurbo(turbo);
+
   return ping();
 }
 
