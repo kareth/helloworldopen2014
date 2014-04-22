@@ -57,31 +57,32 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 double Bot::Optimize(const Position& previous, const Position& current) {
   // Length of time units in 0/1 search
   vector<int> groups
-      { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3 };
+      { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
   //    1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19  <-- counter
 
   // Optimal
   // { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 } 7.43 keimola (just find_mask & 1 )
-  // { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3 }; 7.38 keimola / 7.03 with turbo
+  // { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3 }; 7.38 keimola / 7.03 with ending turbo
+  // { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 }; 7.37 keimola
   // { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3 }; germany 8.6 with turbo
 
   double distance;
   double best_distance = 0;
   double throttle = 0;
-  int best_mask = 0;
+  int best_mask = -1;
 
-  best_mask = FindBestMask(previous, current, groups, &distance);
-  throttle = best_mask & 1;
+  //best_mask = FindBestMask(previous, current, groups, &distance);
+  //throttle = best_mask & 1;
 
-  /*
   // Check no-speed
   Position next = car_tracker_->Predict(current, previous, 0, 0);
   int mask = FindBestMask(current, next, groups, &distance);
   distance += race_.track().Distance(next, current);
   if (mask != -1 && distance > best_distance) {
     throttle = 0;
+    best_distance = distance;
     best_mask = mask;
-  }*/
+  }
 
   /*
   // Check (0, 1)
@@ -107,15 +108,15 @@ double Bot::Optimize(const Position& previous, const Position& current) {
   }
   */
 
-  /*
   // Check fullspeed
   next = car_tracker_->Predict(current, previous, 1, 0);
   mask = FindBestMask(current, next, groups, &distance);
   distance += race_.track().Distance(next, current);
   if (mask != -1 && distance > best_distance) {
     throttle = 1;
+    best_distance = distance;
     best_mask = mask;
-  }*/
+  }
 
   // Log predictions
   std::cout << std::setw(12) << throttle << " ";
@@ -176,8 +177,8 @@ bool Bot::CanUseTurbo(const Position& position) {
   // TODO hardcode
   //if (race_.track().id() == "keimola" && position.piece() == 36)
   //  return true;
-  if (position.lap() == 2 && race_.track().IsLastStraight(position))
-    return true;
+  // if (position.lap() == 2 && race_.track().IsLastStraight(position))
+  //  return true;
 
   return false;
 }

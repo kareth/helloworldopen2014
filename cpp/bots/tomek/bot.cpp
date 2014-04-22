@@ -22,7 +22,7 @@ game::Command Bot::GetMove(
   const auto& my_position = positions.find(color_)->second;
   car_tracker_->Record(my_position);
 
-  double throttle = 0.65;
+  double throttle = 1;
   // throttle = 0.50 + double(rand() % 22)/99.0;
   // if (car_tracker_->angle() < 1) {
   //   throttle = 1.0;
@@ -49,6 +49,7 @@ game::Command Bot::GetMove(
       return Command(game::kSwitchLeft);
     }
   }
+
 
   car_tracker_->RecordThrottle(throttle);
   return Command(throttle);
