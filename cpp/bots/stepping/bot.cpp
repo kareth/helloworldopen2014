@@ -57,13 +57,13 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 double Bot::Optimize(const Position& previous, const Position& current) {
   // Length of time units in 0/1 search
   vector<int> groups
-      { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3 };
+      { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3 };
   //    1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19  <-- counter
 
   // Optimal
   // { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 } 7.43 keimola (just find_mask & 1 )
-  // { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3 }; 7.38 keimola
-  // { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3 }; germany
+  // { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3 }; 7.38 keimola / 7.03 with turbo
+  // { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3 }; germany 8.6 with turbo
 
   double distance;
   double best_distance = 0;
