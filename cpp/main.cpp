@@ -13,7 +13,7 @@
 #include "bots/greedy/bot.h"
 #include "bots/stepping/bot.h"
 
-DEFINE_string(track, "keimola", "The track to join the race");
+DEFINE_string(track, "", "The track to join the race. Possible options: keimola, germany, usa.");
 DEFINE_int32(num_players, 1, "The number of players that will race (including you)");
 DEFINE_string(bot, "tomek", "The bot to use");
 
@@ -37,8 +37,12 @@ bots::BotInterface* GetBot(const string& bot_name) {
 
 void run(utils::Connection* connection, bots::RawBot* bot,
     const std::string& name, const std::string& key) {
-  connection->send_requests(
-      { utils::make_join_race("NFC-" + name, key, FLAGS_track, FLAGS_num_players) });
+  if (!FLAGS_track.empty()) {
+    connection->send_requests(
+        { utils::make_join_race("NFC-" + name, key, FLAGS_track, FLAGS_num_players) });
+  } else {
+    connection->send_requests({ utils::make_join("NFC-" + name, key) });
+  }
 
   for (;;) {
     boost::system::error_code error;
