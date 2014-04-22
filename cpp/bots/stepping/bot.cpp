@@ -59,7 +59,7 @@ double Bot::Optimize(const Position& previous, const Position& current) {
 
   // Find most optimal first tick
 
-  while (r - l > 2e-1) {
+  while (r - l > 6e-1) {
     m = (l + r) / 2.0;
 
     Position next = car_tracker_->Predict(current, previous, m, 0);
@@ -135,7 +135,7 @@ bool Bot::CheckMask(int mask, const Position& previous, const Position& current,
       positions[now ^ 1] = car_tracker_->Predict(positions[now], positions[now ^ 1], ((mask & (1 << g)) > 0), 0);
       now ^= 1;
       (*distance) += race_.track().Distance(positions[now], positions[now ^ 1]);
-      if (fabs(positions[now].angle()) >= 60 - 1e-9)
+      if (fabs(positions[now].angle()) >= 60 - 1e-4)
         return false;
     }
   }

@@ -50,6 +50,7 @@ class RawBot {
   msg_vector OnSpawn(const jsoncons::json& data);
   msg_vector OnError(const jsoncons::json& data);
   msg_vector OnDNF(const jsoncons::json& data);
+  msg_vector OnTurboAvailable(const jsoncons::json& data);
 
   msg_vector ping() const { return { }; }
 

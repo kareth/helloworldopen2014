@@ -53,4 +53,8 @@ jsoncons::json make_switch(game::Switch s) {
     return make_ping();
 }
 
+jsoncons::json make_turbo() {
+  return make_request("turbo", "YABAA DABAA DUUUUUUUUUUUU");
+}
+
 }  // namespace utils
