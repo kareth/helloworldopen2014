@@ -44,7 +44,7 @@ class CarTracker : public CarPredictor {
  public:
   CarTracker(const Race* race) : race_(race) {
     stats_file_.open ("bin/stats.csv");
-    stats_file_ << "piece_index,radius,in_piece_distance,angle,velocity,throttle" << std::endl;
+    stats_file_ << "piece_index,start_lane,end_lane,radius,in_piece_distance,angle,velocity,throttle" << std::endl;
 
     if (race_->track().id() == "germany" || race_->track().id() == "keimola") {
       drift_model_[0].reset(new DriftModel(0));
@@ -120,6 +120,8 @@ class CarTracker : public CarPredictor {
 
     stats_file_ << std::setprecision(std::numeric_limits<double>::digits10)
                 << position.piece() << ","
+                << position.start_lane() << ","
+                << position.end_lane() << ","
                 << race_->track().LaneRadius(position.piece(), position.start_lane()) << ","
                 << position.piece_distance() << ","
                 << angle_ << ","

@@ -19,7 +19,8 @@ Bot::~Bot() {
 
 game::Command Bot::GetMove(
     const std::map<std::string, Position>& positions, int game_tick)  {
-  car_tracker_->Record(positions.find(color_)->second);
+  const auto& my_position = positions.find(color_)->second;
+  car_tracker_->Record(my_position);
 
   double throttle = 0.65;
   // throttle = 0.50 + double(rand() % 22)/99.0;
@@ -39,7 +40,15 @@ game::Command Bot::GetMove(
   //   std::cout << game_tick << " " <<  std::setprecision(std::numeric_limits<long double>::digits10) << positions.find(color_)->second.angle() << std::endl;
   //   count_++;
   // }
-  throttle = 0.50 + double(rand() % 22)/99.0;
+  throttle = 0.50;
+
+  if (my_position.piece() == 2) {
+    if (my_position.start_lane() == 0) {
+      return Command(throttle, game::kSwitchRight);
+    } else {
+      return Command(throttle, game::kSwitchLeft);
+    }
+  }
 
   car_tracker_->RecordThrottle(throttle);
   return Command(throttle);
