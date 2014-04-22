@@ -27,7 +27,8 @@ RawBot::RawBot(BotInterface* bot)
       { "crash", &RawBot::OnCrash },
       { "spawn", &RawBot::OnSpawn },
       { "error", &RawBot::OnError },
-      { "dnf", &RawBot::OnDNF }
+      { "dnf", &RawBot::OnDNF },
+      { "turboAvailable", &RawBot::OnTurboAvailable }
     }
 {
   history["positions"] = json(json::an_array);
@@ -46,15 +47,14 @@ RawBot::~RawBot() {
 }
 
 RawBot::msg_vector RawBot::CommandToMsg(const game::Command& command, int game_tick) {
-  msg_vector result;
-
   if (command.SwitchSet())
-    result.push_back(utils::make_switch(command.get_switch()));
-
-  if (command.ThrottleSet())
-    result.push_back(utils::make_throttle(command.get_throttle(), game_tick));
-
-  return result;
+    return { utils::make_switch(command.get_switch()) };
+  else if (command.TurboSet())
+    return { utils::make_turbo() };
+  else if (command.ThrottleSet())
+    return { utils::make_throttle(command.get_throttle(), game_tick) };
+  else
+    return ping();
 }
 
 RawBot::msg_vector RawBot::React(const jsoncons::json& msg) {
@@ -222,6 +222,11 @@ void RawBot::TransitionState(State from, State to) {
     std::cerr << "Incorrect state. state_=" << state_ << " from=" << from << " to=" << to << std::endl;
 
   state_ = to;
+}
+
+RawBot::msg_vector RawBot::OnTurboAvailable(const jsoncons::json& data) {
+  std::cout << "Turboooooo!";
+  return ping();
 }
 
 }  // namespace bots
