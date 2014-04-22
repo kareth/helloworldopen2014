@@ -11,6 +11,7 @@
 #include "game/position.h"
 #include "game/race.h"
 #include "game/car_tracker.h"
+#include "game/turbo.h"
 
 namespace bots {
 namespace tomek {
@@ -32,6 +33,8 @@ class Bot : public bots::BotInterface {
 
   void CarCrashed(const std::string& color) override;
   void CarSpawned(const std::string& color) override;
+
+  void OnTurbo(const game::Turbo& turbo);
 
  private:
   game::Race race_;

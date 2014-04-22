@@ -11,6 +11,7 @@
 #include "game/piece.h"
 
 #include "physics/speed_tracker.h"
+#include "game/turbo.h"
 
 namespace bots {
 namespace piotr {
@@ -31,6 +32,8 @@ class Bot : public bots::BotInterface {
 
   void CarCrashed(const std::string& color) override;
   void CarSpawned(const std::string& color) override;
+
+  void OnTurbo(const game::Turbo& turbo);
 
  private:
   double DistanceFromBent(const game::Position& position, double* angle) const;

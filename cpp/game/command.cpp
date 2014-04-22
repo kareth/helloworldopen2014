@@ -15,7 +15,7 @@ Command::Command(double t)
       throttle_(t) {
 }
 
-Command::Command(Turbo t)
+Command::Command(TurboToggle t)
     : turbo_set_(true),
       throttle_set_(false),
       switch_set_(false),

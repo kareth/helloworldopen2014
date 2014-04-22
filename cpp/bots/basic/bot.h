@@ -6,6 +6,7 @@
 #include "bots/bot_interface.h"
 #include "game/command.h"
 #include "game/position.h"
+#include "game/turbo.h"
 
 namespace bots {
 namespace basic {
@@ -26,6 +27,8 @@ class Bot : public bots::BotInterface {
 
   void CarCrashed(const std::string& color) override;
   void CarSpawned(const std::string& color) override;
+
+  void OnTurbo(const game::Turbo& turbo);
 };
 
 }  // namespace basic

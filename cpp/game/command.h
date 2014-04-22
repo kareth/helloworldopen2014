@@ -9,8 +9,8 @@ enum Switch {
   kSwitchRight
 };
 
-enum class Turbo {
-  kOn
+enum class TurboToggle {
+  kToggleOn
 };
 
 class Command {
@@ -18,14 +18,14 @@ class Command {
   Command();
   explicit Command(double t);
   explicit Command(Switch s);
-  explicit Command(Turbo t);
+  explicit Command(TurboToggle t);
 
   Switch get_switch() const { return switch_; }
   double get_throttle() const { return throttle_; }
 
   void set_throttle(double t) { throttle_ = t; throttle_set_ = true; }
   void set_switch(Switch s) { switch_ = s; switch_set_ = true; }
-  void set_turbo() { turbo_ = Turbo::kOn; turbo_set_ = true; }
+  void set_turbo() { turbo_ = TurboToggle::kToggleOn; turbo_set_ = true; }
   //void set
 
   bool SwitchSet() const { return switch_set_; }
@@ -39,7 +39,7 @@ class Command {
 
   double throttle_;
   Switch switch_;
-  Turbo turbo_;
+  TurboToggle turbo_;
 };
 
 }  // namespace game

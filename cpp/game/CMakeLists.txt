@@ -7,6 +7,7 @@ set(GAME_SOURCES
   result.cpp
   simplex.cpp
   track.cpp
+  turbo.cpp
 )
 
 set(GAME_HEADERS
@@ -25,6 +26,7 @@ set(GAME_HEADERS
   simplex.h
   track.h
   velocity_model.h
+  turbo.h
 )
 
 set(GAME_TESTS
