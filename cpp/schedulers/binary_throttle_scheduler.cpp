@@ -20,7 +20,7 @@ BinaryThrottleScheduler::BinaryThrottleScheduler(const game::Race& race,
 
  // Default state consists of one 1 and multiple 2 later
  groups_.push_back(1);
- for (int i = 0; i < size - 2; i++)
+ for (int i = 0; i < size - 1; i++)
    groups_.push_back(2);
 }
 
@@ -41,13 +41,17 @@ void BinaryThrottleScheduler::Overtake(const string& color) {
 
 void BinaryThrottleScheduler::Schedule(const game::CarState& state) {
   // TODO(kareth) strategies
-  Optimize(state);
+  if (!car_tracker_.IsReady())
+    schedule_ = { 1 };
+  else
+    Optimize(state);
 }
 
 // Returns optimal throttlle:
 void BinaryThrottleScheduler::Optimize(const CarState& state) {
   double distance;
   int mask = FindBestMask(state, &distance);
+  if (mask == -1) mask = 0;
 
   schedule_.clear();
   for (int g = 0; g < groups_.size(); g++)
@@ -61,14 +65,10 @@ void BinaryThrottleScheduler::Optimize(const CarState& state) {
 // @returns mask or -1 if impossible
 // @param distance total distance travelled
 int BinaryThrottleScheduler::FindBestMask(const CarState& state, double* distance) {
-  if (state.previous_angle() >= 60 - 1e-9 || state.position().angle() >= 60 - 1e-9)
-    return -1;
-
   int best_mask = -1;
   *distance = 0;
 
-
-  // TODO dont predict that much.
+  // TODO dont predict that much. probably can go 2 times faster
   for (int mask = 0; mask < (1 << (groups_.size())); mask++) {
     double mask_distance;
     if (CheckMask(mask, state, &mask_distance) &&
