@@ -16,15 +16,49 @@ class CarTrackerTest : public testing::Test {
     race_.ParseFromJson(race_json);
     car_tracker_.reset(new CarTracker(&race_));
   }
+
+  Command ParseCommand(const json& data) {
+    if (data[0]["msgType"] == "throttle")
+      return Command(data[0]["data"].as_double());
+    return Command();
+  }
+
   Race race_;
   std::unique_ptr<CarTracker> car_tracker_;
 };
 
 TEST_F(CarTrackerTest, Basic) {
-  Position position;
-  // car_tracker_->Record(position);
+  auto history = json::parse_file("../history.json");
+  auto commands = history["commands"];
+  auto positions = history["positions"];
 
-  // TODO
+  CarState state;
+
+  for (int i = 0; !car_tracker_->IsReady(); ++i) {
+    Command command = ParseCommand(commands[i]);
+    Position position;
+    position.ParseFromJson(positions[i]);
+
+    car_tracker_->Record(position);
+    car_tracker_->RecordThrottle(command.get_throttle());
+  }
+
+  const double kEps = 1e-9;
+  for (int i = 0; i < positions.size() - 1; ++i) {
+    Command command = ParseCommand(commands[i]);
+    Position position;
+    position.ParseFromJson(positions[i + 1]);
+
+    state = car_tracker_->Predict(state, command);
+
+    EXPECT_NEAR(position.angle(), state.position().angle(), kEps);
+    EXPECT_DOUBLE_EQ(position.piece(), state.position().piece());
+    EXPECT_NEAR(position.piece_distance(), state.position().piece_distance(), kEps);
+    EXPECT_DOUBLE_EQ(position.start_lane(), state.position().start_lane());
+    EXPECT_DOUBLE_EQ(position.end_lane(), state.position().end_lane());
+    EXPECT_DOUBLE_EQ(position.lap(), state.position().lap());
+  }
+
 }
 
 class VelocityModelTest : public testing::Test {

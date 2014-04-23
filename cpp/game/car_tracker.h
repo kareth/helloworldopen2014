@@ -144,11 +144,48 @@ class CarTracker : public CarPredictor {
 
   double angle() const { return angle_; }
 
-  CarState Predict(const CarState& state, const Command& command) {
-    // TODO(tomek)
-    return CarState();
+  bool IsReady() const {
+    return velocity_model_.IsReady();
   }
 
+  CarState Predict(const CarState& state, const Command& command) {
+    double velocity = velocity_model_.Predict(state.velocity(), command.get_throttle());
+    double piece_distance = state.position().piece_distance() + velocity;
+    int lap = state.position().lap();
+    int piece = state.position().piece();
+
+    // Is it next piece?
+    if (piece_distance > race_->track().LaneLength(piece, state.position().start_lane())) {
+      piece_distance = piece_distance - race_->track().LaneLength(piece, state.position().start_lane());
+
+      piece++;
+
+      // Is it next lap?
+      if (piece >= race_->track().pieces().size()) {
+        piece = 0;
+        lap++;
+      }
+    }
+
+    double radius = race_->track().LaneRadius(state.position().piece(), state.position().start_lane());
+    double angle = GetDriftModel(state.position())->Predict(
+        state.position().angle(),
+        state.previous_angle(),
+        state.velocity(),
+        radius);
+
+    Position position;
+    position.set_piece_distance(piece_distance);
+    position.set_lap(lap);
+    position.set_piece(piece);
+    position.set_start_lane(state.position().start_lane());
+    position.set_end_lane(state.position().end_lane());
+    position.set_angle(angle);
+
+    return CarState(position, velocity, state.position().angle());
+  }
+
+  // TODO deprecated
   Position Predict(const Position& position, const Position& previous_position, double throttle, bool change_lane) {
     if (!GetDriftModel(position)->IsReady() ||
         !velocity_model_.IsReady())

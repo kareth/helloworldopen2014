@@ -44,11 +44,11 @@ class VelocityModel {
   }
 
   // Returns predicted new velocity based on velocity and applied throttle.
-  double Predict(double velocity, double throttle) {
+  double Predict(double velocity, double throttle) const {
     return x_[0] * velocity + x_[1] * throttle;
   }
 
-  bool IsReady() {
+  bool IsReady() const {
     return ready_;
   }
 

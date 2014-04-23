@@ -28,7 +28,7 @@ class CarState {
 
   const Position& position() const { return position_; }
   double velocity() const { return velocity_; }
-  double previuos_angle() const { return previous_angle_; }
+  double previous_angle() const { return previous_angle_; }
 
  private:
   Position position_;

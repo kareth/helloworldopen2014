@@ -31,14 +31,14 @@ class Position {
   void set_lap(double lap) { lap_ = lap; }
 
  private:
-  double angle_ = -1;
-  int piece_index_ = -1;
-  double piece_distance_ = -1;
+  double angle_ = 0;
+  int piece_index_ = 0;
+  double piece_distance_ = 0;
 
-  int start_lane_ = -1;
-  int end_lane_ = -1;
+  int start_lane_ = 0;
+  int end_lane_ = 0;
 
-  int lap_ = -1;
+  int lap_ = 0;
 };
 
 }  // namespace game
