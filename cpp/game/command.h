@@ -1,7 +1,16 @@
 #ifndef CPP_GAME_COMMAND_H_
 #define CPP_GAME_COMMAND_H_
 
+#include <sstream>
+
 namespace game {
+
+template <typename Enumeration>
+auto as_integer(Enumeration const value)
+    -> typename std::underlying_type<Enumeration>::type
+{
+    return static_cast<typename std::underlying_type<Enumeration>::type>(value);
+}
 
 enum Switch {
   kSwitchLeft,
@@ -32,6 +41,20 @@ class Command {
   bool SwitchSet() const { return switch_set_; }
   bool ThrottleSet() const { return throttle_set_; }
   bool TurboSet() const { return turbo_set_; }
+
+  std::string DebugString() {
+    std::stringstream ss;
+    if (switch_set_) {
+      ss << "switch: " << as_integer(switch_) << std::endl;
+    } else if (throttle_set_) {
+      ss << "throttle: " << throttle_ << std::endl;
+    } else if (turbo_set_) {
+      ss << "turbo: " << as_integer(turbo_) << std::endl;
+    } else {
+      ss << "ping()" << std::endl;
+    }
+    return ss.str();
+  }
 
  private:
   bool switch_set_;
