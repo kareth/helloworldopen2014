@@ -60,7 +60,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 double Bot::Optimize(const CarState& state) {
   // Length of time units in 0/1 search
   vector<int> groups
-      { 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+      { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
   //    1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19  <-- counter
 
   // Optimal
@@ -88,6 +88,7 @@ double Bot::Optimize(const CarState& state) {
   }
 
 
+  /*
   // Check (0, 1)
   double l = 0, r = 1, m;
 
@@ -109,6 +110,7 @@ double Bot::Optimize(const CarState& state) {
       }
     }
   }
+  */
 
   // Check fullspeed
   next = car_tracker_->Predict(state, Command(1));
