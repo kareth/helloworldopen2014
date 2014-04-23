@@ -56,6 +56,8 @@ class CarTracker : public CarPredictor {
 
   bool IsSafe(const CarState& state, const Command& command);
 
+  bool IsSafe(const CarState& state);
+
   void RecordCarCrash() {
     crash_model_.RecordCarCrash(state_.position().angle());
 
