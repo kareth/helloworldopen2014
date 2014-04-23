@@ -21,22 +21,24 @@ class Bot : public bots::BotInterface {
   Bot();
   ~Bot() override;
 
-  void JoinedGame() override;
+  void JoinedGame() override {}
   void YourCar(const std::string& color) override;
   void NewRace(const game::Race& race) override;
-  void GameStarted() override;
+  void GameStarted() override {}
   game::Command GetMove(const std::map<std::string, game::Position>& positions, int game_tick) override;
-  void CarFinishedLap(const std::string& color) override;
-  void CarFinishedRace(const std::string& color) override;
-  void GameEnd() override;
-  void TournamentEnd() override;
+  void CarFinishedLap(const std::string& color) override {}
+  void CarFinishedRace(const std::string& color) override {}
+  void GameEnd() override {}
+  void TournamentEnd() override {}
 
   void CarCrashed(const std::string& color) override;
-  void CarSpawned(const std::string& color) override;
+  void CarSpawned(const std::string& color) override {}
 
-  void OnTurbo(const game::Turbo& turbo);
+  void OnTurbo(const game::Turbo& turbo) {}
 
  private:
+  game::Command ComputeMove(const game::Position& position);
+
   game::Race race_;
   std::string color_;
 

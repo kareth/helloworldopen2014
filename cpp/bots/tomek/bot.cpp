@@ -17,11 +17,7 @@ Bot::Bot() {
 Bot::~Bot() {
 }
 
-game::Command Bot::GetMove(
-    const std::map<std::string, Position>& positions, int game_tick)  {
-  const auto& my_position = positions.find(color_)->second;
-  car_tracker_->Record(my_position);
-
+game::Command Bot::ComputeMove(const Position& position) {
   double throttle = 1;
   // throttle = 0.50 + double(rand() % 22)/99.0;
   // if (car_tracker_->angle() < 1) {
@@ -42,20 +38,25 @@ game::Command Bot::GetMove(
   // }
   throttle = 0.50;
 
-  if (my_position.piece() == 2) {
-    if (my_position.start_lane() == 0) {
-      return Command(game::kSwitchRight);
-    } else {
-      return Command(game::kSwitchLeft);
-    }
-  }
-
-
-  car_tracker_->RecordThrottle(throttle);
-  return Command(throttle);
+  // if (my_position.piece() == 2) {
+  //   if (my_position.start_lane() == 0) {
+  //     return Command(game::kSwitchRight);
+  //   } else {
+  //     return Command(game::kSwitchLeft);
+  //   }
+  // }
+  return Command(0.5);
 }
 
-void Bot::JoinedGame() {
+game::Command Bot::GetMove(
+    const std::map<std::string, Position>& positions, int game_tick)  {
+  const auto& my_position = positions.find(color_)->second;
+  car_tracker_->Record(my_position);
+
+  Command command = ComputeMove(my_position);
+
+  car_tracker_->RecordCommand(command);
+  return Command(command);
 }
 
 void Bot::YourCar(const std::string& color) {
@@ -67,29 +68,8 @@ void Bot::NewRace(const Race& race) {
   car_tracker_.reset(new CarTracker(&race_));
 }
 
-void Bot::GameStarted() {
-}
-
-void Bot::CarFinishedLap(const std::string& color /* + results */)  {
-}
-
-void Bot::CarFinishedRace(const std::string& color)  {
-}
-
-void Bot::GameEnd(/* results */)  {
-}
-
-void Bot::TournamentEnd()  {
-}
-
 void Bot::CarCrashed(const std::string& color)  {
   car_tracker_->RecordCarCrash();
-}
-
-void Bot::CarSpawned(const std::string& color)  {
-}
-
-void Bot::OnTurbo(const game::Turbo& turbo) {
 }
 
 }  // namespace bots

@@ -18,36 +18,13 @@ CarTracker::CarTracker(const Race* race) : race_(race) {
   }
 }
 
-DriftModel* CarTracker::GetDriftModel(const Position& position) {
-  auto& piece = race_->track().pieces().at(position.piece());
-  int direction = sgn(piece.angle());
-  if (drift_model_[direction] == nullptr) {
-    drift_model_[direction].reset(new DriftModel(direction));
-  }
-  return drift_model_[direction].get();
-}
-
-void CarTracker::LogState() {
-  const auto& position = positions_.back();
-
-  stats_file_ << std::setprecision(std::numeric_limits<double>::digits10)
-    << position.piece() << ","
-    << position.start_lane() << ","
-    << position.end_lane() << ","
-    << race_->track().LaneRadius(position.piece(), position.start_lane()) << ","
-    << position.piece_distance() << ","
-    << angle_ << ","
-    << velocity_ << ","
-    << throttle_ << std::endl;
-}
-
 CarState CarTracker::Predict(const CarState& state, const Command& command) {
   if (!IsReady()) {
     std::cerr << "Cannot predict on not ready model" << std::endl;
     return state;
   }
 
-  double velocity = velocity_model_.Predict(state.velocity(), command.get_throttle());
+  double velocity = velocity_model_.Predict(state.velocity(), command.throttle());
   double piece_distance = state.position().piece_distance() + velocity;
   int lap = state.position().lap();
   int piece = state.position().piece();
@@ -78,6 +55,33 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
   position.set_angle(angle);
 
   return CarState(position, velocity, state.position().angle());
+}
+
+bool CarTracker::IsReady() const {
+  return velocity_model_.IsReady();
+}
+
+DriftModel* CarTracker::GetDriftModel(const Position& position) {
+  auto& piece = race_->track().pieces().at(position.piece());
+  int direction = sgn(piece.angle());
+  if (drift_model_[direction] == nullptr) {
+    drift_model_[direction].reset(new DriftModel(direction));
+  }
+  return drift_model_[direction].get();
+}
+
+void CarTracker::LogState() {
+  const auto& position = positions_.back();
+
+  stats_file_ << std::setprecision(std::numeric_limits<double>::digits10)
+    << position.piece() << ","
+    << position.start_lane() << ","
+    << position.end_lane() << ","
+    << race_->track().LaneRadius(position.piece(), position.start_lane()) << ","
+    << position.piece_distance() << ","
+    << angle_ << ","
+    << velocity_ << ","
+    << last_command_.throttle() << std::endl;
 }
 
 }  // namespace game

@@ -22,6 +22,7 @@ class Command {
 
   Switch get_switch() const { return switch_; }
   double get_throttle() const { return throttle_; }
+  double throttle() const { return throttle_; }
 
   void set_throttle(double t) { throttle_ = t; throttle_set_ = true; }
   void set_switch(Switch s) { switch_ = s; switch_set_ = true; }

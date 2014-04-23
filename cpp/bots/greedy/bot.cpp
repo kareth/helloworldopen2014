@@ -35,7 +35,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 
   double throttle = Optimize(previous, position);
 
-  car_tracker_->RecordThrottle(throttle);
+  car_tracker_->RecordCommand(Command(throttle));
   return Command(throttle);
 }
 

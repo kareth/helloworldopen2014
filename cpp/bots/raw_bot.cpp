@@ -116,7 +116,6 @@ RawBot::msg_vector RawBot::OnGameStart(const jsoncons::json& msg) {
 }
 
 RawBot::msg_vector RawBot::OnCarPositions(const jsoncons::json& msg) {
-  std::cout << "OnCarPosition" << std::endl;
   const auto& data = msg.get("data", jsoncons::json(""));
   const int game_tick = msg.get("gameTick", jsoncons::json(0)).as_int();
   if (game_tick != last_game_tick_ + 1) {

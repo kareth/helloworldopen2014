@@ -58,7 +58,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
   if (position.lap() == 2 && race_.track().IsLastStraight(position))
     return Command(1);
 
-  car_tracker_->RecordThrottle(throttle);
+  car_tracker_->RecordCommand(Command(throttle));
   return Command(throttle);
 }
 

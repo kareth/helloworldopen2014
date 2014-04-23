@@ -40,7 +40,7 @@ TEST_F(CarTrackerTest, greedyRun) {
     position.ParseFromJson(positions[i]);
 
     car_tracker_->Record(position);
-    car_tracker_->RecordThrottle(command.get_throttle());
+    car_tracker_->RecordCommand(command);
   }
 
   const double kEps = 1e-9;

@@ -68,7 +68,7 @@ class CarTracker : public CarPredictor {
     // For some reason first few entries are bogus. Do not train model on them.
     // Update Models
     crash_model_.Record(angle);
-    velocity_model_.Record(velocity, velocity_, throttle_);
+    velocity_model_.Record(velocity, velocity_, last_command_.throttle());
     // TODO last position
     auto pos = position;
     if (positions_.size() > 0) pos = positions_.back();
@@ -87,11 +87,6 @@ class CarTracker : public CarPredictor {
     LogState();
   }
 
-  // TODO change to RecordCommand
-  void RecordThrottle(double throttle) {
-    throttle_ = throttle;
-  }
-
   void RecordCommand(const Command& command) {
     last_command_ = command;
   }
@@ -105,15 +100,7 @@ class CarTracker : public CarPredictor {
     stats_file_ << "CRASH" << std::endl;
   }
 
-  double velocity() const { return velocity_; }
-
-  double throttle() const { return throttle_; }
-
-  double angle() const { return angle_; }
-
-  bool IsReady() const {
-    return velocity_model_.IsReady();
-  }
+  bool IsReady() const;
 
   CarState Predict(const CarState& state, const Command& command);
 
@@ -175,6 +162,9 @@ class CarTracker : public CarPredictor {
     return state_;
   }
 
+  // TODO deprecate
+  double throttle() const { return last_command_.throttle(); }
+
  private:
   DriftModel* GetDriftModel(const Position& position);
   void LogState();
@@ -200,7 +190,6 @@ class CarTracker : public CarPredictor {
 
   // TODO deprecated, use states instead
   vector<Position> positions_;
-  double throttle_ = 0;
 };
 
 }  // namespace game
