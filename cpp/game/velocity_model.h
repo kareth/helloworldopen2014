@@ -21,6 +21,7 @@ class VelocityModel {
     std::cout << "==== Velocity Model ====" << std::endl;
     for (int i = 0; i < x_.size(); ++i)
       std::cout << "x" << i <<": " << x_[i] << " ";
+    std::cout << std::endl;
     error_tracker_.Print();
     std::cout << std::endl;
   }

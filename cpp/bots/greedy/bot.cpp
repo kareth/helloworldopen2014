@@ -5,10 +5,11 @@ using std::string;
 using std::vector;
 using std::map;
 
-using game::Position;
 using game::CarTracker;
-using game::Race;
+using game::CarState;
 using game::Command;
+using game::Position;
+using game::Race;
 
 namespace bots {
 namespace greedy {
@@ -18,41 +19,35 @@ Bot::Bot() {
 }
 
 game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick)  {
-  Position position = positions.at(color_);
-  Position previous;
-
-  if (car_tracker_->positions().size() == 0) {
-    previous = position;
-  } else {
-    previous = car_tracker_->positions().back();
-  }
-
+  const Position& position = positions.at(color_);
   car_tracker_->Record(position);
 
   if (crashed_) {
     return Command(0);
   }
 
-  double throttle = Optimize(previous, position);
+  const CarState& state = car_tracker_->current_state();
+  double throttle = Optimize(state);
 
   car_tracker_->RecordCommand(Command(throttle));
   return Command(throttle);
 }
 
-double Bot::Optimize(const Position& previous, const Position& current) {
+double Bot::Optimize(const CarState& state) {
   int window_size = 120;
   vector<double> thr(window_size, 1);
-  vector<Position> positions {previous, current};
+  vector<CarState> states {state};
 
   for (int i = 0; i < window_size; i++) {
-    Position predicted = car_tracker_->Predict(positions[i+1], positions[i], thr[i], 0);
-    positions.push_back(predicted);
+    CarState predicted = car_tracker_->Predict(states[i], Command(thr[i]));
+    states.push_back(predicted);
 
-    if (fabs(predicted.angle()) >= 60) {
+    // TODO We should not hard code 60!
+    if (fabs(predicted.position().angle()) >= 60) {
       bool found = false;
       // Look for something to slow down
       for (int j = i; j >= 0; j--) {
-        positions.pop_back();
+        states.pop_back();
         if (thr[j] > 1e-2) {
           thr[j] -= fmax(0, thr[j] - 0.005);
           i = j - 1;
@@ -63,7 +58,7 @@ double Bot::Optimize(const Position& previous, const Position& current) {
       if (found) {
         continue;
       } else {
-        std::cout << "FAILED to stop drifting";
+        std::cout << "FAILED to stop drifting" << std::endl;
         return 0;
       }
     }

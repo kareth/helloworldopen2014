@@ -39,11 +39,11 @@ class Bot : public bots::BotInterface {
   void TurboEnded(const std::string& color) override;
 
  private:
-  double Optimize(const game::Position& previous, const game::Position& current);
-  int FindBestMask(const game::Position& previous, const game::Position& current, const std::vector<int>& groups, double* distance);
-  bool CheckMask(int mask, const game::Position& previous, const game::Position& current, const std::vector<int>& groups, double* distance);
+  double Optimize(const game::CarState& state);
+  int FindBestMask(const game::CarState& state, const std::vector<int>& groups, double* distance);
+  bool CheckMask(int mask, const game::CarState& state, const std::vector<int>& groups, double* distance);
   bool CanUseTurbo(const game::Position& position);
-  bool ShouldChangeLane(const game::Position& position, game::Switch* s);
+  bool ShouldChangeLane(const game::CarState& state, game::Switch* s);
 
   int NextSwitch(int piece);
   double LaneLength(const game::Position& position, int lane, int from, int to);

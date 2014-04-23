@@ -18,9 +18,12 @@ CarTracker::CarTracker(const Race* race) : race_(race) {
   }
 }
 
+CarTracker::~CarTracker() {
+  stats_file_.close();
+}
+
 CarState CarTracker::Predict(const CarState& state, const Command& command) {
   if (!IsReady()) {
-    std::cerr << "Cannot predict on not ready model" << std::endl;
     return state;
   }
 
@@ -57,6 +60,31 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
   return CarState(position, velocity, state.position().angle());
 }
 
+void CarTracker::Record(const Position& position) {
+  // TODO Make sure everything works on crash.
+  // TODO If velocity model is trained, it is probably better to use it for
+  // velocity (because of unknown length of switches.
+  // TODO Handle bumps with other cars, do not break models then.
+
+  double velocity = 0;
+  if (state_.position().piece() == position.piece()) {
+    velocity = position.piece_distance() - state_.position().piece_distance();
+  } else {
+    velocity = position.piece_distance() - state_.position().piece_distance() +
+      race_->track().LaneLength(state_.position().piece(), state_.position().start_lane());
+  }
+
+  // Update models
+  crash_model_.Record(position.angle());
+  velocity_model_.Record(velocity, state_.velocity(), last_command_.throttle());
+  GetDriftModel(state_.position())->Record(
+      position.angle(), state_.position().angle(), state_.previous_angle(),
+      state_.velocity(), RadiusInPosition(state_.position()));
+
+  state_ = CarState(position, velocity, state_.position().angle());
+  LogState();
+}
+
 bool CarTracker::IsReady() const {
   return velocity_model_.IsReady();
 }
@@ -70,8 +98,12 @@ DriftModel* CarTracker::GetDriftModel(const Position& position) {
   return drift_model_[direction].get();
 }
 
+double CarTracker::RadiusInPosition(const Position& position) {
+  return race_->track().LaneRadius(position.piece(), position.start_lane());
+}
+
 void CarTracker::LogState() {
-  const auto& position = positions_.back();
+  const auto& position = state_.position();
 
   stats_file_ << std::setprecision(std::numeric_limits<double>::digits10)
     << position.piece() << ","
@@ -79,8 +111,8 @@ void CarTracker::LogState() {
     << position.end_lane() << ","
     << race_->track().LaneRadius(position.piece(), position.start_lane()) << ","
     << position.piece_distance() << ","
-    << angle_ << ","
-    << velocity_ << ","
+    << state_.position().angle() << ","
+    << state_.velocity() << ","
     << last_command_.throttle() << std::endl;
 }
 

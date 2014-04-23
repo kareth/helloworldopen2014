@@ -5,10 +5,11 @@ using std::string;
 using std::vector;
 using std::map;
 
-using game::Position;
 using game::CarTracker;
-using game::Race;
+using game::CarState;
 using game::Command;
+using game::Position;
+using game::Race;
 
 namespace bots {
 namespace stepping {
@@ -18,14 +19,7 @@ Bot::Bot() {
 }
 
 game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick)  {
-  Position position = positions.at(color_);
-  Position previous;
-
-  if (car_tracker_->positions().size() == 0) {
-    previous = position;
-  } else {
-    previous = car_tracker_->positions().back();
-  }
+  const Position& position = positions.at(color_);
 
   car_tracker_->Record(position);
 
@@ -33,7 +27,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
     return Command(0);
   }
 
-  double throttle = Optimize(previous, position);
+  double throttle = Optimize(car_tracker_->current_state());
   if (game_tick < 10) throttle = 1;
 
   if (CanUseTurbo(position)) {
@@ -63,7 +57,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 }
 
 // Returns optimal throttlle:
-double Bot::Optimize(const Position& previous, const Position& current) {
+double Bot::Optimize(const CarState& state) {
   // Length of time units in 0/1 search
   vector<int> groups
       { 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
@@ -84,9 +78,9 @@ double Bot::Optimize(const Position& previous, const Position& current) {
   //throttle = best_mask & 1;
 
   // Check no-speed
-  Position next = car_tracker_->Predict(current, previous, 0, 0);
-  int mask = FindBestMask(current, next, groups, &distance);
-  distance += race_.track().Distance(next, current);
+  CarState next = car_tracker_->Predict(state, Command(0));
+  int mask = FindBestMask(next, groups, &distance);
+  distance += race_.track().Distance(next.position(), state.position());
   if (mask != -1 && distance > best_distance) {
     throttle = 0;
     best_distance = distance;
@@ -100,9 +94,9 @@ double Bot::Optimize(const Position& previous, const Position& current) {
   while (r - l > 1e-3) {
     m = (l + r) / 2.0;
 
-    Position next = car_tracker_->Predict(current, previous, m, 0);
-    int mask = FindBestMask(current, next, groups, &distance);
-    distance += race_.track().Distance(next, current);
+    CarState next = car_tracker_->Predict(state, Command(m));
+    int mask = FindBestMask(state, groups, &distance);
+    distance += race_.track().Distance(next.position(), state.position());
 
     if (mask == -1) {
       r = m;
@@ -117,9 +111,9 @@ double Bot::Optimize(const Position& previous, const Position& current) {
   }
 
   // Check fullspeed
-  next = car_tracker_->Predict(current, previous, 1, 0);
-  mask = FindBestMask(current, next, groups, &distance);
-  distance += race_.track().Distance(next, current);
+  next = car_tracker_->Predict(state, Command(1));
+  mask = FindBestMask(next, groups, &distance);
+  distance += race_.track().Distance(next.position(), state.position());
   if (mask != -1 && distance > best_distance) {
     throttle = 1;
     best_distance = distance;
@@ -133,7 +127,7 @@ double Bot::Optimize(const Position& previous, const Position& current) {
   else
     for (int i = 0; i < groups.size(); i++)
       std::cout << ((best_mask & (1 << i)) > 0) << " ";
-  std::cout << "(" << current.piece() << ")" << std::endl;
+  std::cout << "(" << state.position().piece() << ")" << std::endl;
 
   return throttle;
 }
@@ -141,8 +135,8 @@ double Bot::Optimize(const Position& previous, const Position& current) {
 // Finds most optimal(by means of distance travelled) mask
 // @returns mask or -1 if impossible
 // @param distance total distance travelled
-int Bot::FindBestMask(const Position& previous, const Position& current, const vector<int>& groups, double* distance) {
-  if (previous.angle() >= 60 - 1e-9 || current.angle() >= 60 - 1e-9)
+int Bot::FindBestMask(const CarState& state, const vector<int>& groups, double* distance) {
+  if (state.previous_angle() >= 60 - 1e-9 || state.position().angle() >= 60 - 1e-9)
     return -1;
 
   int best_mask = -1;
@@ -150,7 +144,7 @@ int Bot::FindBestMask(const Position& previous, const Position& current, const v
 
   for (int mask = 0; mask < (1 << (groups.size())); mask++) {
     double mask_distance;
-    if (CheckMask(mask, previous, current, groups, &mask_distance) && mask_distance > *distance) {
+    if (CheckMask(mask, state, groups, &mask_distance) && mask_distance > *distance) {
       *distance = mask_distance;
       best_mask = mask;
     }
@@ -161,17 +155,17 @@ int Bot::FindBestMask(const Position& previous, const Position& current, const v
 // Checks whether given throttle setup wont crash
 // @returns false if car crashes
 // @param distance total distance travelled
-bool Bot::CheckMask(int mask, const Position& previous, const Position& current, const vector<int>& groups, double* distance) {
-  vector<Position> positions {previous, current};
+bool Bot::CheckMask(int mask, const CarState& state, const vector<int>& groups, double* distance) {
+  vector<CarState> states {state};
   int now = 1;
   *distance = 0;
 
   for (int g = 0; g < groups.size(); g++) {
     for (int t = 0; t < groups[g]; t++) {
-      positions[now ^ 1] = car_tracker_->Predict(positions[now], positions[now ^ 1], ((mask & (1 << g)) > 0), 0);
+      states[now ^ 1] = car_tracker_->Predict(states[now], Command((mask & (1 << g)) > 0));
       now ^= 1;
-      (*distance) += race_.track().Distance(positions[now], positions[now ^ 1]);
-      if (fabs(positions[now].angle()) >= 60 - 1e-9)
+      (*distance) += race_.track().Distance(states[now].position(), states[now ^ 1].position());
+      if (fabs(states[now].position().angle()) >= 60 - 1e-9)
         return false;
     }
   }
@@ -220,10 +214,9 @@ void Bot::TournamentEnd()  {
 }
 
 void Bot::CarCrashed(const string& color)  {
-  auto& previous = car_tracker_->positions()[car_tracker_->positions().size() - 2];
-  auto& current = car_tracker_->positions().back();
-  auto next = car_tracker_->Predict(current, previous, car_tracker_->throttle(), 0);
-  printf("Crash! %lf %lf %lf\n", previous.angle(), current.angle(), next.angle());
+  auto& state = car_tracker_->current_state();
+  auto next = car_tracker_->Predict(state, Command(car_tracker_->throttle()));
+  printf("Crash! %lf %lf %lf\n", next.position().angle(), state.position().angle(), state.previous_angle());
 
   if (color == color_) {
     crashed_ = true;
@@ -243,7 +236,8 @@ void Bot::OnTurbo(const game::Turbo& turbo) {
 
 
 // TODO refactor
-bool Bot::ShouldChangeLane(const game::Position& position, game::Switch* s) {
+bool Bot::ShouldChangeLane(const game::CarState& state, game::Switch* s) {
+  const Position& position = state.position();
   // TODO its just just basic greedy choosing
   if (position.piece() == switched_)
     switched_ = -1;
@@ -253,8 +247,7 @@ bool Bot::ShouldChangeLane(const game::Position& position, game::Switch* s) {
 
   int from = NextSwitch(position.piece());
 
-  if (car_tracker_->positions().size() <= 1 ||
-      car_tracker_->Predict(position, car_tracker_->positions()[car_tracker_->positions().size() - 2], 1, 0).piece() != from)
+  if (car_tracker_->Predict(state, Command(1)).position().piece() != from)
     return false;
 
   int to = NextSwitch(from);

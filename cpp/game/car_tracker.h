@@ -44,119 +44,23 @@ class CarTracker : public CarPredictor {
  public:
   CarTracker(const Race* race);
 
-  virtual ~CarTracker() {
-    stats_file_.close();
-  }
+  virtual ~CarTracker();
 
-  void Record(const Position& position) {
-    // Calculate new values for state - velocity, angle, etc.
-    double angle = position.angle();
-    double velocity = velocity_;
-    if (positions_.size() > 0) {
-      const auto& prev_position = positions_.back();
-
-      if (prev_position.piece() == position.piece()) {
-        velocity = position.piece_distance() - prev_position.piece_distance();
-      } else {
-        velocity = position.piece_distance() - prev_position.piece_distance() +
-          race_->track().LaneLength(prev_position.piece(), prev_position.start_lane());
-      }
-    }
-
-    // TODO do not update model after crash
-
-    // For some reason first few entries are bogus. Do not train model on them.
-    // Update Models
-    crash_model_.Record(angle);
-    velocity_model_.Record(velocity, velocity_, last_command_.throttle());
-    // TODO last position
-    auto pos = position;
-    if (positions_.size() > 0) pos = positions_.back();
-
-    double radius = race_->track().LaneRadius(pos.piece(), pos.start_lane());
-    GetDriftModel(pos)->Record(angle, angle_, previous_angle_, velocity_, radius);
-
-    // Update state
-    previous_angle_ = angle_;
-    angle_ = angle;
-    velocity_ = velocity;
-    positions_.push_back(position);
-
-    state_ = CarState(position, velocity_, previous_angle_);
-
-    LogState();
-  }
+  void Record(const Position& position);
 
   void RecordCommand(const Command& command) {
     last_command_ = command;
   }
 
-  void RecordCarCrash() {
-    crash_model_.RecordCarCrash(angle_);
+  CarState Predict(const CarState& state, const Command& command);
 
-    velocity_ = 0;
-    angle_ = 0;
+  void RecordCarCrash() {
+    crash_model_.RecordCarCrash(state_.position().angle());
 
     stats_file_ << "CRASH" << std::endl;
   }
 
   bool IsReady() const;
-
-  CarState Predict(const CarState& state, const Command& command);
-
-  // TODO deprecated
-  Position Predict(const Position& position, const Position& previous_position, double throttle, bool change_lane) {
-    // TODO dont require drift model
-    if (!GetDriftModel(position)->IsReady() ||
-        !velocity_model_.IsReady())
-      return position;
-
-    // TODO swapping lanes prolongs track :D
-    // TODO no lane swapping management
-
-    double radius = race_->track().LaneRadius(position.piece(), position.start_lane());
-    double velocity = race_->track().Distance(position, previous_position);
-
-    Position result;
-
-    double angle = GetDriftModel(position)->Predict(
-        position.angle(),
-        previous_position.angle(),
-        velocity,
-        radius
-        );
-
-    result.set_angle(angle);
-
-    double new_velocity = velocity_model_.Predict(velocity, throttle);
-    double new_position = position.piece_distance() + new_velocity;
-
-    int lap = position.lap();
-
-    if (new_position > race_->track().LaneLength(position.piece(), position.start_lane())) {
-      int piece = position.piece() + 1;
-      if (piece >= race_->track().pieces().size()) {
-        piece %= race_->track().pieces().size();
-        lap++;
-      }
-      result.set_piece(piece);
-      result.set_piece_distance(new_position - race_->track().LaneLength(position.piece(), position.start_lane()));
-    } else {
-      result.set_piece(position.piece());
-      result.set_piece_distance(new_position);
-    }
-
-    result.set_lap(lap);
-
-    // TODO(kareth)
-    result.set_start_lane(position.start_lane());
-    result.set_end_lane(position.end_lane());
-
-    return result;
-  }
-
-  // TODO deprecate
-  const vector<Position>& positions() { return positions_; }
 
   const CarState& current_state() {
     return state_;
@@ -168,15 +72,12 @@ class CarTracker : public CarPredictor {
  private:
   DriftModel* GetDriftModel(const Position& position);
   void LogState();
+  double RadiusInPosition(const Position& position);
 
   std::ofstream stats_file_;
 
   CarState state_;
   Command last_command_;
-
-  double velocity_ = 0;
-  double angle_ = 0;
-  double previous_angle_ = 0;
 
   // Does not own the pointer.
   const Race* race_;
@@ -187,9 +88,6 @@ class CarTracker : public CarPredictor {
   // radius (straight pieces assume radius 0).
   // TODO fix drift model to make it independent on radius (sign)
   map<int, std::unique_ptr<DriftModel>> drift_model_;
-
-  // TODO deprecated, use states instead
-  vector<Position> positions_;
 };
 
 }  // namespace game

@@ -12,6 +12,7 @@
 #include "game/position.h"
 
 #include "game/car_tracker.h"
+#include "game/car_predictor.h"
 #include "game/turbo.h"
 
 namespace bots {
@@ -37,7 +38,7 @@ class Bot : public bots::BotInterface {
   void OnTurbo(const game::Turbo& turbo);
 
  private:
-  double Optimize(const game::Position& previous, const game::Position& current);
+  double Optimize(const game::CarState& state);
 
   game::Race race_;
 
