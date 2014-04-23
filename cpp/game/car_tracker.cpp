@@ -117,6 +117,19 @@ void CarTracker::Record(const Position& position) {
 }
 
 bool CarTracker::IsSafe(const CarState& state, const Command& command) {
+  return IsSafe(Predict(state, command));
+}
+
+bool CarTracker::IsSafe(const CarState& state) {
+  // TODO hardcoded
+  double safe_speed = 3;
+
+  auto s = state;
+  while (s.velocity() > safe_speed) {
+    if (s.position().angle() > 60 - 1e-9)
+      return false;
+    s = Predict(s, Command(0));
+  }
   return true;
 }
 

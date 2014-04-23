@@ -59,10 +59,12 @@ class CarTracker : public CarPredictor {
 
   void RecordTurboAvailable(const game::Turbo& turbo);
 
-  // Prediction API
   CarState Predict(const CarState& state, const Command& command);
 
   bool IsSafe(const CarState& state, const Command& command);
+
+  bool IsSafe(const CarState& state);
+
 
   bool IsReady() const;
 
