@@ -27,8 +27,8 @@ class CarTrackerTest : public testing::Test {
   std::unique_ptr<CarTracker> car_tracker_;
 };
 
-TEST_F(CarTrackerTest, Basic) {
-  auto history = json::parse_file("../history.json");
+TEST_F(CarTrackerTest, greedyRun) {
+  auto history = json::parse_file("data/greedyRun.json");
   auto commands = history["commands"];
   auto positions = history["positions"];
 

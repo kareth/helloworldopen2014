@@ -61,10 +61,6 @@ class CarTracker : public CarPredictor {
   }
 
   void Record(const Position& position) {
-    // Note: all variables with _ are old e.g.:
-    // velocity_ - previous velocity
-    // velocity  - new velocity
-
     // Calculate new values for state - velocity, angle, etc.
     double angle = position.angle();
     double velocity = velocity_;
@@ -98,6 +94,8 @@ class CarTracker : public CarPredictor {
     velocity_ = velocity;
     positions_.push_back(position);
 
+    state_ = CarState(position, velocity_, previous_angle_);
+
     LogState();
   }
 
@@ -113,6 +111,10 @@ class CarTracker : public CarPredictor {
   // TODO change to RecordCommand
   void RecordThrottle(double throttle) {
     throttle_ = throttle;
+  }
+
+  void RecordCommand(const Command& command) {
+    last_command_ = command;
   }
 
   void LogState() {
@@ -149,6 +151,11 @@ class CarTracker : public CarPredictor {
   }
 
   CarState Predict(const CarState& state, const Command& command) {
+    if (!IsReady()) {
+      std::cerr << "Cannot predict on not ready model" << std::endl;
+      return state;
+    }
+
     double velocity = velocity_model_.Predict(state.velocity(), command.get_throttle());
     double piece_distance = state.position().piece_distance() + velocity;
     int lap = state.position().lap();
@@ -157,10 +164,7 @@ class CarTracker : public CarPredictor {
     // Is it next piece?
     if (piece_distance > race_->track().LaneLength(piece, state.position().start_lane())) {
       piece_distance = piece_distance - race_->track().LaneLength(piece, state.position().start_lane());
-
       piece++;
-
-      // Is it next lap?
       if (piece >= race_->track().pieces().size()) {
         piece = 0;
         lap++;
@@ -235,17 +239,18 @@ class CarTracker : public CarPredictor {
     return result;
   }
 
+  // TODO deprecate
   const vector<Position>& positions() { return positions_; }
 
   const CarState& current_state() {
-    static CarState default_state;
-    if (states_.size() > 0) {
-    }
-    return default_state;
+    return state_;
   }
 
  private:
   std::ofstream stats_file_;
+
+  CarState state_;
+  Command last_command_;
 
   double velocity_ = 0;
   double angle_ = 0;
@@ -263,7 +268,6 @@ class CarTracker : public CarPredictor {
 
   // TODO deprecated, use states instead
   vector<Position> positions_;
-  vector<CarState> states_;
   double throttle_ = 0;
 };
 
