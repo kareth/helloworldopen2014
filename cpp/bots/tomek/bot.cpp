@@ -44,9 +44,9 @@ game::Command Bot::GetMove(
 
   if (my_position.piece() == 2) {
     if (my_position.start_lane() == 0) {
-      return Command(throttle, game::kSwitchRight);
+      return Command(game::kSwitchRight);
     } else {
-      return Command(throttle, game::kSwitchLeft);
+      return Command(game::kSwitchLeft);
     }
   }
 
