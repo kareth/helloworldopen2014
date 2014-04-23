@@ -37,8 +37,6 @@ TEST_F(CarTrackerTest, GreedyRun) {
   auto commands = history["commands"];
   auto positions = history["positions"];
 
-  CarState state;
-
   for (int i = 0; !car_tracker_->IsReady(); ++i) {
     Command command = ParseCommand(commands[i]);
     Position position;
@@ -48,6 +46,7 @@ TEST_F(CarTrackerTest, GreedyRun) {
     car_tracker_->RecordCommand(command);
   }
 
+  CarState state;
   const double kEps = 1e-9;
   for (int i = 0; i < positions.size() - 1; ++i) {
     Command command = ParseCommand(commands[i]);
@@ -92,6 +91,41 @@ TEST_F(CarTrackerTest, SwitchRun) {
       EXPECT_EQ(next_position.end_lane(), next.position().end_lane()) << next_position.DebugString() << std::endl << next.position().DebugString();
       EXPECT_EQ(next_position.lap(), next.position().lap()) << i;
     }
+  }
+}
+
+TEST_F(CarTrackerTest, SwitchRun2) {
+  const double kEps = 1e-9;
+  auto history = json::parse_file("data/switchRun.json");
+  auto commands = history["commands"];
+  auto positions = history["positions"];
+
+  // Train
+  int game_tick;
+  for (game_tick = 0; car_tracker_->current_state().position().lap() == 0; ++game_tick) {
+    Command command = ParseCommand(commands[game_tick]);
+    Position position;
+    position.ParseFromJson(positions[game_tick]);
+
+    car_tracker_->Record(position);
+    car_tracker_->RecordCommand(command);
+  }
+
+  // Predict everything until the next switch
+  CarState state = car_tracker_->current_state();
+  for (; state.position().piece() < 9; ++game_tick) {
+    Command command = ParseCommand(commands[game_tick - 1]);
+    Position position;
+    position.ParseFromJson(positions[game_tick]);
+
+    state = car_tracker_->Predict(state, command);
+
+    // EXPECT_NEAR(position.angle(), state.position().angle(), kEps);
+    // EXPECT_NEAR(position.piece_distance(), state.position().piece_distance(), kEps);
+    EXPECT_EQ(position.piece(), state.position().piece()) << position.DebugString() << std::endl << state.position().DebugString();
+    EXPECT_EQ(position.start_lane(), state.position().start_lane()) << position.DebugString() << std::endl << state.position().DebugString();
+    EXPECT_EQ(position.end_lane(), state.position().end_lane()) << position.DebugString() << std::endl << state.position().DebugString();
+    EXPECT_EQ(position.lap(), state.position().lap());
   }
 }
 

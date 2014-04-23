@@ -39,19 +39,19 @@ game::Command Bot::ComputeMove(const Position& position, int game_tick) {
   // }
   throttle = 0.50;
 
-  if (race_.track().pieces()[position.piece()].has_switch()) {
-    if (switch_ == Switch::kStay) {
-      if (position.end_lane() == 0) {
-        switch_ = Switch::kSwitchRight;
-        return Command(Switch::kSwitchRight);
-      } else {
-        switch_ = Switch::kSwitchLeft;
-        return Command(Switch::kSwitchLeft);
-      }
-    }
-  } else {
-    switch_ = Switch::kStay;
-  }
+  // if (race_.track().pieces()[position.piece()].has_switch()) {
+  //   if (switch_ == Switch::kStay) {
+  //     if (position.end_lane() == 0) {
+  //       switch_ = Switch::kSwitchRight;
+  //       return Command(Switch::kSwitchRight);
+  //     } else {
+  //       switch_ = Switch::kSwitchLeft;
+  //       return Command(Switch::kSwitchLeft);
+  //     }
+  //   }
+  // } else {
+  //   switch_ = Switch::kStay;
+  // }
 
   // if (my_position.piece() == 2) {
   //   if (my_position.start_lane() == 0) {
@@ -60,7 +60,13 @@ game::Command Bot::ComputeMove(const Position& position, int game_tick) {
   //     return Command(game::kSwitchLeft);
   //   }
   // }
-  return Command(0.5);
+  //
+
+  if (game_tick < 10) {
+    return Command(0.5);
+  }
+
+  return Command(Switch::kSwitchRight);
 }
 
 game::Command Bot::GetMove(

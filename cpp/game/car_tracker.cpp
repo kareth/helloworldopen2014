@@ -33,7 +33,7 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
   int piece = state.position().piece();
   int start_lane = state.position().start_lane();
   int end_lane = state.position().end_lane();
-  Switch switch_state = state.switch_state();
+  Switch switch_state = command.SwitchSet() ? command.get_switch() : state.switch_state();
 
   // Is it next piece?
   double lane_length = race_->track().LaneLength(state.position());
@@ -64,6 +64,7 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
       state.previous_angle(),
       state.velocity(),
       radius);
+  double throttle = command.ThrottleSet() ? command.throttle() : state.throttle();
 
   Position position;
   position.set_piece_distance(piece_distance);
@@ -73,7 +74,7 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
   position.set_end_lane(end_lane);
   position.set_angle(angle);
 
-  return CarState(position, velocity, state.position().angle());
+  return CarState(position, velocity, state.position().angle(), switch_state, throttle);
 }
 
 void CarTracker::Record(const Position& position) {
@@ -87,7 +88,7 @@ void CarTracker::Record(const Position& position) {
     velocity = position.piece_distance() - state_.position().piece_distance();
   } else {
     velocity = position.piece_distance() - state_.position().piece_distance() +
-      race_->track().LaneLength(state_.position().piece(), state_.position().start_lane());
+      race_->track().LaneLength(state_.position());
   }
 
   // Update models
@@ -98,9 +99,9 @@ void CarTracker::Record(const Position& position) {
       state_.velocity(), RadiusInPosition(state_.position()));
 
   if (last_command_.SwitchSet()) {
-    state_ = CarState(position, velocity, state_.position().angle(), last_command_.get_switch());
+    state_ = CarState(position, velocity, state_.position().angle(), last_command_.get_switch(), state_.throttle());
   } else {
-    state_ = CarState(position, velocity, state_.position().angle(), state_.switch_state());
+    state_ = CarState(position, velocity, state_.position().angle(), state_.switch_state(), last_command_.get_throttle());
   }
   LogState();
 }
