@@ -1,7 +1,7 @@
 #include "bots/stepping/bot.h"
 #include <cstring>
 
-DEFINE_int32(answer_time, 500, "Time limit for answer in ms");
+DEFINE_int32(answer_time, 10, "Time limit for answer in ms");
 
 using std::string;
 using std::vector;

@@ -1,16 +1,13 @@
-#ifndef CPP_BOTS_STEPPING_SWITCH_SCHEDULER_H_
-#define CPP_BOTS_STEPPING_SWITCH_SCHEDULER_H_
+#ifndef CPP_SCHEDULERS_SWITCH_SCHEDULER_H_
+#define CPP_SCHEDULERS_SWITCH_SCHEDULER_H_
 
-namespace bots {
-namespace stepping {
+namespace schedulers {
 
 class SwitchScheduler {
  public:
  private:
-
 };
 
-}  // namespace stepping
-}  // namespace bots
+}  // namespace schedulers
 
-#endif  // CPP_BOTS_STEPPING_SWITCH_SCHEDULER_H_
+#endif  // CPP_SCHEDULERS_SWITCH_SCHEDULER_H_
