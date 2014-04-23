@@ -31,6 +31,9 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
   double piece_distance = state.position().piece_distance() + velocity;
   int lap = state.position().lap();
   int piece = state.position().piece();
+  int start_lane = state.position().start_lane();
+  int end_lane = state.position().end_lane();
+  Switch switch_state = state.switch_state();
 
   // Is it next piece?
   if (piece_distance > race_->track().LaneLength(piece, state.position().start_lane())) {
@@ -39,6 +42,19 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
     if (piece >= race_->track().pieces().size()) {
       piece = 0;
       lap++;
+    }
+
+
+    if (race_->track().pieces()[piece].has_switch() && switch_state != Switch::kStay) {
+      // TODO Determine what is left and right lane
+      if (switch_state == Switch::kSwitchRight) {
+        end_lane = start_lane + 1;
+      } else {
+        end_lane = start_lane - 1;
+      }
+      switch_state = Switch::kStay;
+    } else {
+      start_lane = end_lane;
     }
   }
 
@@ -53,8 +69,8 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
   position.set_piece_distance(piece_distance);
   position.set_lap(lap);
   position.set_piece(piece);
-  position.set_start_lane(state.position().start_lane());
-  position.set_end_lane(state.position().end_lane());
+  position.set_start_lane(start_lane);
+  position.set_end_lane(end_lane);
   position.set_angle(angle);
 
   return CarState(position, velocity, state.position().angle());
@@ -81,7 +97,11 @@ void CarTracker::Record(const Position& position) {
       position.angle(), state_.position().angle(), state_.previous_angle(),
       state_.velocity(), RadiusInPosition(state_.position()));
 
-  state_ = CarState(position, velocity, state_.position().angle());
+  if (last_command_.SwitchSet()) {
+    state_ = CarState(position, velocity, state_.position().angle(), last_command_.get_switch());
+  } else {
+    state_ = CarState(position, velocity, state_.position().angle(), state_.switch_state());
+  }
   LogState();
 }
 

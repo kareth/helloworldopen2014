@@ -110,7 +110,7 @@ RawBot::msg_vector RawBot::OnGameStart(const jsoncons::json& msg) {
 }
 
 RawBot::msg_vector RawBot::OnCarPositions(const jsoncons::json& msg) {
-  std::cout << "OnCarPosition: " << jsoncons::pretty_print(msg) << std::endl;
+  // std::cout << "OnCarPosition: " << jsoncons::pretty_print(msg) << std::endl;
   const auto& data = msg.get("data", jsoncons::json(""));
   const int game_tick = msg.get("gameTick", jsoncons::json(0)).as_int();
   if (game_tick != last_game_tick_ + 1) {
@@ -134,11 +134,11 @@ RawBot::msg_vector RawBot::OnCarPositions(const jsoncons::json& msg) {
     history["commands"].add(command);
   }
 
-  if (command.size()) {
-    std::cout << "Returning command " << jsoncons::pretty_print(command[0]) << std::endl;
-  } else {
-    std::cout << "Empty command" << std::endl;
-  }
+  // if (command.size()) {
+  //   std::cout << "Returning command " << jsoncons::pretty_print(command[0]) << std::endl;
+  // } else {
+  //   std::cout << "Empty command" << std::endl;
+  // }
   return command;
 }
 

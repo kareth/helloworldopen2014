@@ -3,6 +3,8 @@
 
 #include <string>
 #include <iostream>
+#include <sstream>
+
 #include "jsoncons/json.hpp"
 
 namespace game {
@@ -29,6 +31,17 @@ class Position {
   void set_start_lane(double start_lane) { start_lane_ = start_lane; }
   void set_end_lane(double end_lane) { end_lane_ = end_lane; }
   void set_lap(double lap) { lap_ = lap; }
+
+  std::string DebugString() const {
+    std::stringstream ss;
+    ss << "piece: " << piece_index_ << std::endl;
+    ss << "in_piece_distance: " << piece_distance_ << std::endl;
+    ss << "angle: " << angle_ << std::endl;
+    ss << "start_lane: " << start_lane_ << std::endl;
+    ss << "end_lane: " << end_lane_ << std::endl;
+    ss << "lap: " << lap_ << std::endl;
+    return ss.str();
+  }
 
  private:
   double angle_ = 0;

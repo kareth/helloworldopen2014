@@ -6,6 +6,7 @@ using game::Position;
 using game::CarTracker;
 using game::Race;
 using game::Command;
+using game::Switch;
 
 namespace bots {
 namespace tomek {
@@ -37,11 +38,19 @@ game::Command Bot::ComputeMove(const Position& position, int game_tick) {
   //   count_++;
   // }
   throttle = 0.50;
-  if (game_tick == 0) {
-    return Command(game::kSwitchRight);
-  }
-  if (game_tick == 1) {
-    return Command(game::kSwitchLeft);
+
+  if (race_.track().pieces()[position.piece()].has_switch()) {
+    if (switch_ == Switch::kStay) {
+      if (position.end_lane() == 0) {
+        switch_ = Switch::kSwitchRight;
+        return Command(Switch::kSwitchRight);
+      } else {
+        switch_ = Switch::kSwitchLeft;
+        return Command(Switch::kSwitchLeft);
+      }
+    }
+  } else {
+    switch_ = Switch::kStay;
   }
 
   // if (my_position.piece() == 2) {

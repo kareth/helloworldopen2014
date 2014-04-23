@@ -45,9 +45,9 @@ jsoncons::json make_throttle(double throttle, int game_tick) {
 }
 
 jsoncons::json make_switch(game::Switch s) {
-  if (s == game::kSwitchLeft)
+  if (s == game::Switch::kSwitchLeft)
     return make_request("switchLane", "Left");
-  else if (s == game::kSwitchRight)
+  else if (s == game::Switch::kSwitchRight)
     return make_request("switchLane", "Right");
   else
     return make_ping();

@@ -42,6 +42,7 @@ class Bot : public bots::BotInterface {
   game::Race race_;
   std::string color_;
 
+  game::Switch switch_ = game::Switch::kStay;
   int count_ = 0;
 
   // TODO(tomek) create trackers for other cars?

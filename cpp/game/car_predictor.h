@@ -25,13 +25,18 @@ class CarState {
   CarState(const Position& position, double velocity, double previous_angle)
       : position_(position), velocity_(velocity), previous_angle_(previous_angle) {
   }
+  CarState(const Position& position, double velocity, double previous_angle, Switch switch_state)
+      : position_(position), velocity_(velocity), previous_angle_(previous_angle), switch_(switch_state) {
+  }
 
   const Position& position() const { return position_; }
   double velocity() const { return velocity_; }
   double previous_angle() const { return previous_angle_; }
+  Switch switch_state() const { return switch_; }
 
  private:
   Position position_;
+  Switch switch_ = Switch::kStay;
   double velocity_ = 0.0;
   double previous_angle_ = 0.0;
 };
