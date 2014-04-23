@@ -18,7 +18,7 @@ function build_without_cmake() {
     main.cpp \
     utils/protocol.cpp utils/connection.cpp utils/game_visualizer.cpp \
     bots/raw_bot.cpp bots/tomek/bot.cpp bots/piotr/bot.cpp bots/greedy/bot.cpp bots/basic/bot.cpp bots/stepping/bot.cpp \
-    game/car.cpp game/command.cpp game/gauss.cpp game/position.cpp game/race.cpp game/result.cpp game/simplex.cpp game/track.cpp \
+    game/car.cpp game/command.cpp game/gauss.cpp game/position.cpp game/race.cpp game/result.cpp game/simplex.cpp game/track.cpp game/turbo.cpp \
     gflags/gflags.cc gflags/gflags_reporting.cc gflags/gflags_completions.cc \
     physics/speed_tracker.cpp
 }
