@@ -22,7 +22,11 @@ class Track {
   bool IsLastStraight(const Position& position) const;
   double Distance(const Position& position, const Position& previous) const;
   double LaneRadius(int piece, int lane) const;
+
+  // TODO deprecate, use below version instead.
   double LaneLength(int piece, int lane) const;
+
+  double LaneLength(const Position& position) const;
 
   const string& id() const { return id_; }
   const string& name() const { return name_; }
