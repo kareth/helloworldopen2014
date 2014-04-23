@@ -1,5 +1,6 @@
 set(GAME_SOURCES
   car.cpp
+  car_tracker.cpp
   command.cpp
   gauss.cpp
   position.cpp
