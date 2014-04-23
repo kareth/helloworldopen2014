@@ -13,7 +13,7 @@ BinaryThrottleScheduler::BinaryThrottleScheduler(const game::Race& race,
 
  int size = 16;
 
-  for (; time_limit / 2 > 300; time_limit /= 2)
+  for (; time_limit / 2 > 300 && size < 20; time_limit /= 2)
     size++;
   for (; time_limit < 300; time_limit *= 2)
     size--;

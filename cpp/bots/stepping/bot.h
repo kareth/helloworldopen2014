@@ -13,7 +13,7 @@
 
 #include "game/car_tracker.h"
 #include "game/turbo.h"
-//#include "schedulers/turbo_scheduler.h"
+#include "schedulers/greedy_turbo_scheduler.h"
 //#include "schedulers/switch_scheduler.h"
 #include "schedulers/binary_throttle_scheduler.h"
 
@@ -42,8 +42,6 @@ class Bot : public bots::BotInterface {
   void TurboEnded(const std::string& color) override;
 
  private:
-  bool CanUseTurbo(const game::Position& position);
-
   game::Race race_;
 
   std::string color_;
@@ -52,14 +50,10 @@ class Bot : public bots::BotInterface {
 
   std::unique_ptr<game::CarTracker> car_tracker_;
 
-  bool turbo_available_ = false;
-  game::Turbo turbo_;
-  int turbo_on_ = 0;
-
   int switched_ = -1;
 
-  //TurboScheduler turbo_scheduler_;
   //SwitchScheduler switch_scheduler_;
+  std::unique_ptr<schedulers::TurboScheduler> turbo_scheduler_;
   std::unique_ptr<schedulers::ThrottleScheduler> throttle_scheduler_;
 };
 

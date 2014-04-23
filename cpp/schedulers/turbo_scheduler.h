@@ -1,15 +1,30 @@
-#ifndef CPP_BOTS_STEPPING_TURBO_SCHEDULER_H_
-#define CPP_BOTS_STEPPING_TURBO_SCHEDULER_H_
+#ifndef CPP_SCHEDULERS_TURBO_SCHEDULER_H_
+#define CPP_SCHEDULERS_TURBO_SCHEDULER_H_
 
-namespace bots {
-namespace stepping {
+#include "schedulers/strategy.h"
+#include "game/turbo.h"
+#include "game/car_tracker.h"
+
+namespace schedulers {
 
 class TurboScheduler {
  public:
- private:
+   // Returns if should we use turbo
+   virtual bool ShouldFireTurbo() = 0;
+
+   // Makes decision on turbo usage
+   virtual void Schedule(const game::CarState& state) = 0;
+
+   // Prepare for overtake
+   virtual void Overtake(const string& color) = 0;
+
+   virtual void set_strategy(const Strategy& strategy) = 0;
+
+   virtual void NewTurbo(const game::Turbo& turbo) = 0;
+
+   virtual void TurboUsed() = 0;
 };
 
-}  // namespace stepping
-}  // namespace bots
+}  // namespace schedulers
 
-#endif  // CPP_BOTS_STEPPING_TURBO_SCHEDULER_H_
+#endif  // CPP_SCHEDULERS_TURBO_SCHEDULER_H_
