@@ -13,6 +13,9 @@
 
 #include "game/car_tracker.h"
 #include "game/turbo.h"
+#include "schedulers/greedy_turbo_scheduler.h"
+//#include "schedulers/switch_scheduler.h"
+#include "schedulers/binary_throttle_scheduler.h"
 
 namespace bots {
 namespace stepping {
@@ -39,15 +42,6 @@ class Bot : public bots::BotInterface {
   void TurboEnded(const std::string& color) override;
 
  private:
-  double Optimize(const game::CarState& state);
-  int FindBestMask(const game::CarState& state, const std::vector<int>& groups, double* distance);
-  bool CheckMask(int mask, const game::CarState& state, const std::vector<int>& groups, double* distance);
-  bool CanUseTurbo(const game::Position& position);
-  bool ShouldChangeLane(const game::CarState& state, game::Switch* s);
-
-  int NextSwitch(int piece);
-  double LaneLength(const game::Position& position, int lane, int from, int to);
-
   game::Race race_;
 
   std::string color_;
@@ -56,11 +50,11 @@ class Bot : public bots::BotInterface {
 
   std::unique_ptr<game::CarTracker> car_tracker_;
 
-  bool turbo_available_ = false;
-  game::Turbo turbo_;
-  int turbo_on_ = 0;
-
   int switched_ = -1;
+
+  //SwitchScheduler switch_scheduler_;
+  std::unique_ptr<schedulers::TurboScheduler> turbo_scheduler_;
+  std::unique_ptr<schedulers::ThrottleScheduler> throttle_scheduler_;
 };
 
 }  // namespace stepping

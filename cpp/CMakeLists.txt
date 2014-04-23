@@ -32,6 +32,7 @@ add_subdirectory(bots)
 add_subdirectory(game)
 add_subdirectory(utils)
 add_subdirectory(physics)
+add_subdirectory(schedulers)
 
 add_executable(bot main.cpp)
 target_link_libraries(bot
@@ -46,6 +47,7 @@ target_link_libraries(bot
   physics
   utils
   gflags
+  schedulers
 )
 
 add_style_check_target(bot main.cpp HWO)

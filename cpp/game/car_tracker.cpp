@@ -8,7 +8,8 @@ CarTracker::CarTracker(const Race* race) : race_(race) {
 
   if (race_->track().id() == "germany" ||
       race_->track().id() == "keimola" ||
-      race_->track().id() == "usa") {
+      race_->track().id() == "usa" ||
+      race_->track().id() == "france") {
     drift_model_[0].reset(new DriftModel(0));
     drift_model_[0]->AddModel({1.9, -0.9, -0.00125, 0});
     drift_model_[1].reset(new DriftModel(1));
@@ -104,6 +105,10 @@ void CarTracker::Record(const Position& position) {
     state_ = CarState(position, velocity, state_.position().angle(), state_.switch_state(), last_command_.get_throttle());
   }
   LogState();
+}
+
+bool CarTracker::IsSafe(const CarState& state, const Command& command) {
+  return true;
 }
 
 bool CarTracker::IsReady() const {
