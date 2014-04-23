@@ -156,7 +156,7 @@ int Bot::FindBestMask(const CarState& state, const vector<int>& groups, double* 
 // @returns false if car crashes
 // @param distance total distance travelled
 bool Bot::CheckMask(int mask, const CarState& state, const vector<int>& groups, double* distance) {
-  vector<CarState> states {state};
+  vector<CarState> states {state, state};
   int now = 1;
   *distance = 0;
 
