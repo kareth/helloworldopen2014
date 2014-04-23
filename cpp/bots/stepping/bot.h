@@ -34,7 +34,9 @@ class Bot : public bots::BotInterface {
   void CarCrashed(const std::string& color) override;
   void CarSpawned(const std::string& color) override;
 
-  void OnTurbo(const game::Turbo& turbo);
+  void OnTurbo(const game::Turbo& turbo) override;
+  void TurboStarted(const std::string& color) override;
+  void TurboEnded(const std::string& color) override;
 
  private:
   double Optimize(const game::Position& previous, const game::Position& current);

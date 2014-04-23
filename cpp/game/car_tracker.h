@@ -46,7 +46,9 @@ class CarTracker : public CarPredictor {
     stats_file_.open ("bin/stats.csv");
     stats_file_ << "piece_index,start_lane,end_lane,radius,in_piece_distance,angle,velocity,throttle" << std::endl;
 
-    if (race_->track().id() == "germany" || race_->track().id() == "keimola") {
+    if (race_->track().id() == "germany" ||
+        race_->track().id() == "keimola" ||
+        race_->track().id() == "usa") {
       drift_model_[0].reset(new DriftModel(0));
       drift_model_[0]->AddModel({1.9, -0.9, -0.00125, 0});
       drift_model_[1].reset(new DriftModel(1));
@@ -191,6 +193,7 @@ class CarTracker : public CarPredictor {
 
   // TODO deprecated
   Position Predict(const Position& position, const Position& previous_position, double throttle, bool change_lane) {
+    // TODO dont require drift model
     if (!GetDriftModel(position)->IsReady() ||
         !velocity_model_.IsReady())
       return position;

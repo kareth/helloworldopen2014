@@ -43,6 +43,13 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
     return Command(game::TurboToggle::kToggleOn);
   }
 
+
+  /*game::Switch s;
+  if (ShouldChangeLane(&s)) {
+    switched_ = true;
+    return Command(s);
+  }*/
+
   if (turbo_on_ > 0) {
     // We dont want to spoil model before its done
     turbo_on_--;
@@ -57,7 +64,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 double Bot::Optimize(const Position& previous, const Position& current) {
   // Length of time units in 0/1 search
   vector<int> groups
-      { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+      { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
   //    1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19  <-- counter
 
   // Optimal
@@ -88,7 +95,7 @@ double Bot::Optimize(const Position& previous, const Position& current) {
   // Check (0, 1)
   double l = 0, r = 1, m;
 
-  while (r - l > 3e-1) {
+  while (r - l > 5e-2) {
     m = (l + r) / 2.0;
 
     Position next = car_tracker_->Predict(current, previous, m, 0);
@@ -105,8 +112,7 @@ double Bot::Optimize(const Position& previous, const Position& current) {
         best_mask = mask;
       }
     }
-  }
-  */
+  }*/
 
   // Check fullspeed
   next = car_tracker_->Predict(current, previous, 1, 0);
@@ -177,8 +183,8 @@ bool Bot::CanUseTurbo(const Position& position) {
   // TODO hardcode
   //if (race_.track().id() == "keimola" && position.piece() == 36)
   //  return true;
-  // if (position.lap() == 2 && race_.track().IsLastStraight(position))
-  //  return true;
+  if (position.lap() == 2 && race_.track().IsLastStraight(position))
+    return true;
 
   return false;
 }
@@ -231,6 +237,13 @@ void Bot::CarSpawned(const string& color)  {
 void Bot::OnTurbo(const game::Turbo& turbo) {
   turbo_available_ = true;
   turbo_ = turbo;
+}
+
+
+void Bot::TurboStarted(const std::string& color) {
+}
+
+void Bot::TurboEnded(const std::string& color) {
 }
 
 }  // namespace stepping
