@@ -52,13 +52,12 @@ TEST_F(CarTrackerTest, greedyRun) {
     state = car_tracker_->Predict(state, command);
 
     EXPECT_NEAR(position.angle(), state.position().angle(), kEps);
-    EXPECT_DOUBLE_EQ(position.piece(), state.position().piece());
     EXPECT_NEAR(position.piece_distance(), state.position().piece_distance(), kEps);
-    EXPECT_DOUBLE_EQ(position.start_lane(), state.position().start_lane());
-    EXPECT_DOUBLE_EQ(position.end_lane(), state.position().end_lane());
-    EXPECT_DOUBLE_EQ(position.lap(), state.position().lap());
+    EXPECT_EQ(position.piece(), state.position().piece());
+    EXPECT_EQ(position.start_lane(), state.position().start_lane());
+    EXPECT_EQ(position.end_lane(), state.position().end_lane());
+    EXPECT_EQ(position.lap(), state.position().lap());
   }
-
 }
 
 class VelocityModelTest : public testing::Test {
