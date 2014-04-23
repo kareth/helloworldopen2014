@@ -1,6 +1,8 @@
 #include "bots/stepping/bot.h"
 #include <cstring>
 
+DEFINE_int32(answer_time, 500, "Time limit for answer in ms");
+
 using std::string;
 using std::vector;
 using std::map;
@@ -76,7 +78,7 @@ void Bot::NewRace(const Race& race) {
   race_ = race;
   car_tracker_.reset(new CarTracker(&race_));
   throttle_scheduler_.reset(
-      new schedulers::BinaryThrottleScheduler(race_, *car_tracker_.get(), 300));
+      new schedulers::BinaryThrottleScheduler(race_, *car_tracker_.get(), FLAGS_answer_time));
   turbo_scheduler_.reset(
       new schedulers::GreedyTurboScheduler(race_, *car_tracker_.get()));
 }

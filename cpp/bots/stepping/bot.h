@@ -17,6 +17,10 @@
 //#include "schedulers/switch_scheduler.h"
 #include "schedulers/binary_throttle_scheduler.h"
 
+#include "gflags/gflags.h"
+
+DECLARE_int32(answer_time);
+
 namespace bots {
 namespace stepping {
 
