@@ -1,4 +1,4 @@
-#include "schedulers/switch_scheduler.h"
+#include "schedulers/shortest_path_switch_scheduler.h"
 
 namespace bots {
 namespace stepping {
