@@ -16,22 +16,24 @@ class CarPredictor {
 
 class CarState {
  public:
+  // Creates the empty state (from start position).
   CarState() {}
+
   explicit CarState(const Position& position)
       : position_(position) {
   }
-  CarState(const Position& position, double velocity, double angular_velocity)
-      : position_(position), velocity_(velocity), angular_velocity_(angular_velocity) {
+  CarState(const Position& position, double velocity, double previous_angle)
+      : position_(position), velocity_(velocity), previous_angle_(previous_angle) {
   }
 
   const Position& position() const { return position_; }
-  const double velocity() const { return velocity_; }
-  const double angular_velocity() const { return angular_velocity_; }
+  double velocity() const { return velocity_; }
+  double previuos_angle() const { return previous_angle_; }
 
  private:
   Position position_;
   double velocity_ = 0.0;
-  double angular_velocity_ = 0.0;
+  double previous_angle_ = 0.0;
 };
 
 }  // namespace game
