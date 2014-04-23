@@ -34,7 +34,7 @@ class Bot : public bots::BotInterface {
   void CarCrashed(const std::string& color) override;
   void CarSpawned(const std::string& color) override {}
 
-  void OnTurbo(const game::Turbo& turbo) {}
+  void OnTurbo(const game::Turbo& turbo);
 
  private:
   game::Command ComputeMove(const game::Position& position, int game_tick);
@@ -44,6 +44,8 @@ class Bot : public bots::BotInterface {
 
   game::Switch switch_ = game::Switch::kStay;
   int count_ = 0;
+
+  bool turbo_ = false;
 
   // TODO(tomek) create trackers for other cars?
   std::unique_ptr<game::CarTracker> car_tracker_;

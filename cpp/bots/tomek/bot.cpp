@@ -62,9 +62,7 @@ game::Command Bot::ComputeMove(const Position& position, int game_tick) {
   // }
   //
 
-  if (game_tick < 10) {
-    return Command(0.5);
-  }
+  return Command(0.5);
 
   return Command(Switch::kSwitchRight);
 }
@@ -91,6 +89,10 @@ void Bot::NewRace(const Race& race) {
 
 void Bot::CarCrashed(const std::string& color)  {
   car_tracker_->RecordCarCrash();
+}
+
+void Bot::OnTurbo(const game::Turbo& turbo) {
+  car_tracker_->RecordTurboAvailable(turbo);
 }
 
 }  // namespace bots

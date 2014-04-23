@@ -52,15 +52,17 @@ class CarTracker : public CarPredictor {
     last_command_ = command;
   }
 
+  void RecordCarCrash() {
+    crash_model_.RecordCarCrash(state_.position().angle());
+    stats_file_ << "CRASH" << std::endl;
+  }
+
+  void RecordTurboAvailable(const game::Turbo& turbo);
+
+  // Prediction API
   CarState Predict(const CarState& state, const Command& command);
 
   bool IsSafe(const CarState& state, const Command& command);
-
-  void RecordCarCrash() {
-    crash_model_.RecordCarCrash(state_.position().angle());
-
-    stats_file_ << "CRASH" << std::endl;
-  }
 
   bool IsReady() const;
 

@@ -35,6 +35,11 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
   int start_lane = state.position().start_lane();
   int end_lane = state.position().end_lane();
   Switch switch_state = command.SwitchSet() ? command.get_switch() : state.switch_state();
+  TurboState turbo_state = state.turbo_state();
+  if (command.TurboSet()) {
+    turbo_state.Enable();
+  }
+  turbo_state.Decrement();
 
   // Is it next piece?
   double lane_length = race_->track().LaneLength(state.position());
@@ -75,7 +80,7 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
   position.set_end_lane(end_lane);
   position.set_angle(angle);
 
-  return CarState(position, velocity, state.position().angle(), switch_state, throttle);
+  return CarState(position, velocity, state.position().angle(), switch_state, throttle, turbo_state);
 }
 
 void CarTracker::Record(const Position& position) {
@@ -99,11 +104,15 @@ void CarTracker::Record(const Position& position) {
       position.angle(), state_.position().angle(), state_.previous_angle(),
       state_.velocity(), RadiusInPosition(state_.position()));
 
-  if (last_command_.SwitchSet()) {
-    state_ = CarState(position, velocity, state_.position().angle(), last_command_.get_switch(), state_.throttle());
-  } else {
-    state_ = CarState(position, velocity, state_.position().angle(), state_.switch_state(), last_command_.get_throttle());
+  Switch switch_state = last_command_.SwitchSet() ? last_command_.get_switch() : state_.switch_state();
+  double throttle = last_command_.ThrottleSet() ? last_command_.throttle() : state_.throttle();
+  TurboState turbo_state = state_.turbo_state();
+  if (last_command_.TurboSet()) {
+    turbo_state.Enable();
   }
+  turbo_state.Decrement();
+
+  state_ = CarState(position, velocity, state_.position().angle(), switch_state, throttle, turbo_state);
   LogState();
 }
 
@@ -140,6 +149,10 @@ void CarTracker::LogState() {
     << state_.position().angle() << ","
     << state_.velocity() << ","
     << last_command_.throttle() << std::endl;
+}
+
+void CarTracker::RecordTurboAvailable(const game::Turbo& turbo) {
+  state_.AddNewTurbo(turbo);
 }
 
 }  // namespace game

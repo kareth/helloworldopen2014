@@ -9,14 +9,17 @@ namespace game {
 
 class Turbo {
  public:
+  Turbo() {}
+  Turbo(int duration, double factor);
   void ParseFromJson(const jsoncons::json& data);
 
+  // Number of ticks turbo can be on.
   int duration() const { return ticks_; }
-  int factor() const { return factor_; }
+  double factor() const { return factor_; }
 
  private:
-  double factor_;
-  int ticks_;
+  double factor_ = 1.0;
+  int ticks_ = 0;
 };
 
 }  // namespace game
