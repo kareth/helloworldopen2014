@@ -17,7 +17,7 @@ Bot::Bot() {
 Bot::~Bot() {
 }
 
-game::Command Bot::ComputeMove(const Position& position) {
+game::Command Bot::ComputeMove(const Position& position, int game_tick) {
   double throttle = 1;
   // throttle = 0.50 + double(rand() % 22)/99.0;
   // if (car_tracker_->angle() < 1) {
@@ -37,6 +37,12 @@ game::Command Bot::ComputeMove(const Position& position) {
   //   count_++;
   // }
   throttle = 0.50;
+  if (game_tick == 0) {
+    return Command(game::kSwitchRight);
+  }
+  if (game_tick == 1) {
+    return Command(game::kSwitchLeft);
+  }
 
   // if (my_position.piece() == 2) {
   //   if (my_position.start_lane() == 0) {
@@ -53,7 +59,7 @@ game::Command Bot::GetMove(
   const auto& my_position = positions.find(color_)->second;
   car_tracker_->Record(my_position);
 
-  Command command = ComputeMove(my_position);
+  Command command = ComputeMove(my_position, game_tick);
 
   car_tracker_->RecordCommand(command);
   return Command(command);

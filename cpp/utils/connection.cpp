@@ -31,6 +31,7 @@ void Connection::send_requests(const std::vector<jsoncons::json>& msgs) {
   boost::asio::streambuf request_buf;
   std::ostream s(&request_buf);
   for (const auto& m : msgs) {
+    std::cout << "Responded with: " << pretty_print(m);
     m.to_stream(s, format);
     s << std::endl;
   }

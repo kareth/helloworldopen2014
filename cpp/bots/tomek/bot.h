@@ -37,7 +37,7 @@ class Bot : public bots::BotInterface {
   void OnTurbo(const game::Turbo& turbo) {}
 
  private:
-  game::Command ComputeMove(const game::Position& position);
+  game::Command ComputeMove(const game::Position& position, int game_tick);
 
   game::Race race_;
   std::string color_;
