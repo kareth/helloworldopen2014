@@ -36,14 +36,14 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
   Switch switch_state = state.switch_state();
 
   // Is it next piece?
-  if (piece_distance > race_->track().LaneLength(piece, state.position().start_lane())) {
-    piece_distance = piece_distance - race_->track().LaneLength(piece, state.position().start_lane());
+  double lane_length = race_->track().LaneLength(state.position());
+  if (piece_distance > lane_length) {
+    piece_distance = piece_distance - lane_length;
     piece++;
     if (piece >= race_->track().pieces().size()) {
       piece = 0;
       lap++;
     }
-
 
     if (race_->track().pieces()[piece].has_switch() && switch_state != Switch::kStay) {
       // TODO Determine what is left and right lane

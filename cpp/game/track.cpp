@@ -82,7 +82,7 @@ double Track::LaneLength(const Position& position) const {
     // TODO this is just approximation. Add learning.
 
     double width = fabs(lanes_[position.start_lane()].distance_from_center() - lanes_[position.end_lane()].distance_from_center());
-    return std::sqrt(width * width + piece.length() * piece.length());
+    return 1.000783334 * std::sqrt(width * width + piece.length() * piece.length());
   }
 
   if (position.start_lane() == position.end_lane()) {
@@ -97,7 +97,7 @@ double Track::LaneLength(const Position& position) const {
   // TODO this is just approximation. Add learning.
   double radius1 = LaneRadius(position.piece(), position.start_lane());
   double radius2 = LaneRadius(position.piece(), position.end_lane());
-  return M_PI * radius1 * (fabs(piece.angle()) / 360.0) + M_PI * radius2 * (fabs(piece.angle()) / 360.0);
+  return 1.05 * M_PI * radius1 * (fabs(piece.angle()) / 360.0) + M_PI * radius2 * (fabs(piece.angle()) / 360.0);
 }
 
 double Track::Distance(const Position& position, const Position& previous) const {

@@ -79,16 +79,12 @@ TEST_F(LaneLengthTest, StraightLaneSwitch) {
 }
 
 TEST_F(LaneLengthTest, TurnInnerLane) {
-  EXPECT_NEAR(100, track_.pieces()[4].radius(), kEps);
-
   Position position;
   position.set_piece(4);
   EXPECT_NEAR(86.393797973719316, track_.LaneLength(position), kEps);
 }
 
 TEST_F(LaneLengthTest, TurnOuterLane) {
-  EXPECT_NEAR(100, track_.pieces()[4].radius(), kEps);
-
   Position position;
   position.set_piece(4);
   position.set_start_lane(1);
@@ -97,24 +93,36 @@ TEST_F(LaneLengthTest, TurnOuterLane) {
 }
 
 TEST_F(LaneLengthTest, TurnSwitchLane1) {
-  EXPECT_NEAR(100, track_.pieces()[4].radius(), kEps);
-
   Position position;
   position.set_piece(29);
   position.set_start_lane(1);
   position.set_end_lane(0);
-  EXPECT_NEAR(81.028059516719, track_.LaneLength(position), 3);
+  EXPECT_NEAR(81.028059516719, track_.LaneLength(position), 1);
 }
 
 // NOTE: There is difference when switching from 0 -> 1 and 1 -> 0.
 TEST_F(LaneLengthTest, TurnSwitchLane2) {
-  EXPECT_NEAR(100, track_.pieces()[4].radius(), kEps);
-
   Position position;
   position.set_piece(29);
   position.set_start_lane(0);
   position.set_end_lane(1);
-  EXPECT_NEAR(81.029484142008, track_.LaneLength(position), 3);
+  EXPECT_NEAR(81.029484142008, track_.LaneLength(position), 1);
+}
+
+TEST_F(LaneLengthTest, TurnSwitchLane3) {
+  Position position;
+  position.set_piece(8);
+  position.set_start_lane(0);
+  position.set_end_lane(1);
+  EXPECT_NEAR(81.053904159305, track_.LaneLength(position), 1);
+}
+
+TEST_F(LaneLengthTest, TurnSwitchLane4) {
+  Position position;
+  position.set_piece(8);
+  position.set_start_lane(1);
+  position.set_end_lane(0);
+  EXPECT_NEAR(81.054652206375, track_.LaneLength(position), 1);
 }
 
 }  // anonymous namespace
