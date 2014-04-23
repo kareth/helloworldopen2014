@@ -26,14 +26,6 @@ class RawBot {
  private:
   typedef std::function<msg_vector(RawBot*, const jsoncons::json&)> action_fun;
 
-  enum State {
-    kWaitingForJoin = 0,
-    kJoin = 1,
-    kYourCar = 2,
-    kGameInit = 3,
-    kGameStart = 4,
-  };
-
   msg_vector CommandToMsg(const game::Command& command, int game_tick);
 
   msg_vector OnJoin(const jsoncons::json& data);
@@ -63,9 +55,6 @@ class RawBot {
   const std::map<std::string, action_fun> action_map_;
   utils::GameVisualizer visualizer_;
 
-  void TransitionState(State from, State to);
-
-  State state_ = State::kWaitingForJoin;
   int last_game_tick_ = -1;
   jsoncons::json history;
 };

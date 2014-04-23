@@ -73,15 +73,12 @@ RawBot::msg_vector RawBot::React(const jsoncons::json& msg) {
 }
 
 RawBot::msg_vector RawBot::OnJoin(const jsoncons::json& msg) {
-  TransitionState(State::kWaitingForJoin, State::kJoin);
-
   std::cout << "Server: Join" << std::endl;
   bot_->JoinedGame();
   return ping();
 }
 
 RawBot::msg_vector RawBot::OnYourCar(const jsoncons::json& msg) {
-  TransitionState(State::kJoin, State::kYourCar);
   const auto& data = msg.get("data", jsoncons::json(""));
 
   const auto& color = data["color"].as_string();
@@ -92,7 +89,6 @@ RawBot::msg_vector RawBot::OnYourCar(const jsoncons::json& msg) {
 }
 
 RawBot::msg_vector RawBot::OnGameInit(const jsoncons::json& msg) {
-  TransitionState(State::kYourCar, State::kGameInit);
   const auto& data = msg.get("data", jsoncons::json(""));
 
   std::cout << "Server: Game Init" << std::endl;
@@ -106,8 +102,7 @@ RawBot::msg_vector RawBot::OnGameInit(const jsoncons::json& msg) {
 }
 
 RawBot::msg_vector RawBot::OnGameStart(const jsoncons::json& msg) {
-  TransitionState(State::kGameInit, State::kGameStart);
-
+  game_tick_ = -1;
   std::cout << "Server: Game start" << std::endl;
 
   visualizer_.GameStart();
@@ -169,6 +164,7 @@ RawBot::msg_vector RawBot::OnGameEnd(const jsoncons::json& msg) {
   std::cout << "Server: Game end" << std::endl;
 
   bot_->GameEnd(/* results */);
+  game_tick_ = -1;
   return ping();
 }
 
@@ -219,13 +215,6 @@ std::string RawBot::ColorPrint(const std::string& color) const {
     return colors[color] + color + colors["normal"];
   else
     return color;
-}
-
-void RawBot::TransitionState(State from, State to) {
-  if (state_ != from)
-    std::cerr << "Incorrect state. state_=" << state_ << " from=" << from << " to=" << to << std::endl;
-
-  state_ = to;
 }
 
 RawBot::msg_vector RawBot::OnTurboAvailable(const jsoncons::json& msg) {
