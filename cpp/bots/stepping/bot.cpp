@@ -31,6 +31,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
   }
 
   throttle_scheduler_->Schedule(state);
+  switch_scheduler_->Schedule(state);
   turbo_scheduler_->Schedule(state);
 
   Command command;
@@ -38,6 +39,10 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
   if (turbo_scheduler_->ShouldFireTurbo()) {
     command = Command(game::TurboToggle::kToggleOn);
     turbo_scheduler_->TurboUsed();
+    printf("YABADABADUUUU\n");
+  } else if (switch_scheduler_->ShouldSwitch()) {
+    command = Command(switch_scheduler_->SwitchDirection());
+    switch_scheduler_->Switched();
   } else {
     command = Command(throttle_scheduler_->throttle());
   }
@@ -81,6 +86,8 @@ void Bot::NewRace(const Race& race) {
       new schedulers::BinaryThrottleScheduler(race_, *car_tracker_.get(), FLAGS_answer_time));
   turbo_scheduler_.reset(
       new schedulers::GreedyTurboScheduler(race_, *car_tracker_.get()));
+  switch_scheduler_.reset(
+      new schedulers::ShortestPathSwitchScheduler(race_, *car_tracker_.get()));
 }
 
 void Bot::GameStarted() {

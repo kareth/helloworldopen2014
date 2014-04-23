@@ -65,6 +65,8 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
   }
 
   double radius = race_->track().LaneRadius(state.position().piece(), state.position().start_lane());
+  // TODO
+  if (state.position().start_lane() != state.position().end_lane()) radius = radius * 0.9;
   double angle = GetDriftModel(state.position())->Predict(
       state.position().angle(),
       state.previous_angle(),

@@ -1,24 +1,37 @@
 #include "schedulers/shortest_path_switch_scheduler.h"
 
-namespace bots {
-namespace stepping {
+// TODO refactor whole code here, its copypaste
 
-  /*
-// TODO refactor
-bool ShouldChangeLane(const game::CarState& state, game::Switch* s) {
+using game::Position;
+
+namespace schedulers {
+
+ShortestPathSwitchScheduler::ShortestPathSwitchScheduler(
+    const game::Race& race, game::CarTracker& car_tracker)
+  : race_(race), car_tracker_(car_tracker), should_switch_now_(false),
+    target_switch_(-1) {
+  //ComputeShortestPaths();
+}
+
+// Prepares for overtake
+void ShortestPathSwitchScheduler::Overtake(const string& color) {
+  printf("Feature not implemented\n");
+}
+
+// Updates the state and calculates next state
+// TODO switch time
+void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
+  if (state.position().piece() == target_switch_)
+    target_switch_ = -1;
+
+  // already scheduled
+  if (target_switch_ != -1 || should_switch_now_ == true)
+    return;
+
+  // TODO its greedy :D
   const Position& position = state.position();
-  // TODO its just just basic greedy choosing
-  if (position.piece() == switched_)
-    switched_ = -1;
-
-  if (switched_ != -1)
-    return false;
 
   int from = NextSwitch(position.piece());
-
-  if (car_tracker_->Predict(state, Command(1)).position().piece() != from)
-    return false;
-
   int to = NextSwitch(from);
 
   double current = LaneLength(position, position.end_lane(), from, to);
@@ -31,20 +44,18 @@ bool ShouldChangeLane(const game::CarState& state, game::Switch* s) {
     right = LaneLength(position, position.end_lane() + 1, from, to);
 
   if (left < current && left < right) {
-    *s = game::Switch::kSwitchLeft;
-    switched_ = from;
-    return true;
+    scheduled_switch_ = game::Switch::kSwitchLeft;
+    target_switch_ = from;
+    should_switch_now_ = true;
+  } else if (right < current && right <= left) {
+    scheduled_switch_ = game::Switch::kSwitchRight;
+    target_switch_ = from;
+    should_switch_now_ = true;
   }
-  else if (right < current && right <= left) {
-    *s = game::Switch::kSwitchRight;
-    switched_ = from;
-    return true;
-  }
-  return false;
 }
 
 // From -> To excliding both
-double LaneLength(const game::Position& position, int lane, int from, int to) {
+double ShortestPathSwitchScheduler::LaneLength(const game::Position& position, int lane, int from, int to) {
   double distance = 0;
   for (int p = from + 1; p < to; p++)
     distance += race_.track().LaneLength(p, lane);
@@ -52,7 +63,7 @@ double LaneLength(const game::Position& position, int lane, int from, int to) {
 }
 
 // Next, not including given one
-int NextSwitch(int piece_index) {
+int ShortestPathSwitchScheduler::NextSwitch(int piece_index) {
   int index = 1;
   auto& pieces = race_.track().pieces();
 
@@ -64,6 +75,22 @@ int NextSwitch(int piece_index) {
   }
   return (piece_index + index) % pieces.size();
 }
-*/
-}  // namespace stepping
-}  // namespace bots
+
+void ShortestPathSwitchScheduler::ComputeShortestPaths() {
+  // TODO
+}
+
+void ShortestPathSwitchScheduler::Switched() {
+  should_switch_now_ = false;
+}
+
+// Returns scheduled switch
+bool ShortestPathSwitchScheduler::ShouldSwitch() {
+  return should_switch_now_;
+}
+
+game::Switch ShortestPathSwitchScheduler::SwitchDirection() {
+  return scheduled_switch_;
+}
+
+}  // namespace schedulers

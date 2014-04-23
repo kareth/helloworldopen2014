@@ -14,7 +14,7 @@
 #include "game/car_tracker.h"
 #include "game/turbo.h"
 #include "schedulers/greedy_turbo_scheduler.h"
-//#include "schedulers/switch_scheduler.h"
+#include "schedulers/shortest_path_switch_scheduler.h"
 #include "schedulers/binary_throttle_scheduler.h"
 
 #include "gflags/gflags.h"
@@ -56,9 +56,9 @@ class Bot : public bots::BotInterface {
 
   int switched_ = -1;
 
-  //SwitchScheduler switch_scheduler_;
-  std::unique_ptr<schedulers::TurboScheduler> turbo_scheduler_;
   std::unique_ptr<schedulers::ThrottleScheduler> throttle_scheduler_;
+  std::unique_ptr<schedulers::SwitchScheduler> switch_scheduler_;
+  std::unique_ptr<schedulers::TurboScheduler> turbo_scheduler_;
 };
 
 }  // namespace stepping

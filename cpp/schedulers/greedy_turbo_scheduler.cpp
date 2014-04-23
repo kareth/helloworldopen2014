@@ -22,9 +22,10 @@ void GreedyTurboScheduler::Schedule(const game::CarState& state) {
 
   // TODO(kareth) strategies
   // TODO check if its safe to fire turbo now.
-  if (state.position().lap() == race_.laps() - 1 &&
-      race_.track().IsLastStraight(state.position()))
-    should_fire_now_ = true;
+  if (race_.track().IsLastStraight(state.position())) {
+    if (state.position().lap() == race_.laps() - 1)
+      should_fire_now_ = true;
+  }
 }
 
 // Prepare for overtake
