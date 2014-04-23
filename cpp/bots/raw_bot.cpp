@@ -30,7 +30,9 @@ RawBot::RawBot(BotInterface* bot)
       { "spawn", &RawBot::OnSpawn },
       { "error", &RawBot::OnError },
       { "dnf", &RawBot::OnDNF },
-      { "turboAvailable", &RawBot::OnTurboAvailable }
+      { "turboAvailable", &RawBot::OnTurboAvailable },
+      { "turboStart", &RawBot::OnTurboEnd },
+      { "turboEnd", &RawBot::OnTurboStart }
     }
 {
   history["positions"] = json(json::an_array);
@@ -232,6 +234,22 @@ RawBot::msg_vector RawBot::OnTurboAvailable(const jsoncons::json& msg) {
   turbo.ParseFromJson(msg.get("data", jsoncons::json("")));
   bot_->OnTurbo(turbo);
 
+  return ping();
+}
+
+RawBot::msg_vector RawBot::OnTurboStart(const jsoncons::json& msg) {
+  const auto& data = msg.get("data", jsoncons::json(""));
+  const auto& color = data["color"].as_string();
+
+  bot_->TurboEnded(color);
+  return ping();
+}
+
+RawBot::msg_vector RawBot::OnTurboEnd(const jsoncons::json& msg) {
+  const auto& data = msg.get("data", jsoncons::json(""));
+  const auto& color = data["color"].as_string();
+
+  bot_->TurboStarted(color);
   return ping();
 }
 
