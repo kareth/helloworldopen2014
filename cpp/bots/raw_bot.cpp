@@ -102,7 +102,6 @@ RawBot::msg_vector RawBot::OnGameInit(const jsoncons::json& msg) {
 }
 
 RawBot::msg_vector RawBot::OnGameStart(const jsoncons::json& msg) {
-  game_tick_ = -1;
   std::cout << "Server: Game start" << std::endl;
 
   visualizer_.GameStart();
@@ -164,7 +163,7 @@ RawBot::msg_vector RawBot::OnGameEnd(const jsoncons::json& msg) {
   std::cout << "Server: Game end" << std::endl;
 
   bot_->GameEnd(/* results */);
-  game_tick_ = -1;
+  last_game_tick_ = -1;
   return ping();
 }
 

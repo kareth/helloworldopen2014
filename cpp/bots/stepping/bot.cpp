@@ -95,7 +95,7 @@ double Bot::Optimize(const CarState& state) {
     m = (l + r) / 2.0;
 
     CarState next = car_tracker_->Predict(state, Command(m));
-    int mask = FindBestMask(state, groups, &distance);
+    int mask = FindBestMask(next, groups, &distance);
     distance += race_.track().Distance(next.position(), state.position());
 
     if (mask == -1) {
