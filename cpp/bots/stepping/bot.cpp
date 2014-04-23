@@ -36,6 +36,19 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
   double throttle = Optimize(previous, position);
   if (game_tick < 10) throttle = 1;
 
+  if (CanUseTurbo(position)) {
+    printf("YABADABADUUUUU :D\n");
+    turbo_on_ = turbo_.duration() - 1;
+    turbo_available_ = false;
+    return Command(game::TurboToggle::kToggleOn);
+  }
+
+  if (turbo_on_ > 0) {
+    // We dont want to spoil model before its done
+    turbo_on_--;
+    return Command(1);
+  }
+
   car_tracker_->RecordThrottle(throttle);
   return Command(throttle);
 }
@@ -44,19 +57,25 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 double Bot::Optimize(const Position& previous, const Position& current) {
   // Length of time units in 0/1 search
   vector<int> groups
-      { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 };
+      { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3 };
   //    1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19  <-- counter
 
   // Optimal
-  // { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 } 7.43 keimola
+  // { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 } 7.43 keimola (just find_mask & 1 )
+  // { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3 }; 7.38 keimola / 7.03 with turbo
+  // { 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3 }; germany 8.6 with turbo
 
   double distance;
   double best_distance = 0;
   double throttle = 0;
   int best_mask = 0;
 
+  best_mask = FindBestMask(previous, current, groups, &distance);
+  throttle = best_mask & 1;
+
+  /*
   // Check no-speed
-  /*Position next = car_tracker_->Predict(current, previous, 0, 0);
+  Position next = car_tracker_->Predict(current, previous, 0, 0);
   int mask = FindBestMask(current, next, groups, &distance);
   distance += race_.track().Distance(next, current);
   if (mask != -1 && distance > best_distance) {
@@ -64,10 +83,11 @@ double Bot::Optimize(const Position& previous, const Position& current) {
     best_mask = mask;
   }*/
 
+  /*
   // Check (0, 1)
   double l = 0, r = 1, m;
 
-  /*while (r - l > 3e-1) {
+  while (r - l > 3e-1) {
     m = (l + r) / 2.0;
 
     Position next = car_tracker_->Predict(current, previous, m, 0);
@@ -84,20 +104,18 @@ double Bot::Optimize(const Position& previous, const Position& current) {
         best_mask = mask;
       }
     }
-  }*/
+  }
+  */
 
+  /*
   // Check fullspeed
-  /*next = car_tracker_->Predict(current, previous, 1, 0);
+  next = car_tracker_->Predict(current, previous, 1, 0);
   mask = FindBestMask(current, next, groups, &distance);
   distance += race_.track().Distance(next, current);
   if (mask != -1 && distance > best_distance) {
     throttle = 1;
     best_mask = mask;
   }*/
-
-  best_mask = FindBestMask(previous, current, groups, &distance);
-  throttle = best_mask & 1;
-
 
   // Log predictions
   std::cout << std::setw(12) << throttle << " ";
@@ -151,6 +169,19 @@ bool Bot::CheckMask(int mask, const Position& previous, const Position& current,
   return true;
 }
 
+bool Bot::CanUseTurbo(const Position& position) {
+  if (turbo_on_ > 0 || turbo_available_ == false)
+    return false;
+
+  // TODO hardcode
+  //if (race_.track().id() == "keimola" && position.piece() == 36)
+  //  return true;
+  if (position.lap() == 2 && race_.track().IsLastStraight(position))
+    return true;
+
+  return false;
+}
+
 void Bot::JoinedGame() {
 }
 
@@ -197,6 +228,8 @@ void Bot::CarSpawned(const string& color)  {
 }
 
 void Bot::OnTurbo(const game::Turbo& turbo) {
+  turbo_available_ = true;
+  turbo_ = turbo;
 }
 
 }  // namespace stepping

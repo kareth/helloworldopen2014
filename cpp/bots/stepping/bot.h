@@ -40,6 +40,7 @@ class Bot : public bots::BotInterface {
   double Optimize(const game::Position& previous, const game::Position& current);
   int FindBestMask(const game::Position& previous, const game::Position& current, const std::vector<int>& groups, double* distance);
   bool CheckMask(int mask, const game::Position& previous, const game::Position& current, const std::vector<int>& groups, double* distance);
+  bool CanUseTurbo(const game::Position& position);
 
   game::Race race_;
 
@@ -48,6 +49,11 @@ class Bot : public bots::BotInterface {
   bool crashed_ = false;
 
   std::unique_ptr<game::CarTracker> car_tracker_;
+
+  bool turbo_available_ = false;
+  game::Turbo turbo_;
+  int turbo_on_ = 0;
+
 };
 
 }  // namespace stepping
