@@ -26,6 +26,7 @@ class Track {
   // TODO deprecate, use below version instead.
   double LaneLength(int piece, int lane) const;
 
+  // TODO deprecated, use LaneLengthModel
   double LaneLength(const Position& position) const;
 
   const string& id() const { return id_; }
