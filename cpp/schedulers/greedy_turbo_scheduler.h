@@ -10,6 +10,21 @@
 
 namespace schedulers {
 
+class Straight {
+ public:
+  Straight(int length, int from, int to)
+    : length_(length), from_(from), to_(to) {}
+
+  double length() const { return length_; }
+  int from() const { return from_; }
+  int to() const { return to_; }
+
+ private:
+  int length_;
+  int from_;
+  int to_;
+};
+
 class GreedyTurboScheduler : public TurboScheduler {
  public:
    GreedyTurboScheduler(const game::Race& race,
@@ -42,7 +57,8 @@ class GreedyTurboScheduler : public TurboScheduler {
    Strategy strategy_;
    bool should_fire_now_;
 
-   vector<std::pair<double, std::pair<int, int>>> straights_;
+   // length, from, to inclusive
+   vector<Straight> straights_;
 };
 
 }  // namespace schedulers
