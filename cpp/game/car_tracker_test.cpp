@@ -101,6 +101,39 @@ TEST_F(CarTrackerTest, TurboRun) {
   }
 }
 
+TEST_F(CarTrackerTest, TurboRun2) {
+  const double kEps = 1e-9;
+  auto history = json::parse_file("data/turboRun.json");
+  auto commands = history["commands"];
+  auto positions = history["positions"];
+
+  for (int i = 0; i < positions.size() - 2; ++i) {
+    Command command = ParseCommand(commands[i]);
+    Position position;
+    position.ParseFromJson(positions[i]);
+
+    car_tracker_->Record(position);
+    car_tracker_->RecordCommand(command);
+
+    if (i % 600 == 0) {
+      car_tracker_->RecordTurboAvailable(Turbo(30, 3.0));
+    }
+
+    if (car_tracker_->IsReady()) {
+      auto next = car_tracker_->Predict(car_tracker_->current_state(), command);
+      Position next_position;
+      next_position.ParseFromJson(positions[i+1]);
+
+      EXPECT_NEAR(next_position.angle(), next.position().angle(), kEps);
+      EXPECT_NEAR(next_position.piece_distance(), next.position().piece_distance(), kEps) << next_position.DebugString() << std::endl << next.position().DebugString();
+      EXPECT_EQ(next_position.piece(), next.position().piece());
+      EXPECT_EQ(next_position.start_lane(), next.position().start_lane()) << next_position.DebugString() << std::endl << next.position().DebugString();
+      EXPECT_EQ(next_position.end_lane(), next.position().end_lane()) << next_position.DebugString() << std::endl << next.position().DebugString();
+      EXPECT_EQ(next_position.lap(), next.position().lap()) << i;
+    }
+  }
+}
+
 TEST_F(CarTrackerTest, SwitchRun) {
   const double kEps = 1e-9;
   auto history = json::parse_file("data/switchRun.json");
