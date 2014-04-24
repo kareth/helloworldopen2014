@@ -68,7 +68,9 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
   }
 
   double radius = race_->track().LaneRadius(state.position().piece(), state.position().start_lane());
+
   // TODO
+  //
   if (state.position().start_lane() != state.position().end_lane() && radius > 1e-12)
     radius = radius * 0.9;
 
@@ -132,10 +134,14 @@ bool CarTracker::IsSafe(const CarState& state) {
 
   auto s = state;
   while (s.velocity() > safe_speed) {
-    if (s.position().angle() > 60 - 1e-9)
+    printf("(%d, %d-%d,  %lf, %lf) ", s.position().piece(), s.position().start_lane(), s.position().end_lane(), s.position().angle(), s.velocity());
+    if (s.position().angle() > 60 - 1e-9) {
+      printf("\n");
       return false;
+    }
     s = Predict(s, Command(0));
   }
+  printf("\n");
   return true;
 }
 
