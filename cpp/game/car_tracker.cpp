@@ -2,21 +2,15 @@
 
 namespace game {
 
+namespace {
+template <typename T> int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+}  // anonymous namespace
+
 CarTracker::CarTracker(const Race* race) : race_(race), lane_length_model_(&race_->track()) {
   stats_file_.open ("bin/stats.csv");
   stats_file_ << "piece_index,start_lane,end_lane,radius,in_piece_distance,angle,velocity,throttle" << std::endl;
-
-  if (race_->track().id() == "germany" ||
-      race_->track().id() == "keimola" ||
-      race_->track().id() == "usa" ||
-      race_->track().id() == "france") {
-    drift_model_[0].reset(new DriftModel(0));
-    drift_model_[0]->AddModel({1.9, -0.9, -0.00125, 0});
-    drift_model_[1].reset(new DriftModel(1));
-    drift_model_[1]->AddModel({1.9, -0.9, -0.00125, 0.00125});
-    drift_model_[-1].reset(new DriftModel(-1));
-    drift_model_[-1]->AddModel({1.9, -0.9, -0.00125, -0.00125});
-  }
 }
 
 CarTracker::~CarTracker() {
@@ -78,17 +72,19 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
 
   // TODO
   double radius = race_->track().LaneRadius(state.position().piece(), state.position().start_lane());
+  double direction = -sgn(race_->track().pieces()[state.position().piece()].angle());
 
   // TODO
   //
   if (state.position().start_lane() != state.position().end_lane() && radius > 1e-12)
     radius = radius * 0.9;
 
-  double angle = GetDriftModel(state.position())->Predict(
+  double angle = drift_model_.Predict(
       state.position().angle(),
       state.previous_angle(),
       state.velocity(),
-      radius);
+      radius,
+      direction);
 
   Position position;
   position.set_piece_distance(piece_distance);
@@ -137,6 +133,8 @@ void CarTracker::Record(const Position& position) {
     }
   }
 
+  double direction = -sgn(race_->track().pieces()[state_.position().piece()].angle());
+
   // Update models
   crash_model_.Record(position.angle());
   // There is too many problems in between pieces (length of switches),
@@ -144,9 +142,9 @@ void CarTracker::Record(const Position& position) {
   if (state_.position().piece() == position.piece()) {
     velocity_model_.Record(velocity, state_.velocity(), effective_throttle);
   }
-  GetDriftModel(state_.position())->Record(
+  drift_model_.Record(
       position.angle(), state_.position().angle(), state_.previous_angle(),
-      state_.velocity(), RadiusInPosition(state_.position()));
+      state_.velocity(), RadiusInPosition(state_.position()), direction);
   if (velocity_model_.IsReady()) {
     lane_length_model_.Record(state_.position(), position, velocity_model_.Predict(state_.velocity(), effective_throttle));
   }
@@ -175,15 +173,6 @@ bool CarTracker::IsSafe(const CarState& state) {
 
 bool CarTracker::IsReady() const {
   return velocity_model_.IsReady();
-}
-
-DriftModel* CarTracker::GetDriftModel(const Position& position) {
-  auto& piece = race_->track().pieces().at(position.piece());
-  int direction = sgn(piece.angle());
-  if (drift_model_[direction] == nullptr) {
-    drift_model_[direction].reset(new DriftModel(direction));
-  }
-  return drift_model_[direction].get();
 }
 
 double CarTracker::RadiusInPosition(const Position& position) {

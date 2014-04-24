@@ -25,10 +25,6 @@ using std::map;
 
 namespace game {
 
-template <typename T> int sgn(T val) {
-    return (T(0) < val) - (val < T(0));
-}
-
 // Usage:
 //
 // CarTracker car_tracker(race);
@@ -86,7 +82,6 @@ class CarTracker : public CarPredictor {
  private:
   bool just_started_ = true;
 
-  DriftModel* GetDriftModel(const Position& position);
   void LogState();
   double RadiusInPosition(const Position& position);
 
@@ -100,10 +95,7 @@ class CarTracker : public CarPredictor {
 
   CrashModel crash_model_;
   VelocityModel velocity_model_;
-  // We need separate drift models for different pieces. We group them by
-  // radius (straight pieces assume radius 0).
-  // TODO fix drift model to make it independent on radius (sign)
-  map<int, std::unique_ptr<DriftModel>> drift_model_;
+  DriftModel drift_model_;
   LaneLengthModel lane_length_model_;
 };
 
