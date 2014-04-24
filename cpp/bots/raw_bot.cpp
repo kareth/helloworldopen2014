@@ -9,6 +9,7 @@
 #include "game/turbo.h"
 
 DEFINE_bool(dump_history, false, "");
+DEFINE_bool(continuous_integration, true, "");
 
 using jsoncons::json;
 
@@ -113,10 +114,15 @@ RawBot::msg_vector RawBot::OnCarPositions(const jsoncons::json& msg) {
   // std::cout << "OnCarPosition: " << jsoncons::pretty_print(msg) << std::endl;
   const auto& data = msg.get("data", jsoncons::json(""));
   const int game_tick = msg.get("gameTick", jsoncons::json(0)).as_int();
-  if (game_tick != last_game_tick_ + 1) {
-    std::cout << "Bad game tick: " << pretty_print(msg) << std::endl;
-    return ping();
+
+  if (FLAGS_continuous_integration) {
+    std::cout << "game_tick: " << game_tick << std::endl;
   }
+
+  // if (game_tick != last_game_tick_ + 1) {
+  //   std::cout << "Bad game tick: " << pretty_print(msg) << std::endl;
+  //   return ping();
+  // }
   last_game_tick_ = game_tick;
 
   std::map<std::string, game::Position> positions;
