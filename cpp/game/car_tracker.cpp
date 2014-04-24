@@ -102,6 +102,11 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
 }
 
 void CarTracker::Record(const Position& position) {
+  if (just_started_) {
+    just_started_ = false;
+    state_ = CarState(position);
+  }
+
   // TODO Make sure everything works on crash.
   // TODO If velocity model is trained, it is probably better to use it for
   // velocity (because of unknown length of switches.

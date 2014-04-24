@@ -75,11 +75,17 @@ void Bot::YourCar(const string& color) {
 
 void Bot::NewRace(const Race& race) {
   race_ = race;
-  car_tracker_.reset(new CarTracker(&race_));
+
+  // We do not want to loose all models between qualification and race.
+  // TODO We assume that the race is exactly the same as the one in car_tracker_.
+  if (car_tracker_ == nullptr) {
+    car_tracker_.reset(new CarTracker(&race_));
+  }
 }
 
 void Bot::GameStarted() {
   started_ = true;
+  car_tracker_->Reset();
 }
 
 void Bot::CarFinishedLap(const string& color /* + results */)  {

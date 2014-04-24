@@ -80,6 +80,10 @@ game::Command Bot::GetMove(
   return Command(command);
 }
 
+void Bot::GameStarted() {
+  car_tracker_->Reset();
+}
+
 void Bot::YourCar(const std::string& color) {
   color_ = color;
 }

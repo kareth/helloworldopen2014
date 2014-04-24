@@ -47,6 +47,13 @@ class CarTracker : public CarPredictor {
 
   virtual ~CarTracker();
 
+  // We need to reset the CarTracker when the game is started.
+  // The first Record() after Reset is assumed to be initial position of
+  // the car.
+  void Reset() {
+    just_started_ = true;
+  }
+
   void Record(const Position& position);
 
   void RecordCommand(const Command& command) {
@@ -77,6 +84,8 @@ class CarTracker : public CarPredictor {
   double throttle() const { return last_command_.throttle(); }
 
  private:
+  bool just_started_ = true;
+
   DriftModel* GetDriftModel(const Position& position);
   void LogState();
   double RadiusInPosition(const Position& position);
