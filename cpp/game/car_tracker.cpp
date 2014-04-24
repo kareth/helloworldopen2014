@@ -124,6 +124,9 @@ void CarTracker::Record(const Position& position) {
     velocity = position.piece_distance() - state_.position().piece_distance() +
       lane_length_model_.Length(state_.position());
 
+    // TODO It is probably to predicy the velocity (if velocity_model_ is ready),
+    // because the Length can be not perfect.
+
     if (position.start_lane() != position.end_lane()) {
       switch_state = Switch::kStay;
     }
@@ -131,8 +134,11 @@ void CarTracker::Record(const Position& position) {
 
   // Update models
   crash_model_.Record(position.angle());
-  // TODO Fix throttle (take turbo into account).
-  velocity_model_.Record(velocity, state_.velocity(), effective_throttle);
+  // There is too many problems in between pieces (length of switches),
+  // so do not take those measurements into account.
+  if (state_.position().piece() == position.piece()) {
+    velocity_model_.Record(velocity, state_.velocity(), effective_throttle);
+  }
   GetDriftModel(state_.position())->Record(
       position.angle(), state_.position().angle(), state_.previous_angle(),
       state_.velocity(), RadiusInPosition(state_.position()));
