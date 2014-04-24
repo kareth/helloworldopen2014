@@ -45,12 +45,30 @@ void BinaryThrottleScheduler::Schedule(const game::CarState& state) {
     schedule_ = { 1 };
   } else {
     if (strategy_ == Strategy::kOptimizeCurrentLap &&
-        race_.track().IsLastStraight(state.position()))
+        race_.track().IsLastStraight(state.position())) {
       schedule_ = { 1 };
-    else
+    } else {
       Optimize(state);
+      OptimizeTurboBrake(state);
+    }
   }
   Log(state);
+}
+
+void BinaryThrottleScheduler::OptimizeTurboBrake(const game::CarState& state) {
+/*  // TODO hardcoded
+  if (schedule_[0] < 1e-9) return;
+
+  if (state.velocity() > 10) {
+    // Move that will be issued now
+    auto next = car_tracker_.Predict(state, game::Command(1));
+    // if next one crashes, then we should start braking earlier
+    next = car_tracker_.Predict(next, game::Command(1));
+    // atleast 2 ticks :D
+    next = car_tracker_.Predict(next, game::Command(1));
+    if (!car_tracker_.IsSafe(next))
+      schedule_[0] = 0;
+  }*/
 }
 
 // Returns optimal throttlle:

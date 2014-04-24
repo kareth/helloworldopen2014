@@ -48,6 +48,9 @@ class BinaryThrottleScheduler : public ThrottleScheduler {
   // @param distance total distance travelled
   bool CheckMask(int mask, const game::CarState& state, double* distance);
 
+  // Check if should brake with turbo
+  void OptimizeTurboBrake(const game::CarState& state);
+
   // Log every schedule
   void Log(const game::CarState& state);
 
