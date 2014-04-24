@@ -10,6 +10,7 @@
 
 DEFINE_bool(dump_history, false, "");
 DEFINE_bool(continuous_integration, true, "");
+DEFINE_bool(print_track, false, "");
 
 using jsoncons::json;
 
@@ -93,6 +94,10 @@ RawBot::msg_vector RawBot::OnGameInit(const jsoncons::json& msg) {
   const auto& data = msg.get("data", jsoncons::json(""));
 
   std::cout << "Server: Game Init" << std::endl;
+
+  if (FLAGS_print_track) {
+    std::cout << pretty_print(msg) << std::endl;
+  }
 
   game::Race race;
   race.ParseFromJson(data["race"]);
