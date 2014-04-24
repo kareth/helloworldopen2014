@@ -155,7 +155,7 @@ RawBot::msg_vector RawBot::ProcessOnCarPositions(const jsoncons::json& msg) {
 
 RawBot::msg_vector RawBot::OnCarPositions(const jsoncons::json& msg) {
   if (msg.has_member("gameTick")) {
-    ProcessOnCarPositions(msg);
+    return ProcessOnCarPositions(msg);
   } else {
     last_on_car_positions_ = msg;
   }
