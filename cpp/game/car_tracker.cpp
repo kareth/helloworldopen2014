@@ -2,7 +2,7 @@
 
 namespace game {
 
-CarTracker::CarTracker(const Race* race) : race_(race) {
+CarTracker::CarTracker(const Race* race) : race_(race), lane_length_model_(&race_->track()) {
   stats_file_.open ("bin/stats.csv");
   stats_file_ << "piece_index,start_lane,end_lane,radius,in_piece_distance,angle,velocity,throttle" << std::endl;
 
@@ -45,7 +45,7 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
   Switch switch_state = state.switch_state();
 
   // Is it next piece?
-  double lane_length = race_->track().LaneLength(state.position());
+  double lane_length = lane_length_model_.Length(state.position());
   if (piece_distance > lane_length) {
     piece_distance = piece_distance - lane_length;
     piece++;
@@ -107,6 +107,14 @@ void CarTracker::Record(const Position& position) {
   // velocity (because of unknown length of switches.
   // TODO Handle bumps with other cars, do not break models then.
 
+  TurboState turbo_state = state_.turbo_state();
+  double throttle = last_command_.ThrottleSet() ? last_command_.throttle() : state_.throttle();
+  double effective_throttle = turbo_state.is_on() ? throttle * turbo_state.turbo().factor() : throttle;
+  if (last_command_.TurboSet()) {
+    turbo_state.Enable();
+  }
+  turbo_state.Decrement();
+
   Switch switch_state = last_command_.SwitchSet() ? last_command_.get_switch() : state_.switch_state();
 
   double velocity = 0;
@@ -114,20 +122,12 @@ void CarTracker::Record(const Position& position) {
     velocity = position.piece_distance() - state_.position().piece_distance();
   } else {
     velocity = position.piece_distance() - state_.position().piece_distance() +
-      race_->track().LaneLength(state_.position());
+      lane_length_model_.Length(state_.position());
 
     if (position.start_lane() != position.end_lane()) {
       switch_state = Switch::kStay;
     }
   }
-
-  double throttle = last_command_.ThrottleSet() ? last_command_.throttle() : state_.throttle();
-  double effective_throttle = turbo_state.is_on() ? throttle * turbo_state.turbo().factor() : throttle;
-  TurboState turbo_state = state_.turbo_state();
-  if (last_command_.TurboSet()) {
-    turbo_state.Enable();
-  }
-  turbo_state.Decrement();
 
   // Update models
   crash_model_.Record(position.angle());
@@ -136,7 +136,9 @@ void CarTracker::Record(const Position& position) {
   GetDriftModel(state_.position())->Record(
       position.angle(), state_.position().angle(), state_.previous_angle(),
       state_.velocity(), RadiusInPosition(state_.position()));
-
+  if (velocity_model_.IsReady()) {
+    lane_length_model_.Record(state_.position(), position, velocity_model_.Predict(state_.velocity(), effective_throttle));
+  }
 
   state_ = CarState(position, velocity, state_.position().angle(), switch_state, throttle, turbo_state);
   LogState();

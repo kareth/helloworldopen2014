@@ -9,6 +9,7 @@ set(GAME_SOURCES
   simplex.cpp
   track.cpp
   turbo.cpp
+  lane_length_model.cpp
 )
 
 set(GAME_HEADERS
@@ -27,6 +28,7 @@ set(GAME_HEADERS
   simplex.h
   track.h
   velocity_model.h
+  lane_length_model.h
   turbo.h
 )
 
@@ -37,6 +39,7 @@ set(GAME_TESTS
   race_test.cpp
   simplex_test.cpp
   track_test.cpp
+  lane_length_model_test.cpp
 )
 
 add_library(game ${GAME_SOURCES})

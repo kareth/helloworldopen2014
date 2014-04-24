@@ -12,6 +12,7 @@
 #include "game/crash_model.h"
 #include "game/drift_model.h"
 #include "game/error_tracker.h"
+#include "game/lane_length_model.h"
 #include "game/gauss.h"
 #include "game/position.h"
 #include "game/race.h"
@@ -94,6 +95,7 @@ class CarTracker : public CarPredictor {
   // radius (straight pieces assume radius 0).
   // TODO fix drift model to make it independent on radius (sign)
   map<int, std::unique_ptr<DriftModel>> drift_model_;
+  LaneLengthModel lane_length_model_;
 };
 
 }  // namespace game

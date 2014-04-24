@@ -2,8 +2,8 @@
 
 namespace game {
 
-double LaneLengthModel::Length(const Position& position) {
-  const auto& piece = pieces_[position.piece()];
+double LaneLengthModel::Length(const Position& position) const {
+  const auto& piece = track_->pieces()[position.piece()];
 
   if (piece.type() == PieceType::kStraight) {
     if (position.start_lane() == position.end_lane()) {
@@ -12,14 +12,17 @@ double LaneLengthModel::Length(const Position& position) {
     if (!piece.has_switch()) {
       std::cerr << "Changing lane on non switch piece?" << std::endl;
     }
-    // TODO this is just approximation. Add learning.
 
-    double width = fabs(lanes_[position.start_lane()].distance_from_center() - lanes_[position.end_lane()].distance_from_center());
-    return 1.000783334 * std::sqrt(width * width + piece.length() * piece.length());
+    const double width = fabs(track_->lanes()[position.start_lane()].distance_from_center() - track_->lanes()[position.end_lane()].distance_from_center());
+    if (switch_on_straight_length_.count({piece.length(), width}) > 0) {
+      return switch_on_straight_length_.at({piece.length(), width});
+    }
+
+    return std::sqrt(width * width + piece.length() * piece.length());
   }
 
   if (position.start_lane() == position.end_lane()) {
-    double radius = LaneRadius(position.piece(), position.start_lane());
+    double radius = track_->LaneRadius(position.piece(), position.start_lane());
     return 2.0 * M_PI * radius * (fabs(piece.angle()) / 360.0);
   }
 
@@ -27,10 +30,39 @@ double LaneLengthModel::Length(const Position& position) {
     std::cerr << "Changing lane on non switch piece?" << std::endl;
   }
 
-  // TODO this is just approximation. Add learning.
-  double radius1 = LaneRadius(position.piece(), position.start_lane());
-  double radius2 = LaneRadius(position.piece(), position.end_lane());
-  return 1.05 * M_PI * radius1 * (fabs(piece.angle()) / 360.0) + M_PI * radius2 * (fabs(piece.angle()) / 360.0);
+  double radius1 = track_->LaneRadius(position.piece(), position.start_lane());
+  double radius2 = track_->LaneRadius(position.piece(), position.end_lane());
+
+  if (switch_on_turn_length_.count({radius1, radius2}) > 0) {
+    return switch_on_turn_length_.at({radius1, radius2});
+  }
+  return M_PI * radius1 * (fabs(piece.angle()) / 360.0) + M_PI * radius2 * (fabs(piece.angle()) / 360.0);
+}
+
+void LaneLengthModel::Record(const Position& previous, const Position& current, double predicted_velocity) {
+  if (previous.piece() == current.piece())
+    return;
+  if (previous.start_lane() == previous.end_lane())
+    return;
+
+  const auto& piece = track_->pieces()[previous.piece()];
+
+  double length = previous.piece_distance() + predicted_velocity - current.piece_distance();
+
+  if (piece.type() == PieceType::kStraight) {
+    const double width = fabs(track_->lanes()[previous.start_lane()].distance_from_center() - track_->lanes()[previous.end_lane()].distance_from_center());
+    switch_on_straight_length_[{piece.length(), width}] = length;
+    return;
+  }
+
+  double radius1 = track_->LaneRadius(previous.piece(), previous.start_lane());
+  double radius2 = track_->LaneRadius(previous.piece(), previous.end_lane());
+  switch_on_turn_length_[{radius1, radius2}] = length;
+
+  // The opposite is almost true, so update the approximation if no available.
+  if (switch_on_turn_length_.count({radius2, radius1}) == 0) {
+    switch_on_turn_length_[{radius2, radius1}] = length;
+  }
 }
 
 }  // namespace game

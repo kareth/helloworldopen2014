@@ -7,20 +7,24 @@
 #include <map>
 #include <algorithm>
 
-#include "game/gauss.h"
-#include "game/error_tracker.h"
+#include "game/track.h"
 
 namespace game {
 
 class LaneLengthModel {
  public:
-  LaneLengthModel(Track* track) : track_(track) {}
+  // Track has to outlive this model.
+  LaneLengthModel(const Track* track) : track_(track) {}
+
+  double Length(const Position& position) const;
+
+  void Record(const Position& previous, const Position& current, double predicted_velocity);
 
  private:
-  Track* track_;
+  const Track* track_;
 
-  map<double, double> switch_on_straight_length_;
-  map<pair<double, double>, double switch_on_turn_length_;
+  std::map<std::pair<double, double>, double> switch_on_straight_length_;
+  std::map<std::pair<double, double>, double> switch_on_turn_length_;
 };
 
 }  // namespace game
