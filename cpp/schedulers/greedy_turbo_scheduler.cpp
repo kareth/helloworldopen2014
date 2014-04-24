@@ -36,14 +36,19 @@ void GreedyTurboScheduler::Schedule(const game::CarState& state) {
     // Longest overall
     if (state.position().piece() == straights_[0].from()) {
       should_fire_now_ = true;
+    } else if (CanFireBeforeStraight(state, straights_[0])) {
+      should_fire_now_ = true;
     }
   } else if (strategy_ == Strategy::kOptimizeCurrentLap) {
     // Longest in between now and lap end
     for (auto& s : straights_) {
-      if (s.from() == state.position().piece())
+      if (s.from() == state.position().piece()) {
         should_fire_now_ = true;
-      if (s.from() > state.position().piece())
+      } else if (CanFireBeforeStraight(state, s)) {
+        should_fire_now_ = true;
+      } if (s.from() > state.position().piece()) {
         return;
+      }
     }
   } else if (strategy_ == Strategy::kOptimizeNextLap) {
     // Give him best speed for next lap
@@ -55,16 +60,31 @@ void GreedyTurboScheduler::Schedule(const game::CarState& state) {
 
     // If connected to 0
     if (last->to() == race_.track().pieces().size() - 1)
-      if (CanFire(state, *last))
+      if (state.position().piece() == last->from())
         should_fire_now_ = true;
   }
 }
 
-bool GreedyTurboScheduler::CanFire(const game::CarState& state, const Straight& straight) {
+bool GreedyTurboScheduler::CanFireBeforeStraight(const game::CarState& state, const Straight& straight) {
   if (state.position().piece() == straight.from())
     return true;
-  //if (state.position().piece() == straight.from() - 1) {
-  //}
+
+  if (state.position().piece() > straight.from())
+    return false;
+
+  if (state.position().piece() <= straight.from() &&
+      state.position().piece() >= straight.from() - 2) {
+    auto s = car_tracker_.Predict(state, game::Command(game::TurboToggle::kToggleOn));
+    int max_ticks = 80;
+    while (max_ticks-- > 0 && s.position().piece() != straight.from()) {
+      if (s.position().angle() > 60 - 1e-9)
+        return false;
+      s = car_tracker_.Predict(s, game::Command(1));
+      printf("(%d %lf %lf) ",s.position().piece(), s.position().piece_distance(), s.position().angle());
+    }
+    printf("\n");
+    return car_tracker_.IsSafe(s);
+  }
   return false;
 }
 

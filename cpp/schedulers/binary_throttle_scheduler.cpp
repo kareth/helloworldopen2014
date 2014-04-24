@@ -41,10 +41,15 @@ void BinaryThrottleScheduler::Overtake(const string& color) {
 
 void BinaryThrottleScheduler::Schedule(const game::CarState& state) {
   // TODO(kareth) strategies
-  if (!car_tracker_.IsReady())
+  if (!car_tracker_.IsReady()) {
     schedule_ = { 1 };
-  else
-    Optimize(state);
+  } else {
+    if (strategy_ == Strategy::kOptimizeCurrentLap &&
+        race_.track().IsLastStraight(state.position()))
+      schedule_ = { 1 };
+    else
+      Optimize(state);
+  }
 }
 
 // Returns optimal throttlle:
