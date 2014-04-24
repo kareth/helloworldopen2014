@@ -42,7 +42,7 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
   int piece = state.position().piece();
   int start_lane = state.position().start_lane();
   int end_lane = state.position().end_lane();
-  Switch switch_state = command.SwitchSet() ? command.get_switch() : state.switch_state();
+  Switch switch_state = state.switch_state();
 
   // Is it next piece?
   double lane_length = race_->track().LaneLength(state.position());
@@ -58,14 +58,23 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
       // TODO Determine what is left and right lane
       if (switch_state == Switch::kSwitchRight) {
         end_lane = start_lane + 1;
+        if (end_lane >= race_->track().lanes().size()) {
+          std::cerr << "Changed lane out of track!" << std::endl;
+          end_lane = race_->track().lanes().size() - 1;
+        }
       } else {
         end_lane = start_lane - 1;
+        if (end_lane < 0) {
+          std::cerr << "Changed lane to -1!" << std::endl;
+          end_lane = 0;
+        }
       }
       switch_state = Switch::kStay;
     } else {
       start_lane = end_lane;
     }
   }
+  switch_state = command.SwitchSet() ? command.get_switch() : switch_state;
 
   double radius = race_->track().LaneRadius(state.position().piece(), state.position().start_lane());
 
