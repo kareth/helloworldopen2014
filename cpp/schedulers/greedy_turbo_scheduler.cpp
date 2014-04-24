@@ -33,13 +33,11 @@ void GreedyTurboScheduler::Schedule(const game::CarState& state) {
   // second, it has to make some kind of decisions based on turbo freq
 
   if (strategy_ == Strategy::kOptimizeRace) {
-    printf("Longest\n");
     // Longest overall
     if (state.position().piece() == straights_[0].from()) {
       should_fire_now_ = true;
     }
   } else if (strategy_ == Strategy::kOptimizeCurrentLap) {
-    printf("Current\n");
     // Longest in between now and lap end
     for (auto& s : straights_) {
       if (s.from() == state.position().piece())
@@ -48,7 +46,6 @@ void GreedyTurboScheduler::Schedule(const game::CarState& state) {
         return;
     }
   } else if (strategy_ == Strategy::kOptimizeNextLap) {
-    printf("Next\n");
     // Give him best speed for next lap
     // TODO not optimal, just taking last piece
     auto last = &straights_[0];
