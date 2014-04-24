@@ -53,6 +53,7 @@ void GreedyTurboScheduler::Schedule(const game::CarState& state) {
   } else if (strategy_ == Strategy::kOptimizeNextLap) {
     // Give him best speed for next lap
     // TODO not optimal, just taking last piece
+    // TODO commenting this wins usa
     auto last = &straights_[0];
     for (auto& s : straights_)
       if (s.from() > last->from())
@@ -72,6 +73,7 @@ bool GreedyTurboScheduler::CanFireBeforeStraight(const game::CarState& state, co
   if (state.position().piece() > straight.from())
     return false;
 
+  // W teoriinie trzeba samych jedynek...
   if (state.position().piece() <= straight.from() &&
       state.position().piece() >= straight.from() - 2) {
     auto s = car_tracker_.Predict(state, game::Command(game::TurboToggle::kToggleOn));
@@ -80,9 +82,7 @@ bool GreedyTurboScheduler::CanFireBeforeStraight(const game::CarState& state, co
       if (s.position().angle() > 60 - 1e-9)
         return false;
       s = car_tracker_.Predict(s, game::Command(1));
-      printf("(%d %lf %lf) ",s.position().piece(), s.position().piece_distance(), s.position().angle());
     }
-    printf("\n");
     return car_tracker_.IsSafe(s);
   }
   return false;

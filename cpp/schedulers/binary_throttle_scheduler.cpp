@@ -50,6 +50,7 @@ void BinaryThrottleScheduler::Schedule(const game::CarState& state) {
     else
       Optimize(state);
   }
+  Log(state);
 }
 
 // Returns optimal throttlle:
@@ -64,12 +65,10 @@ void BinaryThrottleScheduler::Optimize(const CarState& state) {
       schedule_.push_back((mask & (1 << g)) > 0);
 
   if (!car_tracker_.IsSafe(state))
-    printf("DUPAAA\n");
+    printf("Current state is not safe!\n");
 
   if (!car_tracker_.IsSafe(state, game::Command(schedule_[0])))
     schedule_[0] = 0;
-
-  Log(state);
 }
 
 // Finds most optimal(by means of distance travelled) mask
@@ -115,6 +114,7 @@ bool BinaryThrottleScheduler::CheckMask(
 void BinaryThrottleScheduler::Log(const game::CarState& state) {
   int i = 0;
   for (int g = 0; g < groups_.size(); g++) {
+    if (g >= schedule_.size()) break;
     std::cout << (int) schedule_[i] << " ";
     for (int t = 0; t < groups_[g]; t++)
       i++;
