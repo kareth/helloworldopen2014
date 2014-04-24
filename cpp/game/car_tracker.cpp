@@ -76,6 +76,7 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
   }
   switch_state = command.SwitchSet() ? command.get_switch() : switch_state;
 
+  // TODO
   double radius = race_->track().LaneRadius(state.position().piece(), state.position().start_lane());
 
   // TODO
@@ -106,22 +107,29 @@ void CarTracker::Record(const Position& position) {
   // velocity (because of unknown length of switches.
   // TODO Handle bumps with other cars, do not break models then.
 
+  Switch switch_state = last_command_.SwitchSet() ? last_command_.get_switch() : state_.switch_state();
+
   double velocity = 0;
   if (state_.position().piece() == position.piece()) {
     velocity = position.piece_distance() - state_.position().piece_distance();
   } else {
     velocity = position.piece_distance() - state_.position().piece_distance() +
       race_->track().LaneLength(state_.position());
+
+    if (position.start_lane() != position.end_lane()) {
+      switch_state = Switch::kStay;
+    }
   }
 
   // Update models
   crash_model_.Record(position.angle());
+  // TODO Fix throttle (take turbo into account).
   velocity_model_.Record(velocity, state_.velocity(), last_command_.throttle());
   GetDriftModel(state_.position())->Record(
       position.angle(), state_.position().angle(), state_.previous_angle(),
       state_.velocity(), RadiusInPosition(state_.position()));
 
-  Switch switch_state = last_command_.SwitchSet() ? last_command_.get_switch() : state_.switch_state();
+
   double throttle = last_command_.ThrottleSet() ? last_command_.throttle() : state_.throttle();
   TurboState turbo_state = state_.turbo_state();
   if (last_command_.TurboSet()) {
@@ -143,14 +151,11 @@ bool CarTracker::IsSafe(const CarState& state) {
 
   auto s = state;
   while (s.velocity() > safe_speed) {
-    printf("(%d, %d-%d,  %lf, %lf) ", s.position().piece(), s.position().start_lane(), s.position().end_lane(), s.position().angle(), s.velocity());
     if (s.position().angle() > 60 - 1e-9) {
-      printf("\n");
       return false;
     }
     s = Predict(s, Command(0));
   }
-  printf("\n");
   return true;
 }
 

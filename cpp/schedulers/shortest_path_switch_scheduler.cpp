@@ -39,7 +39,7 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
   double left = 1000000000;
   double right = 1000000000;
 
-  if (position.start_lane() > 0)
+  if (position.end_lane() > 0)
     left = LaneLength(position, position.end_lane() - 1, from, to);
   if (position.end_lane() < race_.track().lanes().size() - 1)
     right = LaneLength(position, position.end_lane() + 1, from, to);

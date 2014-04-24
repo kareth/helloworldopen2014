@@ -42,7 +42,7 @@ class Command {
   bool ThrottleSet() const { return throttle_set_; }
   bool TurboSet() const { return turbo_set_; }
 
-  std::string DebugString() {
+  std::string DebugString() const {
     std::stringstream ss;
     if (switch_set_) {
       ss << "switch: " << as_integer(switch_) << std::endl;

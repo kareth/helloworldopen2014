@@ -65,6 +65,12 @@ class CarState {
            Switch switch_state, double throttle, TurboState turbo_state)
       : position_(position), velocity_(velocity), previous_angle_(previous_angle),
         switch_(switch_state), throttle_(throttle), turbo_state_(turbo_state) {
+    if (switch_ == Switch::kSwitchRight && position_.end_lane() == 1) {
+      std::cerr << "Incorrect CarState. Trying to switch right on end_lane == 1" << std::endl;
+    }
+    if (switch_ == Switch::kSwitchLeft && position_.end_lane() == 0) {
+      std::cerr << "Incorrect CarState. Trying to switch left on end_lane == 0" << std::endl;
+    }
   }
 
   const Position& position() const { return position_; }
@@ -84,6 +90,13 @@ class CarState {
 
   void AddNewTurbo(const Turbo& turbo) {
     turbo_state_.Add(turbo);
+  }
+
+  std::string DebugString() const {
+    std::stringstream ss;
+    ss << "position: " << position_.DebugString();
+    ss << "switch: " << as_integer(switch_) << std::endl;
+    return ss.str();
   }
 
  private:
