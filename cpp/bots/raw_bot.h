@@ -56,6 +56,11 @@ class RawBot {
   utils::GameVisualizer visualizer_;
 
   int last_game_tick_ = -1;
+
+  msg_vector ProcessOnCarPositions(const jsoncons::json& data);
+
+  jsoncons::json last_on_car_positions_;
+  
   jsoncons::json history;
 };
 
