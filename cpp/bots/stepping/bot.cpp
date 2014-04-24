@@ -1,5 +1,4 @@
 #include "bots/stepping/bot.h"
-#include <cstring>
 
 DEFINE_int32(answer_time, 10, "Time limit for answer in ms");
 
@@ -17,7 +16,17 @@ namespace bots {
 namespace stepping {
 
 Bot::Bot() {
-  srand(time(0));
+}
+
+void Bot::NewRace(const Race& race) {
+  race_ = race;
+  car_tracker_.reset(new CarTracker(&race_));
+  throttle_scheduler_.reset(
+      new schedulers::BinaryThrottleScheduler(race_, *car_tracker_.get(), FLAGS_answer_time));
+  turbo_scheduler_.reset(
+      new schedulers::GreedyTurboScheduler(race_, *car_tracker_.get()));
+  switch_scheduler_.reset(
+      new schedulers::ShortestPathSwitchScheduler(race_, *car_tracker_.get()));
 }
 
 game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick)  {
@@ -29,6 +38,8 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
   if (crashed_) {
     return Command(0);
   }
+
+  SetStrategy(state);
 
   throttle_scheduler_->Schedule(state);
   switch_scheduler_->Schedule(state);
@@ -49,21 +60,20 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 
   car_tracker_->RecordCommand(command);
   return command;
+}
 
-  /*
-  if (race_.track().pieces()[car_tracker_->Predict(car_tracker_->current_state(), Command(1)).position().piece()].has_switch()) {
-    if (position.start_lane() == 0)
-      return Command(game::Switch::kSwitchRight);
-    else
-      return Command(game::Switch::kSwitchLeft);
-  }
-  */
+void Bot::SetStrategy() {
+  auto strategy = Strategy::kOptimizeRace;
+  int lap = state.position().lap();
 
-  /*game::Switch s;
-  if (ShouldChangeLane(position, &s)) {
-    printf("Switch!\n");
-    return Command(s);
-  }*/
+  if (lap % 2 == 1)
+    strategy = Strategy::kOptimizeNextLap;
+  if (lap % 2 == 0 && lap != 0)
+    strategy = Strategy::kOptimizeCurrentLap;
+
+  throttle_scheduler_->set_strategy(strategy);
+  switch_scheduler_->set_strategy(strategy);
+  turbo_scheduler_->set_strategy(strategy);
 }
 
 void Bot::OnTurbo(const game::Turbo& turbo) {
@@ -71,23 +81,8 @@ void Bot::OnTurbo(const game::Turbo& turbo) {
   printf("Turbo Available\n");
 }
 
-void Bot::JoinedGame() {
-}
-
 void Bot::YourCar(const string& color) {
   color_ = color;
-}
-
-// GameInit
-void Bot::NewRace(const Race& race) {
-  race_ = race;
-  car_tracker_.reset(new CarTracker(&race_));
-  throttle_scheduler_.reset(
-      new schedulers::BinaryThrottleScheduler(race_, *car_tracker_.get(), FLAGS_answer_time));
-  turbo_scheduler_.reset(
-      new schedulers::GreedyTurboScheduler(race_, *car_tracker_.get()));
-  switch_scheduler_.reset(
-      new schedulers::ShortestPathSwitchScheduler(race_, *car_tracker_.get()));
 }
 
 void Bot::GameStarted() {

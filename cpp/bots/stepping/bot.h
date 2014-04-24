@@ -28,7 +28,7 @@ class Bot : public bots::BotInterface {
  public:
   Bot();
 
-  void JoinedGame() override;
+  void JoinedGame() override {}
   void YourCar(const std::string& color) override;
   void NewRace(const game::Race& race) override;
   void GameStarted() override;
@@ -46,6 +46,7 @@ class Bot : public bots::BotInterface {
   void TurboEnded(const std::string& color) override;
 
  private:
+  void SetStrategy();
   game::Race race_;
 
   std::string color_;
