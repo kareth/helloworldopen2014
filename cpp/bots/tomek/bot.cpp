@@ -61,10 +61,12 @@ game::Command Bot::ComputeMove(const Position& position, int game_tick) {
   //   }
   // }
   //
+  if (turbo_ && position.piece() == 35) {
+    turbo_ = false;
+    return Command(game::TurboToggle::kToggleOn);
+  }
 
   return Command(0.5);
-
-  return Command(Switch::kSwitchRight);
 }
 
 game::Command Bot::GetMove(
@@ -92,6 +94,7 @@ void Bot::CarCrashed(const std::string& color)  {
 }
 
 void Bot::OnTurbo(const game::Turbo& turbo) {
+  turbo_ = true;
   car_tracker_->RecordTurboAvailable(turbo);
 }
 

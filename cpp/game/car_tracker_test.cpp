@@ -25,6 +25,8 @@ class CarTrackerTest : public testing::Test {
         return Command(Switch::kSwitchRight);
       return Command(Switch::kSwitchLeft);
     }
+    if (data[0]["msgType"] == "turbo")
+      return Command(TurboToggle::kToggleOn);
     return Command();
   }
 
@@ -57,6 +59,41 @@ TEST_F(CarTrackerTest, GreedyRun) {
 
     EXPECT_NEAR(position.angle(), state.position().angle(), kEps);
     EXPECT_NEAR(position.piece_distance(), state.position().piece_distance(), kEps);
+    EXPECT_EQ(position.piece(), state.position().piece());
+    EXPECT_EQ(position.start_lane(), state.position().start_lane());
+    EXPECT_EQ(position.end_lane(), state.position().end_lane());
+    EXPECT_EQ(position.lap(), state.position().lap());
+  }
+}
+
+TEST_F(CarTrackerTest, TurboRun) {
+  auto history = json::parse_file("data/turboRun.json");
+  auto commands = history["commands"];
+  auto positions = history["positions"];
+
+  for (int i = 0; !car_tracker_->IsReady(); ++i) {
+    Command command = ParseCommand(commands[i]);
+    Position position;
+    position.ParseFromJson(positions[i]);
+
+    car_tracker_->Record(position);
+    car_tracker_->RecordCommand(command);
+  }
+
+  CarState state;
+  const double kEps = 1e-9;
+  for (int i = 0; i < positions.size() - 1; ++i) {
+    Command command = ParseCommand(commands[i]);
+    Position position;
+    position.ParseFromJson(positions[i + 1]);
+
+    state = car_tracker_->Predict(state, command);
+    if (i % 600 == 0) {
+      state.AddNewTurbo(Turbo(30, 3.0));
+    }
+
+    EXPECT_NEAR(position.angle(), state.position().angle(), kEps);
+    EXPECT_NEAR(position.piece_distance(), state.position().piece_distance(), kEps) << position.DebugString();
     EXPECT_EQ(position.piece(), state.position().piece());
     EXPECT_EQ(position.start_lane(), state.position().start_lane());
     EXPECT_EQ(position.end_lane(), state.position().end_lane());

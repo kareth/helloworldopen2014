@@ -225,6 +225,8 @@ std::string RawBot::ColorPrint(const std::string& color) const {
 RawBot::msg_vector RawBot::OnTurboAvailable(const jsoncons::json& msg) {
   game::Turbo turbo;
   turbo.ParseFromJson(msg.get("data", jsoncons::json("")));
+  std::cout << "game_tick: " << last_game_tick_ << std::endl;
+  std::cout << turbo.DebugString();
   bot_->OnTurbo(turbo);
 
   return ping();

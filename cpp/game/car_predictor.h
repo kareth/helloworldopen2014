@@ -39,6 +39,13 @@ class TurboState {
     }
   }
 
+  // TODO allow multiple turbos ?
+  void Add(const Turbo& turbo) {
+    turbo_ = turbo;
+    available_ = true;
+    ticks_left_ = turbo_.duration() + 2;
+  }
+
  private:
   bool available_ = false;
   Turbo turbo_;
@@ -76,6 +83,7 @@ class CarState {
   TurboState turbo_state() const { return turbo_state_; }
 
   void AddNewTurbo(const Turbo& turbo) {
+    turbo_state_.Add(turbo);
   }
 
  private:

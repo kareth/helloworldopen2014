@@ -28,18 +28,21 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
     return state;
   }
 
-  double velocity = velocity_model_.Predict(state.velocity(), command.throttle());
+  TurboState turbo_state = state.turbo_state();
+  double throttle = command.ThrottleSet() ? command.throttle() : state.throttle();
+  double effective_throttle = turbo_state.is_on() ? throttle * turbo_state.turbo().factor() : throttle;
+  if (command.TurboSet()) {
+    turbo_state.Enable();
+  }
+  turbo_state.Decrement();
+
+  double velocity = velocity_model_.Predict(state.velocity(), effective_throttle);
   double piece_distance = state.position().piece_distance() + velocity;
   int lap = state.position().lap();
   int piece = state.position().piece();
   int start_lane = state.position().start_lane();
   int end_lane = state.position().end_lane();
   Switch switch_state = command.SwitchSet() ? command.get_switch() : state.switch_state();
-  TurboState turbo_state = state.turbo_state();
-  if (command.TurboSet()) {
-    turbo_state.Enable();
-  }
-  turbo_state.Decrement();
 
   // Is it next piece?
   double lane_length = race_->track().LaneLength(state.position());
@@ -74,7 +77,6 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
       state.previous_angle(),
       state.velocity(),
       radius);
-  double throttle = command.ThrottleSet() ? command.throttle() : state.throttle();
 
   Position position;
   position.set_piece_distance(piece_distance);
