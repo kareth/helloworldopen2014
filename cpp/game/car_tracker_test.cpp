@@ -155,7 +155,8 @@ TEST_F(CarTrackerTest, SwitchRun) {
 
       // TODO(tomek) uncomment once we have better switch prediction.
       // EXPECT_NEAR(next_position.angle(), next.position().angle(), kEps);
-      // EXPECT_NEAR(next_position.piece_distance(), next.position().piece_distance(), kEps) << next_position.DebugString() << std::endl << next.position().DebugString();
+      double error = position.lap() == 0 ? 3 : (position.lap() == 1 ? 0.002 : kEps);
+      EXPECT_NEAR(next_position.piece_distance(), next.position().piece_distance(), error);
       EXPECT_EQ(next_position.piece(), next.position().piece());
       EXPECT_EQ(next_position.start_lane(), next.position().start_lane()) << next_position.DebugString() << std::endl << next.position().DebugString();
       EXPECT_EQ(next_position.end_lane(), next.position().end_lane()) << next_position.DebugString() << std::endl << next.position().DebugString();
@@ -191,7 +192,7 @@ TEST_F(CarTrackerTest, SwitchRun2) {
     state = car_tracker_->Predict(state, command);
 
     // EXPECT_NEAR(position.angle(), state.position().angle(), kEps);
-    // EXPECT_NEAR(position.piece_distance(), state.position().piece_distance(), kEps);
+    EXPECT_NEAR(position.piece_distance(), state.position().piece_distance(), position.lap() == 1 ? 0.002 : kEps);
     EXPECT_EQ(position.piece(), state.position().piece()) << position.DebugString() << std::endl << state.position().DebugString();
     EXPECT_EQ(position.start_lane(), state.position().start_lane()) << position.DebugString() << std::endl << state.position().DebugString();
     EXPECT_EQ(position.end_lane(), state.position().end_lane()) << position.DebugString() << std::endl << state.position().DebugString();
