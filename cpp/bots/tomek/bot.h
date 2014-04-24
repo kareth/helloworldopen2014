@@ -45,6 +45,7 @@ class Bot : public bots::BotInterface {
   game::Switch switch_ = game::Switch::kStay;
   int count_ = 0;
 
+  bool crash_ = false;
   bool turbo_ = false;
 
   // TODO(tomek) create trackers for other cars?

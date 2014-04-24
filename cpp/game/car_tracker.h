@@ -58,6 +58,7 @@ class CarTracker : public CarPredictor {
 
   void RecordCarCrash() {
     crash_model_.RecordCarCrash(state_.position().angle());
+    Reset();
     stats_file_ << "CRASH" << std::endl;
   }
 

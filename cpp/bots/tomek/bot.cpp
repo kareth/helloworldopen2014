@@ -65,8 +65,10 @@ game::Command Bot::ComputeMove(const Position& position, int game_tick) {
   //   turbo_ = false;
   //   return Command(game::TurboToggle::kToggleOn);
   // }
-
-  return Command(0.5);
+  if (crash_) {
+    return Command(0.65);
+  }
+  return Command(0.7);
 }
 
 game::Command Bot::GetMove(
@@ -94,6 +96,7 @@ void Bot::NewRace(const Race& race) {
 }
 
 void Bot::CarCrashed(const std::string& color)  {
+  crash_ = true;
   car_tracker_->RecordCarCrash();
 }
 
