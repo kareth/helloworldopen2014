@@ -39,6 +39,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
     return Command(0);
   }
 
+
   SetStrategy(state);
 
   throttle_scheduler_->Schedule(state);
