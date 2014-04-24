@@ -6,6 +6,7 @@ GreedyTurboScheduler::GreedyTurboScheduler(const game::Race& race,
                       game::CarTracker& car_tracker)
   : race_(race), car_tracker_(car_tracker), turbo_available_(false),
     should_fire_now_(false) {
+  FindLongestStraights();
 }
 
 // Returns if should we use turbo
@@ -26,6 +27,24 @@ void GreedyTurboScheduler::Schedule(const game::CarState& state) {
     if (state.position().lap() == race_.laps() - 1)
       should_fire_now_ = true;
   }
+}
+
+void GreedyTurboScheduler::FindLongestStraights() {
+  /*const auto& pieces = race_.track().pieces();
+
+
+  int from = -1;
+  double length = 0;
+  for (int i = 0; i < pieces.size(); i++) {
+    if (pieces[i].type() == PieceType::kStraight) {
+      if (from == -1)
+        from = i;
+      length += pieces[i].length();
+    } else {
+      if (from != -1);
+    }
+  }
+*/
 }
 
 // Prepare for overtake

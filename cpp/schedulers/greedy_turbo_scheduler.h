@@ -31,6 +31,8 @@ class GreedyTurboScheduler : public TurboScheduler {
    void TurboUsed();
 
   private:
+   void FindLongestStraights();
+
    game::CarTracker& car_tracker_;
    const game::Race& race_;
 
@@ -39,6 +41,8 @@ class GreedyTurboScheduler : public TurboScheduler {
 
    Strategy strategy_;
    bool should_fire_now_;
+
+   vector<std::pair<double, std::pair<int, int>>> straights_;
 };
 
 }  // namespace schedulers

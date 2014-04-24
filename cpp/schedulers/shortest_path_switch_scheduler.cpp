@@ -21,6 +21,7 @@ void ShortestPathSwitchScheduler::Overtake(const string& color) {
 // Updates the state and calculates next state
 // TODO switch time
 void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
+  // TODO by far, it doesnt react on strategy change, it shouldnt be like that
   if (state.position().piece() == target_switch_)
     target_switch_ = -1;
 
