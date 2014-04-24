@@ -87,7 +87,12 @@ void ShortestPathSwitchScheduler::Switched() {
 
 // Returns scheduled switch
 bool ShortestPathSwitchScheduler::ShouldSwitch() {
-  return should_switch_now_;
+  if (should_switch_now_) {
+    if (car_tracker_.IsSafe(
+          car_tracker_.current_state(), game::Command(scheduled_switch_)))
+      return true;
+  }
+  return false;
 }
 
 game::Switch ShortestPathSwitchScheduler::SwitchDirection() {
