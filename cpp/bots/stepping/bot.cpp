@@ -80,6 +80,8 @@ void Bot::SetStrategy(const game::CarState& state) {
 
 void Bot::OnTurbo(const game::Turbo& turbo) {
   turbo_scheduler_->NewTurbo(turbo);
+
+  car_tracker_->RecordTurboAvailable(turbo);
   printf("Turbo Available\n");
 }
 
