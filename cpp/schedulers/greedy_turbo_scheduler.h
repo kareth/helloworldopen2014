@@ -47,6 +47,7 @@ class GreedyTurboScheduler : public TurboScheduler {
 
   private:
    void FindLongestStraights();
+   bool CanFire(const game::CarState& state, const Straight& straight);
 
    game::CarTracker& car_tracker_;
    const game::Race& race_;

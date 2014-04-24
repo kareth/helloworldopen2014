@@ -52,6 +52,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
     turbo_scheduler_->TurboUsed();
     printf("YABADABADUUUU\n");
   } else if (switch_scheduler_->ShouldSwitch()) {
+    printf("Switch\n");
     command = Command(switch_scheduler_->SwitchDirection());
     switch_scheduler_->Switched();
   } else {

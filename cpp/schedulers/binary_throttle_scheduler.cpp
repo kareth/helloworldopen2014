@@ -58,6 +58,9 @@ void BinaryThrottleScheduler::Optimize(const CarState& state) {
     for (int t = 0; t < groups_[g]; t++)
       schedule_.push_back((mask & (1 << g)) > 0);
 
+  if (!car_tracker_.IsSafe(state))
+    printf("DUPAAA\n");
+
   if (!car_tracker_.IsSafe(state, game::Command(schedule_[0])))
     schedule_[0] = 0;
 

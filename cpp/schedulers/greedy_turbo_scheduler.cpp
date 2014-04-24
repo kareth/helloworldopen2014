@@ -55,9 +55,17 @@ void GreedyTurboScheduler::Schedule(const game::CarState& state) {
 
     // If connected to 0
     if (last->to() == race_.track().pieces().size() - 1)
-      if (last->from() == state.position().piece())
+      if (CanFire(state, *last))
         should_fire_now_ = true;
   }
+}
+
+bool GreedyTurboScheduler::CanFire(const game::CarState& state, const Straight& straight) {
+  if (state.position().piece() == straight.from())
+    return true;
+  //if (state.position().piece() == straight.from() - 1) {
+  //}
+  return false;
 }
 
 void GreedyTurboScheduler::FindLongestStraights() {
