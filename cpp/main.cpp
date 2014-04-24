@@ -32,7 +32,7 @@ bots::BotInterface* GetBot(const string& bot_name) {
   if (bot_name == "stepping")
     return new bots::stepping::Bot();
   if (bot_name == "Need for C")
-    return new bots::stepping::Bot();
+    return new bots::tomek::Bot();
 
   return new bots::basic::Bot();
 }

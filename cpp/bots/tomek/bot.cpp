@@ -61,10 +61,10 @@ game::Command Bot::ComputeMove(const Position& position, int game_tick) {
   //   }
   // }
   //
-  if (turbo_ && position.piece() == 35) {
-    turbo_ = false;
-    return Command(game::TurboToggle::kToggleOn);
-  }
+  // if (turbo_ && position.piece() == 35) {
+  //   turbo_ = false;
+  //   return Command(game::TurboToggle::kToggleOn);
+  // }
 
   return Command(0.5);
 }
