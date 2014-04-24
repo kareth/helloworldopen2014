@@ -121,21 +121,22 @@ void CarTracker::Record(const Position& position) {
     }
   }
 
-  // Update models
-  crash_model_.Record(position.angle());
-  // TODO Fix throttle (take turbo into account).
-  velocity_model_.Record(velocity, state_.velocity(), last_command_.throttle());
-  GetDriftModel(state_.position())->Record(
-      position.angle(), state_.position().angle(), state_.previous_angle(),
-      state_.velocity(), RadiusInPosition(state_.position()));
-
-
   double throttle = last_command_.ThrottleSet() ? last_command_.throttle() : state_.throttle();
+  double effective_throttle = turbo_state.is_on() ? throttle * turbo_state.turbo().factor() : throttle;
   TurboState turbo_state = state_.turbo_state();
   if (last_command_.TurboSet()) {
     turbo_state.Enable();
   }
   turbo_state.Decrement();
+
+  // Update models
+  crash_model_.Record(position.angle());
+  // TODO Fix throttle (take turbo into account).
+  velocity_model_.Record(velocity, state_.velocity(), effective_throttle);
+  GetDriftModel(state_.position())->Record(
+      position.angle(), state_.position().angle(), state_.previous_angle(),
+      state_.velocity(), RadiusInPosition(state_.position()));
+
 
   state_ = CarState(position, velocity, state_.position().angle(), switch_state, throttle, turbo_state);
   LogState();
