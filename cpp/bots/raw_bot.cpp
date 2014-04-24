@@ -1,7 +1,8 @@
 #include "bots/raw_bot.h"
 
-#include <iostream>
+#include <ctime>
 #include <fstream>
+#include <iostream>
 
 #include "game/position.h"
 #include "game/race.h"
@@ -122,13 +123,11 @@ RawBot::msg_vector RawBot::OnGameStart(const jsoncons::json& msg) {
 }
 
 RawBot::msg_vector RawBot::ProcessOnCarPositions(const jsoncons::json& msg) {
+  const clock_t begin_time = clock();
+
   const auto& data = msg.get("data", jsoncons::json(""));
 
   const int game_tick = msg.get("gameTick", jsoncons::json(0)).as_int();
-
-  if (FLAGS_continuous_integration) {
-    std::cout << "game_tick: " << game_tick << std::endl;
-  }
 
   if (last_game_tick_ + 1 != game_tick) {
     std::cerr << "Bad game tick. Received " << game_tick << " expected: " << last_game_tick_;
@@ -148,6 +147,10 @@ RawBot::msg_vector RawBot::ProcessOnCarPositions(const jsoncons::json& msg) {
   if (FLAGS_dump_history) {
     history["positions"].add(data[0]);
     history["commands"].add(command);
+  }
+
+  if (FLAGS_continuous_integration) {
+    std::cout << "game_tick: " << game_tick << " time: " << double(clock() - begin_time) /  CLOCKS_PER_SEC * 1000 << "ms" << std::endl;
   }
 
   return command;
