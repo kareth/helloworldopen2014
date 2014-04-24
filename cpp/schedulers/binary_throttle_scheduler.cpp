@@ -41,10 +41,34 @@ void BinaryThrottleScheduler::Overtake(const string& color) {
 
 void BinaryThrottleScheduler::Schedule(const game::CarState& state) {
   // TODO(kareth) strategies
-  if (!car_tracker_.IsReady())
+  if (!car_tracker_.IsReady()) {
     schedule_ = { 1 };
-  else
-    Optimize(state);
+  } else {
+    if (strategy_ == Strategy::kOptimizeCurrentLap &&
+        race_.track().IsLastStraight(state.position())) {
+      schedule_ = { 1 };
+    } else {
+      Optimize(state);
+      OptimizeTurboBrake(state);
+    }
+  }
+  Log(state);
+}
+
+void BinaryThrottleScheduler::OptimizeTurboBrake(const game::CarState& state) {
+/*  // TODO hardcoded
+  if (schedule_[0] < 1e-9) return;
+
+  if (state.velocity() > 10) {
+    // Move that will be issued now
+    auto next = car_tracker_.Predict(state, game::Command(1));
+    // if next one crashes, then we should start braking earlier
+    next = car_tracker_.Predict(next, game::Command(1));
+    // atleast 2 ticks :D
+    next = car_tracker_.Predict(next, game::Command(1));
+    if (!car_tracker_.IsSafe(next))
+      schedule_[0] = 0;
+  }*/
 }
 
 // Returns optimal throttlle:
@@ -58,14 +82,11 @@ void BinaryThrottleScheduler::Optimize(const CarState& state) {
     for (int t = 0; t < groups_[g]; t++)
       schedule_.push_back((mask & (1 << g)) > 0);
 
-  printf("Check:\n");
   if (!car_tracker_.IsSafe(state))
-    printf("DUPAAA\n");
+    printf("Current state is not safe!\n");
 
   if (!car_tracker_.IsSafe(state, game::Command(schedule_[0])))
     schedule_[0] = 0;
-
-  Log(state);
 }
 
 // Finds most optimal(by means of distance travelled) mask
@@ -111,6 +132,7 @@ bool BinaryThrottleScheduler::CheckMask(
 void BinaryThrottleScheduler::Log(const game::CarState& state) {
   int i = 0;
   for (int g = 0; g < groups_.size(); g++) {
+    if (g >= schedule_.size()) break;
     std::cout << (int) schedule_[i] << " ";
     for (int t = 0; t < groups_[g]; t++)
       i++;

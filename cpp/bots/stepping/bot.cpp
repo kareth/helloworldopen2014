@@ -39,6 +39,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
     return Command(0);
   }
 
+
   SetStrategy(state);
 
   throttle_scheduler_->Schedule(state);
@@ -58,6 +59,12 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
   } else {
     command = Command(throttle_scheduler_->throttle());
   }
+
+  // TODO
+  if (race_.track().id() == "usa" &&
+      position.lap() == 0 &&
+      !command.SwitchSet())
+    command = Command(0.4);
 
   car_tracker_->RecordCommand(command);
   return command;
