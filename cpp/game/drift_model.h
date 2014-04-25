@@ -5,6 +5,7 @@
 #include <fstream>
 #include <string>
 #include <map>
+#include <vector>
 #include <algorithm>
 
 #include "game/error_tracker.h"
@@ -21,12 +22,12 @@ namespace game {
 class DriftModel {
  public:
   DriftModel() {
-    x_ = {1.9, -0.9, -0.00125, -0.00125};
+    x_ = {1.9, -0.9, -0.00125, 0.00125 * sqrt(180000), 0.3};
 
     char filename[50];
     sprintf (filename, "bin/drift.csv");
     file_.open (filename);
-    file_ << "p_angle,p_p_angle,p_velocity,angle,radius,sgn" << std::endl;
+    file_ << "angle,p_angle,velocity,radius,direction,next_angle" << std::endl;
   }
 
   ~DriftModel() {
@@ -42,11 +43,28 @@ class DriftModel {
     file_.close();
   }
 
-  // angle = f(previous_angle, previous_previous_angle, previous_velocity, radius, direction)
-  void Record(double angle, double previous_angle, double previous_previous_angle, double previous_velocity, double radius, double direction) {
+  // next_angle = f(angle, previous_previous_angle, previous_velocity, radius, direction)
+  void Record(double next_angle, double angle, double previous_angle, double velocity, double radius, double direction) {
     if (angle == 0) return;
 
-    file_ << previous_angle << "," << previous_previous_angle << "," << previous_velocity << "," << angle << "," << radius;
+    if (!IsReady() && direction != 0) {
+      model_.push_back({
+          angle,
+          previous_angle,
+          velocity * angle,
+          -direction * velocity * velocity * sqrt(InvRadius(radius)),
+          direction * velocity
+      });
+      b_.push_back(next_angle);
+      if (model_.size() > 8) {
+        Train();
+      }
+    }
+    if (IsReady()) {
+      error_tracker_.Add(Predict(angle, previous_angle, velocity, radius, direction), next_angle);
+    }
+
+    file_ << angle << "," << previous_angle << "," << velocity << "," << radius << "," << direction << "," << next_angle << std::endl;
   }
 
   // direction = {-1, 0, 1}
@@ -55,10 +73,10 @@ class DriftModel {
     return x_[0] * angle +
            x_[1] * previous_angle +
            x_[2] * velocity * angle +
-           x_[3] * direction * velocity * fmax(0, sqrt(double(180000) * velocity * velocity * InvRadius(radius)) - 240);
+           -direction * fmax(0, x_[3] * velocity * velocity * sqrt(InvRadius(radius)) - x_[4] * velocity);
   }
 
-  bool IsReady() {
+  bool IsReady() const {
     return ready_;
   }
 
@@ -68,11 +86,20 @@ class DriftModel {
     return 1.0 / radius;
   }
 
+  void Train() {
+    ready_ = true;
+    x_.clear();
+    Simplex::Optimize(model_, b_, x_);
+  }
+
   std::ofstream file_;
 
   bool ready_ = false;
 
-  vector<double> x_;
+  std::vector<vector<double>> model_;
+  std::vector<double> b_;
+
+  std::vector<double> x_;
 
   ErrorTracker error_tracker_;
 };

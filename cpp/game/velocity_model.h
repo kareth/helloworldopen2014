@@ -17,6 +17,9 @@ namespace game {
 // velocity = x0 * previous_velocity + x1 * throttle
 class VelocityModel {
  public:
+  VelocityModel() {
+    x_ = {0.2, 0.98};
+  }
   ~VelocityModel() {
     std::cout << "==== Velocity Model ====" << std::endl;
     for (int i = 0; i < x_.size(); ++i)

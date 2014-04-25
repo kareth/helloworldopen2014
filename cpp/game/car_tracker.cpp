@@ -18,10 +18,6 @@ CarTracker::~CarTracker() {
 }
 
 CarState CarTracker::Predict(const CarState& state, const Command& command) {
-  if (!IsReady()) {
-    return state;
-  }
-
   TurboState turbo_state = state.turbo_state();
   double throttle = command.ThrottleSet() ? command.throttle() : state.throttle();
   double effective_throttle = turbo_state.is_on() ? throttle * turbo_state.turbo().factor() : throttle;
@@ -172,7 +168,7 @@ bool CarTracker::IsSafe(const CarState& state) {
 }
 
 bool CarTracker::IsReady() const {
-  return velocity_model_.IsReady();
+  return velocity_model_.IsReady() && drift_model_.IsReady();
 }
 
 double CarTracker::RadiusInPosition(const Position& position) {
