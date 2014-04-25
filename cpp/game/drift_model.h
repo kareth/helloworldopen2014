@@ -27,7 +27,7 @@ class DriftModel {
     char filename[50];
     sprintf (filename, "bin/drift.csv");
     file_.open (filename);
-    file_ << "angle,p_angle,velocity,radius,direction,next_angle" << std::endl;
+    file_ << "angle,p_angle,velocity,radius,direction,next_angle,error" << std::endl;
   }
 
   ~DriftModel() {
@@ -70,11 +70,13 @@ class DriftModel {
         Train();
       }
     }
+    double predicted = 0;
     if (IsReady()) {
-      error_tracker_.Add(Predict(angle, previous_angle, velocity, radius, direction), next_angle);
+      predicted = Predict(angle, previous_angle, velocity, radius, direction);
+      error_tracker_.Add(predicted, next_angle);
     }
 
-    file_ << angle << "," << previous_angle << "," << velocity << "," << radius << "," << direction << "," << next_angle << std::endl;
+    file_ << std::setprecision(20) << angle << "," << previous_angle << "," << velocity << "," << radius << "," << direction << "," << next_angle << "," << predicted - next_angle << std::endl;
   }
 
   // direction = {-1, 0, 1}
