@@ -53,7 +53,7 @@ class VelocityModel {
     return x_[0] * velocity + x_[1] * throttle;
   }
 
-  double PredictThrottle(double velocity_to_maintain) {
+  double PredictThrottle(double velocity_to_maintain) const {
     return (velocity_to_maintain - velocity_to_maintain * x_[0]) / x_[1];
   }
 

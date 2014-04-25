@@ -77,6 +77,7 @@ class CarTracker : public CarPredictor {
   double throttle() const { return last_command_.throttle(); }
 
   const CrashModel& crash_model() const { return crash_model_; }
+  const VelocityModel& velocity_model() const { return velocity_model_; }
 
  private:
   bool just_started_ = true;
