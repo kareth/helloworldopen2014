@@ -11,6 +11,7 @@ using game::CarState;
 using game::Command;
 using game::Position;
 using game::Race;
+using schedulers::Strategy;
 
 namespace bots {
 namespace stepping {
@@ -25,12 +26,10 @@ void Bot::NewRace(const Race& race) {
   if (car_tracker_ == nullptr) {
     car_tracker_.reset(new CarTracker(&race_));
   }
-  throttle_scheduler_.reset(
-      new schedulers::BinaryThrottleScheduler(race_, *car_tracker_.get(), FLAGS_answer_time));
-  turbo_scheduler_.reset(
-      new schedulers::GreedyTurboScheduler(race_, *car_tracker_.get()));
-  switch_scheduler_.reset(
-      new schedulers::ShortestPathSwitchScheduler(race_, *car_tracker_.get()));
+
+  scheduler_.reset(
+      new schedulers::BulkScheduler(
+        race_, *car_tracker_.get(), FLAGS_answer_time));
 }
 
 game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick)  {
@@ -43,26 +42,11 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
     return Command(0);
   }
 
-
   SetStrategy(state);
 
-  throttle_scheduler_->Schedule(state);
-  switch_scheduler_->Schedule(state);
-  turbo_scheduler_->Schedule(state);
+  scheduler_->Schedule(state);
 
-  Command command;
-
-  if (turbo_scheduler_->ShouldFireTurbo()) {
-    command = Command(game::TurboToggle::kToggleOn);
-    turbo_scheduler_->TurboUsed();
-    printf("YABADABADUUUU\n");
-  } else if (switch_scheduler_->ShouldSwitch()) {
-    printf("Switch\n");
-    command = Command(switch_scheduler_->SwitchDirection());
-    switch_scheduler_->Switched();
-  } else {
-    command = Command(throttle_scheduler_->throttle());
-  }
+  auto command = scheduler_->command();
 
   // TODO
   if (race_.track().id() == "usa" &&
@@ -70,30 +54,23 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
       !command.SwitchSet())
     command = Command(0.4);
 
+  scheduler_->IssuedCommand(command);
+
   car_tracker_->RecordCommand(command);
   return command;
 }
 
 void Bot::SetStrategy(const game::CarState& state) {
-  using schedulers::Strategy;
-
-  auto strategy = Strategy::kOptimizeRace;
   int lap = state.position().lap();
 
   if (lap % 2 == 1)
-    strategy = Strategy::kOptimizeNextLap;
+    scheduler_->set_strategy(Strategy::kOptimizeNextLap);
   if (lap % 2 == 0 && lap != 0)
-    strategy = Strategy::kOptimizeCurrentLap;
-
-  throttle_scheduler_->set_strategy(strategy);
-  switch_scheduler_->set_strategy(strategy);
-  turbo_scheduler_->set_strategy(strategy);
+    scheduler_->set_strategy(Strategy::kOptimizeCurrentLap);
 }
 
 void Bot::OnTurbo(const game::Turbo& turbo) {
   if (!crashed_) {
-    turbo_scheduler_->NewTurbo(turbo);
-
     car_tracker_->RecordTurboAvailable(turbo);
     printf("Turbo Available\n");
   }

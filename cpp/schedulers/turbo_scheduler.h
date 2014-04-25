@@ -20,8 +20,6 @@ class TurboScheduler {
 
    virtual void set_strategy(const Strategy& strategy) = 0;
 
-   virtual void NewTurbo(const game::Turbo& turbo) = 0;
-
    virtual void TurboUsed() = 0;
 };
 

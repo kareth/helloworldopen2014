@@ -13,11 +13,10 @@
 
 #include "game/car_tracker.h"
 #include "game/turbo.h"
-#include "schedulers/greedy_turbo_scheduler.h"
-#include "schedulers/shortest_path_switch_scheduler.h"
-#include "schedulers/binary_throttle_scheduler.h"
 
 #include "gflags/gflags.h"
+
+#include "schedulers/bulk_scheduler.h"
 
 DECLARE_int32(answer_time);
 
@@ -56,10 +55,7 @@ class Bot : public bots::BotInterface {
   std::unique_ptr<game::CarTracker> car_tracker_;
 
   int switched_ = -1;
-
-  std::unique_ptr<schedulers::ThrottleScheduler> throttle_scheduler_;
-  std::unique_ptr<schedulers::SwitchScheduler> switch_scheduler_;
-  std::unique_ptr<schedulers::TurboScheduler> turbo_scheduler_;
+  std::unique_ptr<schedulers::Scheduler> scheduler_;
 };
 
 }  // namespace stepping
