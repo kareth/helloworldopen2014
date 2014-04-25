@@ -15,23 +15,22 @@
 
 DEFINE_string(track, "", "The track to join the race. Possible options: keimola, germany, usa.");
 DEFINE_int32(num_players, 1, "The number of players that will race (including you)");
-DEFINE_string(bot, "tomek", "The bot to use");
+DEFINE_string(bot, "Need for C", "The bot name.");
+DEFINE_string(bot_algorithm, "stepping", "The bot algorithm to use.");
 
 DEFINE_string(host, "testserver.helloworldopen.com", "");
 DEFINE_string(port, "8091", "");
 DEFINE_string(key, "", "");
 
 // Does not take ownership
-bots::BotInterface* GetBot(const string& bot_name) {
-  if (bot_name == "tomek")
+bots::BotInterface* GetBot(const string& bot_algorithm) {
+  if (bot_algorithm == "tomek")
     return new bots::tomek::Bot();
-  if (bot_name == "piotr")
+  if (bot_algorithm == "piotr")
     return new bots::piotr::Bot();
-  if (bot_name == "greedy")
+  if (bot_algorithm == "greedy")
     return new bots::greedy::Bot();
-  if (bot_name == "stepping")
-    return new bots::stepping::Bot();
-  if (bot_name == "Need for C")
+  if (bot_algorithm == "stepping")
     return new bots::stepping::Bot();
 
   return new bots::basic::Bot();
@@ -68,7 +67,7 @@ int main(int argc, char** argv) {
     std::cout << "Host: " << FLAGS_host << ", port: " << FLAGS_port <<
       ", name: " << FLAGS_bot << ", key:" << FLAGS_key << std::endl;
 
-    std::unique_ptr<bots::RawBot> bot(new bots::RawBot(GetBot(FLAGS_bot)));
+    std::unique_ptr<bots::RawBot> bot(new bots::RawBot(GetBot(FLAGS_bot_algorithm)));
     utils::Connection connection(FLAGS_host, FLAGS_port);
 
     run(&connection, bot.get(), FLAGS_bot, FLAGS_key);
