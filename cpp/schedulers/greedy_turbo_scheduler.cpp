@@ -53,9 +53,11 @@ void GreedyTurboScheduler::Schedule(const game::CarState& state) {
         last = &s;
 
     // If connected to 0
-    if (last->to() == race_.track().pieces().size() - 1)
-      if (state.position().piece() == last->from())
-        should_fire_now_ = true;
+    if (race_.track().id() != "usa") {
+      if (last->to() == race_.track().pieces().size() - 1)
+        if (state.position().piece() == last->from())
+          should_fire_now_ = true;
+    }
   }
 }
 
@@ -104,7 +106,7 @@ void GreedyTurboScheduler::FindLongestStraights() {
 
   sort(straights_.begin(), straights_.end(), [](const Straight& a, const Straight& b) {
       if (a.length() - b.length() > 1e-9) return true;
-      if (b.length() - a.length() > 1e-9) return true;
+      if (b.length() - a.length() > 1e-9) return false;
       return a.from() < b.from(); } );
 }
 

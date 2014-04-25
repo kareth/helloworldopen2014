@@ -23,9 +23,9 @@ class BulkScheduler : public Scheduler {
 
    void Overtake(const string& color) override;
 
-   void set_strategy(const Strategy& strategy) override { strategy_ = strategy; }
-
    game::Command command() override { return command_; }
+
+   void set_strategy(const Strategy& strategy) override;
 
    void IssuedCommand(const game::Command& command) override;
 

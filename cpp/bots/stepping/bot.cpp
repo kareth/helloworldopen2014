@@ -38,22 +38,19 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
   auto& state = car_tracker_->current_state();
 
   // TODO
-  if (crashed_) {
+  if (crashed_)
     return Command(0);
+  if (race_.track().id() == "usa" &&
+      position.lap() == 0) {
+    auto command = Command(0.4);
+    car_tracker_->RecordCommand(command);
+    return command;
   }
 
   SetStrategy(state);
 
   scheduler_->Schedule(state);
-
   auto command = scheduler_->command();
-
-  // TODO
-  if (race_.track().id() == "usa" &&
-      position.lap() == 0 &&
-      !command.SwitchSet())
-    command = Command(0.4);
-
   scheduler_->IssuedCommand(command);
 
   car_tracker_->RecordCommand(command);
@@ -65,8 +62,10 @@ void Bot::SetStrategy(const game::CarState& state) {
 
   if (lap % 2 == 1)
     scheduler_->set_strategy(Strategy::kOptimizeNextLap);
-  if (lap % 2 == 0 && lap != 0)
+  else if (lap % 2 == 0 && lap != 0)
     scheduler_->set_strategy(Strategy::kOptimizeCurrentLap);
+  else
+    scheduler_->set_strategy(Strategy::kOptimizeRace);
 }
 
 void Bot::OnTurbo(const game::Turbo& turbo) {
