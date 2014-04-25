@@ -206,6 +206,8 @@ RawBot::msg_vector RawBot::OnCrash(const jsoncons::json& msg) {
   const auto& data = msg.get("data", jsoncons::json(""));
   const auto& color = data["color"].as_string();
 
+  std::cout << "Crash on tick: " << last_game_tick_ << std::endl;
+
   visualizer_.CarCrashed(color);
   bot_->CarCrashed(color);
   return ping();

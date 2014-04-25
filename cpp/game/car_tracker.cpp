@@ -121,8 +121,10 @@ void CarTracker::Record(const Position& position) {
     velocity = position.piece_distance() - state_.position().piece_distance() +
       lane_length_model_.Length(state_.position());
 
-    // TODO It is probably to predicy the velocity (if velocity_model_ is ready),
-    // because the Length can be not perfect.
+    // Note: because of switches, it is better to use our model.
+    if (velocity_model_.IsReady()) {
+      velocity = velocity_model_.Predict(state_.velocity(), effective_throttle);
+    }
 
     if (position.start_lane() != position.end_lane()) {
       switch_state = Switch::kStay;
@@ -132,10 +134,16 @@ void CarTracker::Record(const Position& position) {
   double direction = -sgn(race_->track().pieces()[state_.position().piece()].angle());
 
   // Update models
-  crash_model_.Record(position.angle());
+  crash_model_.RecordSafeAngle(position.angle());
   // There is too many problems in between pieces (length of switches),
   // so do not take those measurements into account.
   if (state_.position().piece() == position.piece()) {
+    if (fabs(velocity - velocity_model_.Predict(state_.velocity(), effective_throttle)) > 0.00001) {
+      std::cout << "Previous position: " << std::endl;
+      std::cout << state_.DebugString();
+      std::cout << "New position" << std::endl;
+      std::cout << position.DebugString();
+    }
     velocity_model_.Record(velocity, state_.velocity(), effective_throttle);
   }
   drift_model_.Record(
@@ -159,7 +167,7 @@ bool CarTracker::IsSafe(const CarState& state) {
 
   auto s = state;
   while (s.velocity() > safe_speed) {
-    if (s.position().angle() > 60 - 1e-9) {
+    if (!crash_model_.IsSafe(s.position().angle())) {
       return false;
     }
     s = Predict(s, Command(0));
@@ -191,6 +199,13 @@ void CarTracker::LogState() {
 
 void CarTracker::RecordTurboAvailable(const game::Turbo& turbo) {
   state_.AddNewTurbo(turbo);
+}
+
+void CarTracker::RecordCarCrash() {
+  auto crashed_state = Predict(state_, last_command_);
+  crash_model_.RecordCarCrash(crashed_state.position().angle());
+  Reset();
+  stats_file_ << "CRASH" << std::endl;
 }
 
 }  // namespace game

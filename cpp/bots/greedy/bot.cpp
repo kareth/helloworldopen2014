@@ -43,7 +43,7 @@ double Bot::Optimize(const CarState& state) {
     states.push_back(predicted);
 
     // TODO We should not hard code 60!
-    if (fabs(predicted.position().angle()) >= 60) {
+    if (!car_tracker_->crash_model().IsSafe(predicted.position().angle())) {
       bool found = false;
       // Look for something to slow down
       for (int j = i; j >= 0; j--) {

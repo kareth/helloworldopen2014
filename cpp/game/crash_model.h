@@ -13,7 +13,8 @@ class CrashModel {
  public:
   ~CrashModel() {
     std::cout << "==== Crash Model ====" << std::endl;
-    std::cout << "threshold: " << angle_threshold_ << std::endl;
+    std::cout << "safe_angle: " << safe_angle_ << std::endl;
+    std::cout << "unsafe_angle: " << unsafe_angle_ << std::endl;
     std::cout << (ready_ ? "with crash" : "without crash") << std::endl;
     if (crashes_.size() > 0) {
       std::cout << "Crashes: ";
@@ -23,27 +24,21 @@ class CrashModel {
     std::cout << std::endl << std::endl;
   }
 
-  void RecordCarCrash(double angle) {
+  void RecordCarCrash(double unsafe_angle) {
     ready_ = true;
-    angle_threshold_ = fmax(angle_threshold_, angle);
-    crashes_.push_back(angle);
+    unsafe_angle_ = fmin(unsafe_angle_, fabs(unsafe_angle));
   }
 
-  // TODO(zurkowski) Do we need this?
-  void Record(double angle) {
-    angle_threshold_ = fmax(angle_threshold_, angle);
+  void RecordSafeAngle(double angle) {
+    safe_angle_ = fmax(safe_angle_, fabs(angle));
   }
 
-  // Returns the angle that is definitely safe. If the car has higher angle
-  // than this value, then it is possible it will crash.
-  double safe_angle() const {
-    return angle_threshold_;
-  }
-
-  // WillCrash?
-  bool Predict(double angle) const {
-    if (ready_) return false;
-    return angle < angle_threshold_;
+  bool IsSafe(double angle) const {
+    if (IsReady()) {
+      return fabs(angle) < safe_angle_;
+    } else {
+      return fabs(angle) < safe_angle_ + 3;
+    }
   }
 
 
@@ -58,7 +53,8 @@ class CrashModel {
   bool ready_ = false;
 
   // The angle that will not cause crash.
-  double angle_threshold_ = 0.0;
+  double safe_angle_ = 0.0;
+  double unsafe_angle_ = 90.0;
 
   // The list of angles just before the crash.
   std::vector<double> crashes_;

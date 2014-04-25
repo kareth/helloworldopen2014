@@ -122,7 +122,7 @@ bool BinaryThrottleScheduler::CheckMask(
       states[now ^ 1] = car_tracker_.Predict(states[now], game::Command((mask & (1 << g)) > 0));
       now ^= 1;
       (*distance) += race_.track().Distance(states[now].position(), states[now ^ 1].position());
-      if (fabs(states[now].position().angle()) >= 60 - 1e-9)
+      if (!car_tracker_.crash_model().IsSafe(states[now].position().angle()))
         return false;
     }
   }

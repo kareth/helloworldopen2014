@@ -56,11 +56,7 @@ class CarTracker : public CarPredictor {
     last_command_ = command;
   }
 
-  void RecordCarCrash() {
-    crash_model_.RecordCarCrash(state_.position().angle());
-    Reset();
-    stats_file_ << "CRASH" << std::endl;
-  }
+  void RecordCarCrash();
 
   void RecordTurboAvailable(const game::Turbo& turbo);
 
@@ -79,6 +75,8 @@ class CarTracker : public CarPredictor {
 
   // TODO deprecate
   double throttle() const { return last_command_.throttle(); }
+
+  const CrashModel& crash_model() const { return crash_model_; }
 
  private:
   bool just_started_ = true;

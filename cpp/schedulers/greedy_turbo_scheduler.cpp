@@ -79,7 +79,7 @@ bool GreedyTurboScheduler::CanFireBeforeStraight(const game::CarState& state, co
     auto s = car_tracker_.Predict(state, game::Command(game::TurboToggle::kToggleOn));
     int max_ticks = 80;
     while (max_ticks-- > 0 && s.position().piece() != straight.from()) {
-      if (s.position().angle() > 60 - 1e-9)
+      if (!car_tracker_.crash_model().IsSafe(s.position().angle()))
         return false;
       s = car_tracker_.Predict(s, game::Command(1));
     }

@@ -6,6 +6,9 @@ namespace game {
 class ErrorTracker {
  public:
   void Add(double error) {
+    if (error > 1e-5) {
+      std::cout << "Big error: " << error << std::endl;
+    }
     error_max_ = fmax(error, error_max_);
     error_sum_ += error;
     error_count_++;
