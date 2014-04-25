@@ -17,9 +17,12 @@ void LearningScheduler::Schedule(const game::CarState& state) {
 
   auto next = car_tracker_.Predict(state, command_);
 
-  if (next.velocity() < state.velocity())
-    command_ = game::Command(
-        car_tracker_.velocity_model().PredictThrottle(state.velocity()));
+  // TODO maintain speed
+  /*if (race_.track().pieces()[state.position().piece()].type() == game::PieceType::kBent ||
+      race_.track().pieces()[next.position().piece()].type() == game::PieceType::kBent)
+    if (next.velocity() < state.velocity())
+      command_ = game::Command(
+          car_tracker_.velocity_model().PredictThrottle(state.velocity()));*/
 }
 
 void LearningScheduler::set_strategy(const Strategy& strategy) {

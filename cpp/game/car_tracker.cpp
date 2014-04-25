@@ -73,7 +73,9 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
   // TODO
   //
   if (state.position().start_lane() != state.position().end_lane() && radius > 1e-12)
-    radius = radius * 0.9;
+    radius = 0.9 *
+      min(race_->track().LaneRadius(state.position().piece(), state.position().start_lane()),
+          race_->track().LaneRadius(state.position().piece(), state.position().end_lane()));
 
   double angle = drift_model_.Predict(
       state.position().angle(),
