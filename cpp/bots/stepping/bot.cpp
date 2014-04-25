@@ -30,6 +30,10 @@ void Bot::NewRace(const Race& race) {
   scheduler_.reset(
       new schedulers::BulkScheduler(
         race_, *car_tracker_.get(), FLAGS_answer_time));
+
+  learning_scheduler_.reset(
+      new schedulers::LearningScheduler(
+        race_, *car_tracker_.get(), FLAGS_answer_time));
 }
 
 game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick)  {
@@ -47,11 +51,17 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
     return command;
   }
 
-  SetStrategy(state);
-
-  scheduler_->Schedule(state);
-  auto command = scheduler_->command();
-  scheduler_->IssuedCommand(command);
+  Command command;
+  if (car_tracker_->IsReady()) {
+    SetStrategy(state);
+    scheduler_->Schedule(state);
+    command = scheduler_->command();
+    scheduler_->IssuedCommand(command);
+  } else {
+    learning_scheduler_->Schedule(state);
+    command = learning_scheduler_->command();
+    learning_scheduler_->IssuedCommand(command);
+  }
 
   car_tracker_->RecordCommand(command);
   return command;

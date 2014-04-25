@@ -17,6 +17,7 @@
 #include "gflags/gflags.h"
 
 #include "schedulers/bulk_scheduler.h"
+#include "schedulers/learning_scheduler.h"
 
 DECLARE_int32(answer_time);
 
@@ -56,6 +57,7 @@ class Bot : public bots::BotInterface {
 
   int switched_ = -1;
   std::unique_ptr<schedulers::Scheduler> scheduler_;
+  std::unique_ptr<schedulers::Scheduler> learning_scheduler_;
 };
 
 }  // namespace stepping
