@@ -12,6 +12,7 @@ function build_with_cmake() {
 
 function build_without_cmake() {
   date
+  git rev-parse HEAD
   # Build without cmake
   flags="-std=c++11 -I jsoncons/src/ -I . -l pthread -l boost_system -o bin/bot"
   g++ $flags \
