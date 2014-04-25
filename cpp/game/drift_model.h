@@ -55,7 +55,8 @@ class DriftModel {
 
 
     // TODO keep improving the model
-    if (!IsReady() && direction != 0) {
+    // TODO remove hardcoding of the next_angle. Maybe we should use crash model?
+    if (!IsReady() && direction != 0 && next_angle > 5) {
       model_.push_back({
           angle,
           previous_angle,
@@ -64,6 +65,7 @@ class DriftModel {
           direction * velocity
       });
       b_.push_back(next_angle);
+      // TODO
       if (model_.size() > 8) {
         Train();
       }

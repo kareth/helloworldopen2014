@@ -16,11 +16,6 @@ class CrashModel {
     std::cout << "safe_angle: " << safe_angle_ << std::endl;
     std::cout << "unsafe_angle: " << unsafe_angle_ << std::endl;
     std::cout << (ready_ ? "with crash" : "without crash") << std::endl;
-    if (crashes_.size() > 0) {
-      std::cout << "Crashes: ";
-      for (double c : crashes_)
-        std::cout << c << ", ";
-    }
     std::cout << std::endl << std::endl;
   }
 
@@ -37,10 +32,9 @@ class CrashModel {
     if (IsReady()) {
       return fabs(angle) < safe_angle_;
     } else {
-      return fabs(angle) < safe_angle_ + 3;
+      return fabs(angle) < safe_angle_ + 10;
     }
   }
-
 
   // Returns true if there was at least one crash.
   bool IsReady() const {
@@ -55,9 +49,6 @@ class CrashModel {
   // The angle that will not cause crash.
   double safe_angle_ = 0.0;
   double unsafe_angle_ = 90.0;
-
-  // The list of angles just before the crash.
-  std::vector<double> crashes_;
 };
 
 }  // namespace game

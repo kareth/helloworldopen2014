@@ -41,16 +41,12 @@ void BinaryThrottleScheduler::Overtake(const string& color) {
 
 void BinaryThrottleScheduler::Schedule(const game::CarState& state) {
   // TODO(kareth) strategies
-  if (!car_tracker_.IsReady()) {
+  if (strategy_ == Strategy::kOptimizeCurrentLap &&
+      race_.track().IsLastStraight(state.position())) {
     schedule_ = { 1 };
   } else {
-    if (strategy_ == Strategy::kOptimizeCurrentLap &&
-        race_.track().IsLastStraight(state.position())) {
-      schedule_ = { 1 };
-    } else {
-      Optimize(state);
-      OptimizeTurboBrake(state);
-    }
+    Optimize(state);
+    OptimizeTurboBrake(state);
   }
   Log(state);
 }

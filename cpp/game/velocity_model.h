@@ -31,7 +31,8 @@ class VelocityModel {
 
   // velocity = x * previous_velocity + y * previous_throttle
   void Record(double velocity, double previous_velocity, double previous_throttle) {
-    if (velocity == 0) return;
+    if (velocity < 1e-5) return;
+    if (previous_throttle < 1e-5) return;
 
     if (IsReady()) {
       error_tracker_.Add(velocity, Predict(previous_velocity, previous_throttle));
