@@ -32,7 +32,7 @@ class CrashModel {
     if (IsReady()) {
       return fabs(angle) < safe_angle_;
     } else {
-      return fabs(angle) < safe_angle_ + 10;
+      return fabs(angle) < fmax(60, safe_angle_);
     }
   }
 
