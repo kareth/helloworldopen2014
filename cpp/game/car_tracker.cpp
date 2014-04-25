@@ -141,9 +141,13 @@ void CarTracker::Record(const Position& position) {
   if (state_.position().piece() == position.piece()) {
     velocity_model_.Record(velocity, state_.velocity(), effective_throttle);
   }
-  drift_model_.Record(
-      position.angle(), state_.position().angle(), state_.previous_angle(),
-      state_.velocity(), RadiusInPosition(state_.position()), direction);
+
+  // Do not learn the drift model on switches!
+  if (!drift_model_.IsReady() && state_.position().piece() != position.piece()) {
+    drift_model_.Record(
+        position.angle(), state_.position().angle(), state_.previous_angle(),
+        state_.velocity(), RadiusInPosition(state_.position()), direction);
+  }
   if (velocity_model_.IsReady()) {
     lane_length_model_.Record(state_.position(), position, velocity_model_.Predict(state_.velocity(), effective_throttle));
   }
