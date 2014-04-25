@@ -2,7 +2,8 @@
 
 namespace game {
 
-double LaneLengthModel::Length(const Position& position) const {
+double LaneLengthModel::Length(const Position& position, bool* perfect) const {
+  if (perfect) *perfect = true;
   const auto& piece = track_->pieces()[position.piece()];
 
   if (piece.type() == PieceType::kStraight) {
@@ -18,6 +19,7 @@ double LaneLengthModel::Length(const Position& position) const {
       return switch_on_straight_length_.at({piece.length(), width});
     }
 
+    if (perfect) *perfect = false;
     return std::sqrt(width * width + piece.length() * piece.length());
   }
 
@@ -34,6 +36,11 @@ double LaneLengthModel::Length(const Position& position) const {
   double radius2 = track_->LaneRadius(position.piece(), position.end_lane());
 
   if (switch_on_turn_length_.count({radius1, radius2}) > 0) {
+    return switch_on_turn_length_.at({radius1, radius2});
+  }
+  // The opposite switch is much better predictor if available
+  if (switch_on_turn_length_.count({radius2, radius1}) > 0) {
+    if (perfect) *perfect = false;
     return switch_on_turn_length_.at({radius1, radius2});
   }
   return M_PI * radius1 * (fabs(piece.angle()) / 360.0) + M_PI * radius2 * (fabs(piece.angle()) / 360.0);
@@ -58,11 +65,6 @@ void LaneLengthModel::Record(const Position& previous, const Position& current, 
   double radius1 = track_->LaneRadius(previous.piece(), previous.start_lane());
   double radius2 = track_->LaneRadius(previous.piece(), previous.end_lane());
   switch_on_turn_length_[{radius1, radius2}] = length;
-
-  // The opposite is almost true, so update the approximation if no available.
-  if (switch_on_turn_length_.count({radius2, radius1}) == 0) {
-    switch_on_turn_length_[{radius2, radius1}] = length;
-  }
 }
 
 }  // namespace game

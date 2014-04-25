@@ -118,11 +118,12 @@ void CarTracker::Record(const Position& position) {
   if (state_.position().piece() == position.piece()) {
     velocity = position.piece_distance() - state_.position().piece_distance();
   } else {
+    bool lane_length_perfect = false;
     velocity = position.piece_distance() - state_.position().piece_distance() +
-      lane_length_model_.Length(state_.position());
+      lane_length_model_.Length(state_.position(), &lane_length_perfect);
 
     // Note: because of switches, it is better to use our model.
-    if (velocity_model_.IsReady()) {
+    if (!lane_length_perfect && velocity_model_.IsReady()) {
       velocity = velocity_model_.Predict(state_.velocity(), effective_throttle);
     }
 
@@ -188,7 +189,7 @@ void CarTracker::LogState() {
     << position.piece_distance() << ","
     << state_.position().angle() << ","
     << state_.velocity() << ","
-    << last_command_.throttle() << std::endl;
+    << state_.throttle() << std::endl;
 }
 
 void CarTracker::RecordTurboAvailable(const game::Turbo& turbo) {

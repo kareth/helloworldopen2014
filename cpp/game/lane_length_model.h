@@ -16,7 +16,8 @@ class LaneLengthModel {
   // Track has to outlive this model.
   LaneLengthModel(const Track* track) : track_(track) {}
 
-  double Length(const Position& position) const;
+  // perfect - return if the returned length is on 100% correct
+  double Length(const Position& position, bool* perfect=nullptr) const;
 
   void Record(const Position& previous, const Position& current, double predicted_velocity);
 
