@@ -44,17 +44,31 @@ jsoncons::json make_throttle(double throttle, int game_tick) {
   return r;
 }
 
-jsoncons::json make_switch(game::Switch s) {
+jsoncons::json make_switch(game::Switch s, int game_tick) {
+  jsoncons::json r;
+  r["msgType"] = "switchLane";
+
+  if (game_tick != -1) {
+    r["gameTick"] = game_tick;
+  }
+
   if (s == game::Switch::kSwitchLeft)
-    return make_request("switchLane", "Left");
+    r["data"] = "Left";
   else if (s == game::Switch::kSwitchRight)
-    return make_request("switchLane", "Right");
+    r["data"] = "Right";
   else
     return make_ping();
+  return r;
 }
 
-jsoncons::json make_turbo() {
-  return make_request("turbo", "YABAA DABAA DUUUUUUUUUUUU");
+jsoncons::json make_turbo(int game_tick) {
+  jsoncons::json r;
+  r["msgType"] = "turbo";
+  r["data"] = "YABAA DABAA DUUUUUUUUUUUU";
+  if (game_tick != -1) {
+    r["gameTick"] = game_tick;
+  }
+  return r;
 }
 
 }  // namespace utils

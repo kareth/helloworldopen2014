@@ -4,8 +4,7 @@ namespace schedulers {
 
 GreedyTurboScheduler::GreedyTurboScheduler(const game::Race& race,
                       game::CarTracker& car_tracker)
-  : race_(race), car_tracker_(car_tracker), turbo_available_(false),
-    should_fire_now_(false) {
+  : race_(race), car_tracker_(car_tracker), should_fire_now_(false) {
   FindLongestStraights();
 }
 
@@ -16,7 +15,7 @@ bool GreedyTurboScheduler::ShouldFireTurbo() {
 
 // Makes decision on turbo usage
 void GreedyTurboScheduler::Schedule(const game::CarState& state) {
-  if (!turbo_available_) {
+  if (!state.turbo_state().available()) {
     should_fire_now_ = false;
     return;
   }
@@ -110,8 +109,8 @@ void GreedyTurboScheduler::FindLongestStraights() {
     straights_.push_back(Straight(length, from, pieces.size() - 1));
 
   sort(straights_.begin(), straights_.end(), [](const Straight& a, const Straight& b) {
-      if (a.length() != b.length())
-        return a.length() > b.length();
+      if (a.length() - b.length() > 1e-9) return true;
+      if (b.length() - a.length() > 1e-9) return true;
       return a.from() < b.from(); } );
 }
 
@@ -120,13 +119,7 @@ void GreedyTurboScheduler::Overtake(const string& color) {
   printf("Feature not implemented.\n");
 }
 
-void GreedyTurboScheduler::NewTurbo(const game::Turbo& turbo) {
-  turbo_available_ = true;
-  turbo_ = turbo;
-}
-
 void GreedyTurboScheduler::TurboUsed() {
-  turbo_available_ = false;
   should_fire_now_ = false;
 }
 

@@ -41,8 +41,6 @@ class GreedyTurboScheduler : public TurboScheduler {
 
    void set_strategy(const Strategy& strategy) { strategy_ = strategy; }
 
-   void NewTurbo(const game::Turbo& turbo);
-
    void TurboUsed();
 
   private:
@@ -51,9 +49,6 @@ class GreedyTurboScheduler : public TurboScheduler {
 
    game::CarTracker& car_tracker_;
    const game::Race& race_;
-
-   bool turbo_available_;
-   game::Turbo turbo_;
 
    Strategy strategy_;
    bool should_fire_now_;
