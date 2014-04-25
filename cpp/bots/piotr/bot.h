@@ -40,6 +40,7 @@ class Bot : public bots::BotInterface {
 
   game::Race race_;
   std::unique_ptr<physics::SpeedTracker> speed_tracker_;
+  std::string color_;
 };
 
 }  // namespace piotr
