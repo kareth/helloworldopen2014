@@ -143,7 +143,7 @@ void CarTracker::Record(const Position& position) {
   }
 
   // Do not learn the drift model on switches!
-  if (!drift_model_.IsReady() && state_.position().piece() != position.piece()) {
+  if (!drift_model_.IsReady() && state_.position().start_lane() != state_.position().end_lane()) {
     drift_model_.Record(
         position.angle(), state_.position().angle(), state_.previous_angle(),
         state_.velocity(), RadiusInPosition(state_.position()), direction);
