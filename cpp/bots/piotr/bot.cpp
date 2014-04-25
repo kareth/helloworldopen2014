@@ -21,6 +21,7 @@ void Bot::JoinedGame() {
 }
 
 void Bot::YourCar(const string& color) {
+  color_ = color;
   return;
 }
 
@@ -35,6 +36,8 @@ void Bot::GameStarted() {
 }
 
 game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick)  {
+  // printf("%lf\n",positions.at(color_).piece_distance());
+  // return Command(0);
   speed_tracker_->Update(positions);
 
   const auto& my_pos = positions.begin()->second;
