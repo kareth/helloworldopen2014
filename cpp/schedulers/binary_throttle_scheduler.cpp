@@ -1,5 +1,7 @@
 #include "schedulers/binary_throttle_scheduler.h"
 
+#include<chrono>
+
 namespace schedulers {
 
 using game::CarState;
@@ -11,7 +13,7 @@ BinaryThrottleScheduler::BinaryThrottleScheduler(const game::Race& race,
  // Each decrease reduces that time 2 times
  // Size = 16 seems quite optimal (1x1 + 15x2)
 
- int size = 16;
+ int size = 17;
 
   for (; time_limit / 2 > 300 && size < 20; time_limit /= 2)
     size++;
@@ -45,7 +47,14 @@ void BinaryThrottleScheduler::Schedule(const game::CarState& state) {
       race_.track().IsLastStraight(state.position())) {
     schedule_ = { 1 };
   } else {
+    // auto start = std::chrono::system_clock::now();
+
     Optimize(state);
+
+    /* auto end = std::chrono::system_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "time: " << elapsed.count() << std::endl;*/
+
     OptimizeTurboBrake(state);
   }
   Log(state);
@@ -85,44 +94,44 @@ void BinaryThrottleScheduler::Optimize(const CarState& state) {
     schedule_[0] = 0;
 }
 
-// Finds most optimal(by means of distance travelled) mask
-// @returns mask or -1 if impossible
-// @param distance total distance travelled
-int BinaryThrottleScheduler::FindBestMask(const CarState& state, double* distance) {
-  int best_mask = -1;
-  *distance = 0;
+int BinaryThrottleScheduler::FindBestMask(const CarState& state, double* distance, int from) {
+  if (from >= groups_.size()) { // Juz nic nie ma
+    *distance = 0;
+    return 0;
+  }
 
-  // TODO dont predict that much. probably can go 2 times faster
-  for (int mask = 0; mask < (1 << (groups_.size())); mask++) {
-    double mask_distance;
-    if (CheckMask(mask, state, &mask_distance) &&
-        mask_distance > *distance) {
-      *distance = mask_distance;
-      best_mask = mask;
+  *distance = -1;
+  int mask = -1;
+
+  for (int throttle = 0; throttle <= 1; throttle++) {
+    bool fail = false;
+    vector<CarState> next { state };
+
+    double tick_distance = 0;
+    for (int tick = 0; tick < groups_[from]; tick++) {
+      next.push_back(car_tracker_.Predict(next.back(), game::Command(throttle)));
+
+      tick_distance += race_.track().Distance(next.back().position(), next[next.size()-2].position());
+      if (!car_tracker_.crash_model().IsSafe(next.back().position().angle())) {
+        fail = true;
+        break;
+      }
+    }
+
+    if (fail)
+      continue;
+
+    double remaining_distance = 0;
+    int remaining_mask = FindBestMask(next.back(), &remaining_distance, from + 1);
+
+    if (remaining_mask != -1 &&
+        remaining_distance + tick_distance > *distance) {
+      *distance = remaining_distance + tick_distance;
+      mask = (remaining_mask << 1) | (throttle);
     }
   }
-  return best_mask;
-}
 
-// Checks whether given throttle setup wont crash
-// @returns false if car crashes
-// @param distance total distance travelled
-bool BinaryThrottleScheduler::CheckMask(
-    int mask, const CarState& state, double* distance) {
-  vector<CarState> states {state, state};
-  int now = 1;
-  *distance = 0;
-
-  for (int g = 0; g < groups_.size(); g++) {
-    for (int t = 0; t < groups_[g]; t++) {
-      states[now ^ 1] = car_tracker_.Predict(states[now], game::Command((mask & (1 << g)) > 0));
-      now ^= 1;
-      (*distance) += race_.track().Distance(states[now].position(), states[now ^ 1].position());
-      if (!car_tracker_.crash_model().IsSafe(states[now].position().angle()))
-        return false;
-    }
-  }
-  return true;
+  return mask;
 }
 
 void BinaryThrottleScheduler::Log(const game::CarState& state) {

@@ -41,12 +41,8 @@ class BinaryThrottleScheduler : public ThrottleScheduler {
   // Finds most optimal(by means of distance travelled) mask
   // @returns mask or -1 if impossible
   // @param distance total distance travelled
-  int FindBestMask(const game::CarState& state, double* distance);
-
-  // Checks whether given throttle setup wont crash
-  // @returns false if car crashes
-  // @param distance total distance travelled
-  bool CheckMask(int mask, const game::CarState& state, double* distance);
+  // @param from - mask from position 'from' in groups_
+  int FindBestMask(const game::CarState& state, double* distance, int from = 0);
 
   // Check if should brake with turbo
   void OptimizeTurboBrake(const game::CarState& state);
