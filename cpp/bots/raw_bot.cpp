@@ -54,14 +54,17 @@ RawBot::~RawBot() {
 }
 
 RawBot::msg_vector RawBot::CommandToMsg(const game::Command& command, int game_tick) {
-  if (command.SwitchSet())
-    return { utils::make_switch(command.get_switch()) };
-  else if (command.TurboSet())
-    return { utils::make_turbo() };
-  else if (command.ThrottleSet())
+  if (command.SwitchSet()) {
+    printf("Command: Switch\n");
+    return { utils::make_switch(command.get_switch(), game_tick) };
+  } else if (command.TurboSet()) {
+    printf("Command: Turbo\n");
+    return { utils::make_turbo(game_tick) };
+  } else if (command.ThrottleSet()) {
     return { utils::make_throttle(command.get_throttle(), game_tick) };
-  else
+  } else {
     return ping();
+  }
 }
 
 RawBot::msg_vector RawBot::React(const jsoncons::json& msg) {

@@ -110,8 +110,8 @@ void GreedyTurboScheduler::FindLongestStraights() {
     straights_.push_back(Straight(length, from, pieces.size() - 1));
 
   sort(straights_.begin(), straights_.end(), [](const Straight& a, const Straight& b) {
-      if (a.length() != b.length())
-        return a.length() > b.length();
+      if (a.length() - b.length() > 1e-9) return true;
+      if (b.length() - a.length() > 1e-9) return true;
       return a.from() < b.from(); } );
 }
 
