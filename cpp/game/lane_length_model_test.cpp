@@ -46,13 +46,13 @@ TEST_F(LaneLengthModelTest, StraightLaneSwitch) {
   position_.set_piece(3);
   position_.set_start_lane(0);
   position_.set_end_lane(1);
-  EXPECT_NEAR(102.060274992934, model_->Length(position_, &perfect), 0.1);
+  EXPECT_NEAR(102.060274992934, model_->Length(position_, &perfect_), 0.1);
   EXPECT_FALSE(perfect_);
 }
 
 TEST_F(LaneLengthModelTest, TurnInnerLane) {
   position_.set_piece(4);
-  EXPECT_NEAR(86.393797973719316, model_->Length(position_, &perfect), kEps);
+  EXPECT_NEAR(86.393797973719316, model_->Length(position_, &perfect_), kEps);
   EXPECT_TRUE(perfect_);
 }
 
@@ -60,7 +60,7 @@ TEST_F(LaneLengthModelTest, TurnOuterLane) {
   position_.set_piece(4);
   position_.set_start_lane(1);
   position_.set_end_lane(1);
-  EXPECT_NEAR(70.685834705770347, model_->Length(position_, &perfect), kEps);
+  EXPECT_NEAR(70.685834705770347, model_->Length(position_, &perfect_), kEps);
   EXPECT_TRUE(perfect_);
 }
 
@@ -69,7 +69,7 @@ TEST_F(LaneLengthModelTest, TurnSwitchLane1) {
   position.set_piece(29);
   position.set_start_lane(1);
   position.set_end_lane(0);
-  EXPECT_NEAR(81.028059516719, model_->Length(position, &perfect), 3);
+  EXPECT_NEAR(81.028059516719, model_->Length(position, &perfect_), 3);
   EXPECT_FALSE(perfect_);
 }
 
@@ -79,7 +79,7 @@ TEST_F(LaneLengthModelTest, TurnSwitchLane2) {
   position.set_piece(29);
   position.set_start_lane(0);
   position.set_end_lane(1);
-  EXPECT_NEAR(81.029484142008, model_->Length(position, &perfect), 3);
+  EXPECT_NEAR(81.029484142008, model_->Length(position, &perfect_), 3);
   EXPECT_FALSE(perfect_);
 }
 
@@ -88,7 +88,7 @@ TEST_F(LaneLengthModelTest, TurnSwitchLane3) {
   position.set_piece(8);
   position.set_start_lane(0);
   position.set_end_lane(1);
-  EXPECT_NEAR(81.053904159305, model_->Length(position, &perfect), 3);
+  EXPECT_NEAR(81.053904159305, model_->Length(position, &perfect_), 3);
   EXPECT_FALSE(perfect_);
 }
 
@@ -97,8 +97,8 @@ TEST_F(LaneLengthModelTest, TurnSwitchLane4) {
   position.set_piece(8);
   position.set_start_lane(1);
   position.set_end_lane(0);
-  EXPECT_FALSE(81.054652206375, model_->Length(position, &perfect), 3);
-  EXPECT_TRUE(perfect_);
+  EXPECT_NEAR(81.054652206375, model_->Length(position, &perfect_), 3);
+  EXPECT_FALSE(perfect_);
 }
 
 TEST_F(LaneLengthModelTest, LearnTurnSwitchLength) {
@@ -122,12 +122,12 @@ TEST_F(LaneLengthModelTest, LearnTurnSwitchLength) {
   position.set_piece(29);
   position.set_start_lane(1);
   position.set_end_lane(0);
-  EXPECT_NEAR(piece_length, model_->Length(position, &perfect), kEps);
+  EXPECT_NEAR(piece_length, model_->Length(position, &perfect_), kEps);
   EXPECT_TRUE(perfect_);
 
   position.set_start_lane(0);
   position.set_end_lane(1);
-  EXPECT_NEAR(piece_length, model_->Length(position, &perfect), kEps);
+  EXPECT_NEAR(piece_length, model_->Length(position, &perfect_), kEps);
   EXPECT_FALSE(perfect_);
 }
 
@@ -152,13 +152,13 @@ TEST_F(LaneLengthModelTest, LearnStraightSwitchLength) {
   position.set_piece(3);
   position.set_start_lane(0);
   position.set_end_lane(1);
-  EXPECT_NEAR(piece_length, model_->Length(position, &perfect), kEps);
+  EXPECT_NEAR(piece_length, model_->Length(position, &perfect_), kEps);
   EXPECT_TRUE(perfect_);
 
   // On straight line both switches are the same.
   position.set_start_lane(1);
   position.set_end_lane(0);
-  EXPECT_NEAR(piece_length, model_->Length(position, &perfect), kEps);
+  EXPECT_NEAR(piece_length, model_->Length(position, &perfect_), kEps);
   EXPECT_TRUE(perfect_);
 }
 

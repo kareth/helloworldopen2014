@@ -110,6 +110,7 @@ void Bot::CarCrashed(const string& color)  {
 void Bot::CarSpawned(const string& color)  {
   if (color == color_)
     crashed_ = false;
+  car_tracker_->Reset();
 }
 
 void Bot::OnTurbo(const game::Turbo& turbo) {

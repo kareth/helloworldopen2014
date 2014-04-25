@@ -38,10 +38,10 @@ double LaneLengthModel::Length(const Position& position, bool* perfect) const {
   if (switch_on_turn_length_.count({radius1, radius2}) > 0) {
     return switch_on_turn_length_.at({radius1, radius2});
   }
+  if (perfect) *perfect = false;
   // The opposite switch is much better predictor if available
   if (switch_on_turn_length_.count({radius2, radius1}) > 0) {
-    if (perfect) *perfect = false;
-    return switch_on_turn_length_.at({radius1, radius2});
+    return switch_on_turn_length_.at({radius2, radius1});
   }
   return M_PI * radius1 * (fabs(piece.angle()) / 360.0) + M_PI * radius2 * (fabs(piece.angle()) / 360.0);
 }
