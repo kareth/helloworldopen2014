@@ -138,12 +138,6 @@ void CarTracker::Record(const Position& position) {
   // There is too many problems in between pieces (length of switches),
   // so do not take those measurements into account.
   if (state_.position().piece() == position.piece()) {
-    if (fabs(velocity - velocity_model_.Predict(state_.velocity(), effective_throttle)) > 0.00001) {
-      std::cout << "Previous position: " << std::endl;
-      std::cout << state_.DebugString();
-      std::cout << "New position" << std::endl;
-      std::cout << position.DebugString();
-    }
     velocity_model_.Record(velocity, state_.velocity(), effective_throttle);
   }
   drift_model_.Record(

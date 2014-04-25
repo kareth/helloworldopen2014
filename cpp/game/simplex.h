@@ -33,7 +33,7 @@ vector<double> simplex(vector<vector<double>> &A, vector<double> &b, vector<doub
 // a and b are input parameters, x is the output.
 //
 // Returns the error if couldn't find perfect solution.
-double Optimize(vector<vector<double>>& a, vector<double>& b, vector<double>& x);
+double Optimize(const vector<vector<double>>& a, vector<double>& b, vector<double>& x);
 
 }  // namespace Simplex
 

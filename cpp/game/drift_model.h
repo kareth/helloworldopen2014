@@ -36,6 +36,12 @@ class DriftModel {
       for (int i = 0; i < x_.size(); i++)
         std::cout << "x" << i <<": " << x_[i] << " ";
       std::cout << std::endl;
+
+      std::cout << "Model trained using: " << std::endl;
+      for (int i = 0; i < model_.size(); ++i) {
+        for (int j = 0; j < model_[i].size(); ++j) std::cout << std::setprecision(20) << model_[i][j] << " ";
+        std::cout << std::endl;
+      }
     }
     error_tracker_.Print();
     std::cout << std::endl;
@@ -45,8 +51,10 @@ class DriftModel {
 
   // next_angle = f(angle, previous_previous_angle, previous_velocity, radius, direction)
   void Record(double next_angle, double angle, double previous_angle, double velocity, double radius, double direction) {
-    if (angle == 0) return;
+    if (next_angle == 0) return;
 
+
+    // TODO keep improving the model
     if (!IsReady() && direction != 0) {
       model_.push_back({
           angle,
