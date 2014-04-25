@@ -15,16 +15,10 @@ bool GreedyTurboScheduler::ShouldFireTurbo() {
 
 // Makes decision on turbo usage
 void GreedyTurboScheduler::Schedule(const game::CarState& state) {
-  if (!state.turbo_state().available()) {
+  if (!state.turbo_state().available() ||
+       state.turbo_state().is_on()) {
     should_fire_now_ = false;
     return;
-  }
-
-  // TODO(kareth) strategies
-  // TODO check if its safe to fire turbo now.
-  if (race_.track().IsLastStraight(state.position())) {
-    if (state.position().lap() == race_.laps() - 1)
-      should_fire_now_ = true;
   }
 
   // TODO its kind of greedy,
