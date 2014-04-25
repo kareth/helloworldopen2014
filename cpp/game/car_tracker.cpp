@@ -148,6 +148,10 @@ void CarTracker::Record(const Position& position) {
     lane_length_model_.Record(state_.position(), position, velocity_model_.Predict(state_.velocity(), effective_throttle));
   }
 
+  if (drift_model_.IsReady()) {
+    crash_model_.RecordDriftModelReady();
+  }
+
   state_ = CarState(position, velocity, state_.position().angle(), switch_state, throttle, turbo_state);
   LogState();
 }

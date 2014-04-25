@@ -28,11 +28,15 @@ class CrashModel {
     safe_angle_ = fmax(safe_angle_, fabs(angle));
   }
 
+  void RecordDriftModelReady() {
+    guess_safe_angle_ = 60.0;
+  }
+
   bool IsSafe(double angle) const {
     if (IsReady()) {
       return fabs(angle) < safe_angle_;
     } else {
-      return fabs(angle) < fmax(60, safe_angle_);
+      return fabs(angle) < fmax(guess_safe_angle_, safe_angle_);
     }
   }
 
@@ -47,6 +51,7 @@ class CrashModel {
   bool ready_ = false;
 
   // The angle that will not cause crash.
+  double guess_safe_angle_ = 55.0;
   double safe_angle_ = 0.0;
   double unsafe_angle_ = 90.0;
 };
