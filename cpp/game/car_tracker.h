@@ -80,6 +80,8 @@ class CarTracker : public CarPredictor {
   const CrashModel& crash_model() const { return crash_model_; }
   const VelocityModel& velocity_model() const { return velocity_model_; }
 
+  void set_race(const Race* race) { race_ = race; }
+
  private:
   bool just_started_ = true;
 

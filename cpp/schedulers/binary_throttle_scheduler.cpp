@@ -147,7 +147,9 @@ void BinaryThrottleScheduler::Log(const game::CarState& state) {
     for (int t = 0; t < groups_[g]; t++)
       i++;
   }
-  std::cout << "(" << state.position().piece() << ")" << std::endl;
+  std::cout << "(" << state.position().piece() << ")" << " angle: " <<
+    state.position().angle() << " velocity: " << state.velocity() <<
+    std::endl;
 }
 
 }  // namespace schedulers
