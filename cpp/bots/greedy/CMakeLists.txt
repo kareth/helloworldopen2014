@@ -17,6 +17,7 @@ add_style_check_target(bots_greedy "${BOTS_GREEDY_HEADERS}" HWO)
 
 target_link_libraries(bots_greedy
   ${Boost_LIBRARIES}
+  common_flags
   utils
   physics
   game)

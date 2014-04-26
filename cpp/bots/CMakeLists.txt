@@ -21,4 +21,5 @@ add_subdirectory(constant)
 
 target_link_libraries(bots
   ${Boost_LIBRARIES}
+  common_flags
   game)

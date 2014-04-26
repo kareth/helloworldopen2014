@@ -14,9 +14,9 @@ function build_without_cmake() {
   date
   git rev-parse HEAD
   # Build without cmake
-  flags="-O2 -std=c++11 -I jsoncons/src/ -I . -l pthread -l boost_system -o bin/bot"
+  flags="-O2 -std=c++11 -I jsoncons/src/ -I . -l pthread -l boost_system -l boost_filesystem -o bin/bot"
   g++ $flags \
-    main.cpp \
+    main.cpp common_flags.cpp \
     utils/protocol.cpp utils/connection.cpp utils/game_visualizer.cpp \
     bots/raw_bot.cpp bots/tomek/bot.cpp bots/piotr/bot.cpp bots/greedy/bot.cpp bots/basic/bot.cpp bots/stepping/bot.cpp bots/constant/bot.cpp \
     game/car.cpp game/car_tracker.cpp game/command.cpp game/gauss.cpp game/position.cpp game/race.cpp game/result.cpp game/simplex.cpp game/track.cpp game/turbo.cpp game/lane_length_model.cpp game/radius_model.cpp game/approximation.cpp game/drift_model.cpp \

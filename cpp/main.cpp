@@ -1,5 +1,8 @@
 #include <iostream>
 #include <string>
+#include <ctime>
+#include <cstdio>
+#include <boost/filesystem.hpp>
 
 #include "gflags/gflags.h"
 #include "jsoncons/json.hpp"
@@ -16,8 +19,9 @@
 
 DEFINE_string(track, "", "The track to join the race. Possible options: keimola, germany, usa.");
 DEFINE_int32(num_players, 1, "The number of players that will race (including you)");
-DEFINE_string(bot, "Need for C", "The bot name.");
+DEFINE_string(bot, "", "The bot name.");
 DEFINE_string(bot_algorithm, "stepping", "The bot algorithm to use.");
+DECLARE_string(race_id);
 
 DEFINE_string(host, "testserver.helloworldopen.com", "");
 DEFINE_string(port, "8091", "");
@@ -41,11 +45,17 @@ bots::BotInterface* GetBot(const string& bot_algorithm) {
 
 void run(utils::Connection* connection, bots::RawBot* bot,
     const std::string& name, const std::string& key) {
+  std::string bot_name = name;
+
+  if (bot_name.empty()) {
+    bot_name = "NFC";
+  }
+
   if (!FLAGS_track.empty()) {
     connection->send_requests(
-        { utils::make_join_race("NFC-" + name, key, FLAGS_track, FLAGS_num_players) });
+        { utils::make_join_race(bot_name, key, FLAGS_track, FLAGS_num_players) });
   } else {
-    connection->send_requests({ utils::make_join("NFC-" + name, key) });
+    connection->send_requests({ utils::make_join(bot_name, key) });
   }
 
   for (;;) {
@@ -63,8 +73,26 @@ void run(utils::Connection* connection, bots::RawBot* bot,
   }
 }
 
+std::string random_race_id() {
+  time_t rawtime;
+  struct tm * timeinfo;
+  char buffer[80];
+
+  time (&rawtime);
+  timeinfo = localtime(&rawtime);
+
+  strftime (buffer, 80, "%F.%T", timeinfo);
+  return std::string(buffer);
+}
+
 int main(int argc, char** argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
+
+  if (FLAGS_race_id.empty()) {
+    FLAGS_race_id = random_race_id();
+  }
+  std::cout << "Race id: " << FLAGS_race_id << std::endl;
+  boost::filesystem::create_directories("bin/" + FLAGS_race_id);
 
   try {
     std::cout << "Host: " << FLAGS_host << ", port: " << FLAGS_port <<

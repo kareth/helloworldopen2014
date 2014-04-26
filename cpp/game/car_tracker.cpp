@@ -1,4 +1,7 @@
 #include "game/car_tracker.h"
+#include "gflags/gflags.h"
+
+DECLARE_string(race_id);
 
 namespace game {
 
@@ -10,7 +13,7 @@ template <typename T> int sgn(T val) {
 
 CarTracker::CarTracker(const Race* race)
   : race_(race), radius_model_(&race_->track()), lane_length_model_(&race_->track()) {
-  stats_file_.open ("bin/stats.csv");
+  stats_file_.open ("bin/" + FLAGS_race_id + "/stats.csv");
   stats_file_ << "piece_index,start_lane,end_lane,radius,in_piece_distance,angle,velocity,throttle" << std::endl;
 }
 

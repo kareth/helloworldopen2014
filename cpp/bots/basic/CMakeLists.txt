@@ -13,5 +13,6 @@ add_style_check_target(bots_basic "${BOTS_BASIC_HEADERS}" HWO)
 
 target_link_libraries(bots_basic
   ${Boost_LIBRARIES}
+  common_flags
   utils
   game)

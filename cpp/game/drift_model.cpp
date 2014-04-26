@@ -13,6 +13,9 @@
 #include "game/race.h"
 #include "game/simplex.h"
 #include "game/approximation.h"
+#include "gflags/gflags.h"
+
+DECLARE_string(race_id);
 
 namespace game {
 
@@ -70,9 +73,7 @@ double DriftModel::EstimateRadius(double next_angle, double angle, double previo
 DriftModel::DriftModel() {
   x_ = {1.9, -0.9, -0.00125, 0.00125 * sqrt(180000), 0.3};
 
-  char filename[50];
-  sprintf (filename, "bin/drift.csv");
-  file_.open (filename);
+  file_.open("bin/" + FLAGS_race_id + "/drift.csv");
   file_ << "angle,p_angle,velocity,radius,direction,next_angle,error" << std::endl;
 }
 

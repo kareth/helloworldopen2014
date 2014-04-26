@@ -8,10 +8,11 @@
 #include "game/race.h"
 
 #include "game/turbo.h"
+#include "gflags/gflags.h"
 
 DEFINE_bool(dump_history, false, "");
-DEFINE_bool(continuous_integration, true, "");
 DEFINE_bool(print_track, false, "");
+DECLARE_bool(continuous_integration);
 
 using jsoncons::json;
 

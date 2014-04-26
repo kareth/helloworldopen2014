@@ -13,7 +13,7 @@ SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 SET(gtest_SOURCE_DIR "${BASEPATH}/gtest")
 
 # FIND_PACKAGE(Threads REQUIRED)
-FIND_PACKAGE(Boost 1.54.0 COMPONENTS system REQUIRED)
+FIND_PACKAGE(Boost 1.54.0 COMPONENTS system filesystem REQUIRED)
 
 enable_testing()
 
@@ -34,6 +34,9 @@ add_subdirectory(utils)
 add_subdirectory(physics)
 add_subdirectory(schedulers)
 
+add_library(common_flags common_flags.cpp)
+target_link_libraries(common_flags gflags)
+
 add_executable(bot main.cpp)
 target_link_libraries(bot
   ${Boost_LIBRARIES}
@@ -44,6 +47,7 @@ target_link_libraries(bot
   bots_greedy
   bots_stepping
   bots_constant
+  common_flags
   game
   physics
   utils

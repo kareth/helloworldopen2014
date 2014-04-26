@@ -13,5 +13,6 @@ add_style_check_target(default_bot "${BOTS_TOMEK_HEADERS}" HWO)
 
 target_link_libraries(bots_tomek
   ${Boost_LIBRARIES}
+  common_flags
   utils
   game)

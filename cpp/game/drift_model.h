@@ -15,7 +15,6 @@
 #include "game/simplex.h"
 #include "game/approximation.h"
 
-
 namespace game {
 
 // We assume following drift model
