@@ -68,7 +68,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 }
 
 void Bot::SetStrategy(const game::CarState& state) {
-  if (race_.laps() == -1) {
+  if (race_.laps() != -1) {
     scheduler_->set_strategy(Strategy::kOptimizeRace);
     return;
   }
