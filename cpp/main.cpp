@@ -48,7 +48,7 @@ void run(utils::Connection* connection, bots::RawBot* bot,
   std::string bot_name = name;
 
   if (bot_name.empty()) {
-    bot_name = "NFC";
+    bot_name = "NFC-" + FLAGS_race_id;
   }
 
   if (!FLAGS_track.empty()) {
@@ -74,19 +74,14 @@ void run(utils::Connection* connection, bots::RawBot* bot,
 }
 
 std::string random_race_id() {
-  time_t rawtime;
-  struct tm * timeinfo;
   char buffer[80];
-
-  time (&rawtime);
-  timeinfo = localtime(&rawtime);
-
-  strftime (buffer, 80, "%F.%T", timeinfo);
+  sprintf (buffer, "%d", rand());
   return std::string(buffer);
 }
 
 int main(int argc, char** argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
+  srand (time(NULL));
 
   if (FLAGS_race_id.empty()) {
     FLAGS_race_id = random_race_id();
