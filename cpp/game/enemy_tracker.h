@@ -4,37 +4,45 @@
 #include <string>
 #include <map>
 #include "game/race.h"
+#include "game/car_tracker.h"
 
 namespace game {
 
 class EnemyTracker {
-  EnemyInfo(double distance, double speed_factor, int expected_bump_time, const CarState& state)
-    : distance_(distance), speed_factor_(speed_factor), expected_bump_time_(expected_bump_time), state_(state) {
-  }
+ public:
+  EnemyTracker(game::CarTracker& car_tracker, const game::Race& race,
+      const std::string& color, const game::Position& position);
 
-  double distance() const { return distance_; }
-  double speed_factor() const { return speed_factor_; }
+  void RecordLapTime(int time);
+  void RecordPosition(const game::Position& position);
 
+  Position PositionAfterTime(int time);
+  int TimeToPosition(const Position& p);
 
+  /*
   int expected_bump_time() const { return expected_bump_time_; }
   std::pair<int, double> expected_bump_position() const { return expected_bump_position_; }
+  */
+
   const CarState& state() const { return state_; }
 
  private:
-  double distance_;
+  // double speed_factor_;
+  std::vector<int> lap_times_;
 
-  // Ratio of my avg speed to his
-  double speed_factor_;
+  std::vector<double> piece_speed_;
+  std::vector<int> piece_data_points_;
 
-  // Positive - I will bump him soon;
-  // Negative - he will bump me soon;
-  // INF?? - too distant = wont hit him too soon ^^
-  int expected_bump_time_;
-
-  // <piece, in_piece_distance>
-  std::pair<int, double> expected_bump_position_;
+  double average_speed_;
+  int average_data_points_;
 
   CarState state_;
+
+  const Race& race_;
+  CarTracker& car_tracker_;
+  std::string color_;
+
+  int skip_;
 };
 }  // namespace game
 

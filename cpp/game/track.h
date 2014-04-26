@@ -23,6 +23,8 @@ class Track {
   double Distance(const Position& position, const Position& previous) const;
   double LaneRadius(int piece, int lane) const;
 
+  Position PositionAfter(const Position& position, double distance) const;
+
   // TODO deprecate, use below version instead.
   double LaneLength(int piece, int lane) const;
 

@@ -13,6 +13,8 @@ set(GAME_SOURCES
   simplex.cpp
   track.cpp
   turbo.cpp
+  enemy_tracker.cpp
+  race_tracker.cpp
 )
 
 set(GAME_HEADERS
@@ -35,6 +37,8 @@ set(GAME_HEADERS
   track.h
   turbo.h
   velocity_model.h
+  enemy_tracker.h
+  race_tracker.h
 )
 
 set(GAME_TESTS

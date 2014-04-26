@@ -5,39 +5,31 @@ using game::Race;
 
 namespace game {
 
-RaceTracker::RaceTracker(const Race& race, const std::string& color)
-  : race_(race), color_(color) {
+RaceTracker::RaceTracker(game::CarTracker& car_tracker,
+          const game::Race& race, const std::string& color)
+  : car_tracker_(car_tracker), race_(race), color_(color) {
 }
 
 void RaceTracker::Record(const std::map<std::string, Position>& positions) {
   for (auto& p : positions) {
-    if (indexes_.[p.first] == nullptr) {
+    if (indexes_.find(p.first) == indexes_.end()) {
       indexes_[p.first] = enemies_.size();
-      enemies_.resize(enemies_.size() + 1);
+      enemies_.push_back(EnemyTracker(car_tracker_, race_,  p.first, p.second));
+    } else {
+      enemies_[indexes_[p.first]].RecordPosition(p.second);
     }
-
-    // TODO use state somehow...
-    RecordRace(indexes_[p.first], p.second);
   }
 }
 
-void RaceTracker::RecordRace(int index, const Position& position) {
-  UpdateSpeedStats(index, position);
-  // TODO update RaceInfo
-
-}
-
-void UpdateSpeedStats(int index, const game::Position& position) {
-  // TODO Update piece_speeds
-  // TODO Update lap_speeds
-}
-
 void RaceTracker::RecordLapTime(const std::string& color, int time) {
-  int index = indexes_[color];
+  if (indexes_.find(color) == indexes_.end())
+    return;
 
-  if (lap_times_[index] == nullptr)
-    lap_times_[index] = {};
-  lap_times_[index].push_back(time);
+  enemies_[indexes_[color]].RecordLapTime(time);
+}
+
+Position BumpPosition(const std::string& color) {
+
 }
 
 }  // namespace game

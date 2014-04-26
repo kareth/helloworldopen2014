@@ -1,11 +1,17 @@
 #ifndef CPP_GAME_RACE_TRACKER_H_
 #define CPP_GAME_RACE_TRACKER_H_
 
+#include "game/race.h"
+#include "game/enemy_tracker.h"
+#include "game/position.h"
+#include "game/car_tracker.h"
+
 namespace game {
 
 class RaceTracker {
  public:
-  RaceTracker(const game::Race& race, const std::string& color);
+  RaceTracker(game::CarTracker& car_tracker,
+              const game::Race& race, const std::string& color);
 
   void Record(const std::map<std::string, game::Position>& positions);
 
@@ -25,9 +31,13 @@ class RaceTracker {
   void RecordEnemy(int index, const game::Position& position);
   void UpdateSpeedStats(int index, const game::Position& position);
 
-  std::vector<EnemyInfo> enemies_;
+
+  std::vector<EnemyTracker> enemies_;
 
   std::map<std::string, int> indexes_;
+
+  const Race& race_;
+  CarTracker& car_tracker_;
   std::string color_;
 };
 
