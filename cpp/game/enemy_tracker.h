@@ -7,7 +7,7 @@
 
 namespace game {
 
-class EnemyInfo {
+class Enemy {
   EnemyInfo(double distance, double speed_factor, int expected_bump_time, const CarState& state)
     : distance_(distance), speed_factor_(speed_factor), expected_bump_time_(expected_bump_time), state_(state) {
   }
@@ -36,9 +36,9 @@ class EnemyInfo {
   CarState state_;
 };
 
-class EnemyTracker {
+class MapInfo {
  public:
-  EnemyTracker(const game::Race& race, const std::string& color);
+  MapInfo(const game::Race& race, const std::string& color);
 
   void Record(const std::map<std::string, game::Position>& positions);
 

@@ -80,10 +80,12 @@ class CarTracker : public CarPredictor {
   const CrashModel& crash_model() const { return crash_model_; }
   const VelocityModel& velocity_model() const { return velocity_model_; }
 
-  // The following things are not working:
+  // The following things are working differently:
   // - switch is always set to kStay
-  // - turbo state is take from previous tick
+  // - turbo state is taken from previous tick
   CarState CreateCarState(const CarState& prev, const Position& position) const;
+
+  void set_race(const Race* race) { race_ = race; }
 
  private:
   bool just_started_ = true;

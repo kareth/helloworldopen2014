@@ -23,8 +23,11 @@ void Bot::NewRace(const Race& race) {
   race_ = race;
   // We do not want to loose all models between qualification and race.
   // TODO We assume that the race is exactly the same as the one in car_tracker_.
+  // (kareth) Is resetting race enough? it only differs in laps/duration
   if (car_tracker_ == nullptr) {
     car_tracker_.reset(new CarTracker(&race_));
+  } else {
+    car_tracker_->set_race(&race_);
   }
 
   scheduler_.reset(
@@ -68,10 +71,10 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 }
 
 void Bot::SetStrategy(const game::CarState& state) {
-  if (race_.laps() != -1) {
+  /*if (race_.laps() != -1) {
     scheduler_->set_strategy(Strategy::kOptimizeRace);
     return;
-  }
+  }*/
 
   int lap = state.position().lap();
 
