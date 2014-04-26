@@ -214,4 +214,16 @@ void CarTracker::RecordCarCrash() {
   stats_file_ << "CRASH" << std::endl;
 }
 
+CarState CarTracker::CreateCarState(const CarState& prev, const Position& position) const {
+  double velocity = 0.0;
+  if (prev.position().piece() == position.piece()) {
+    velocity = position.piece_distance() - prev.position().piece_distance();
+  } else {
+    velocity = position.piece_distance() - prev.position().piece_distance() +
+      lane_length_model_.Length(prev.position());
+  }
+
+  return CarState(position, velocity, prev.position().angle(), Switch::kStay, 0.0, prev.turbo_state());
+}
+
 }  // namespace game
