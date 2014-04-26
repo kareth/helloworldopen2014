@@ -18,7 +18,7 @@ double RadiusModel::Radius(const Position& position) {
   if (position.start_lane() == position.end_lane())
     return track_->LaneRadius(position.piece(), position.start_lane());
 
-  const auto& model = models_[{position.piece(), position.start_lane()}];
+  const auto& model = *GetModel(position.piece(), position.start_lane());
   if (model.IsReady()) {
     return model.Radius(position.piece_distance());
   }
@@ -33,10 +33,11 @@ void RadiusModel::Record(const Position& position, double radius) {
   if (radius < 1) return;
   if (position.start_lane() == position.end_lane()) return;
 
-  auto& model = models_[{position.piece(), position.start_lane()}];
+  auto& model = *GetModel(position.piece(), position.start_lane());
 
   if (model.IsReady()) {
-    if (radius < model.Radius(position.piece_distance())) {
+    double predicted = model.Radius(position.piece_distance());
+    if (radius < model.Radius(position.piece_distance()) || (radius > 1e-5 && predicted < 1e-5)) {
       std::cerr << "ERROR: We under estimate the radius" << std::endl;
       std::cerr << "Position: " << position.DebugString();
       std::cerr << "Radius: " << radius << std::endl;
@@ -50,19 +51,44 @@ void RadiusModel::Record(const Position& position, double radius) {
 }
 
 double SwitchRadiusModel::Radius(double piece_distance) const {
-  return x_[0] * piece_distance * piece_distance +
-         x_[1] * piece_distance +
-         x_[2] - 1;
+  double radius = 
+    x_[0] * piece_distance * piece_distance +
+    x_[1] * piece_distance +
+    x_[2] - 1;
+
+  if (piece_distance < data_[0].first) {
+    return fmin(radius, data_[0].second);
+  }
+  if (piece_distance > data_.back().first) {
+    return fmin(radius, data_.back().second);
+  }
+  return radius;
 }
 
 void SwitchRadiusModel::Record(double piece_distance, double radius) {
   model_.push_back({piece_distance * piece_distance, piece_distance, 1});
   b_.push_back(radius);
 
-  if (model_.size() == 5) {
+  data_.push_back({piece_distance, radius});
+  sort(data_.begin(), data_.end());
+
+  if (EnoughData()) {
     ready_ = true;
     Simplex::Optimize(model_, b_, x_);
   }
+}
+
+namespace {
+template <typename T> int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+}  // anonymous namespace
+
+bool SwitchRadiusModel::EnoughData() {
+  if (model_.size() < 5 || model_.size() > 15)
+    return false;
+
+  return true;
 }
 
 }  // namespace game

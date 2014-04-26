@@ -63,4 +63,26 @@ TEST_F(RadiusModelTest, Switch) {
   }
 }
 
+class SwitchRadiusModelTest : public testing::Test {
+ protected:
+  SwitchRadiusModelTest() : model_(1, 2) {}
+
+  SwitchRadiusModel model_;
+};
+
+TEST_F(SwitchRadiusModelTest, Switch2) {
+  vector<double> piece_distance{5.455820072, 5.639723642, 11.78062607, 12.54728078, 18.17893595, 19.51668677, 24.64927963, 26.54670464, 31.19021644, 33.63612216, 37.80033451, 40.78375132, 44.47825022, 47.9884279, 51.22260761, 55.24901095, 58.03207786, 62.56438234, 64.9053587, 69.9334463, 71.84117393, 77.35512898, 78.83827285};
+  vector<double> radius{89.43628325, 89.43628325, 87.12813582, 86.9418616, 86.27587828, 86.29102023, 86.88396473, 87.26389456, 88.94874369, 90.0974493, 92.46082461, 94.75077197, 97.39791135, 101.1992047, 104.6304817, 109.4018474, 112.5152617, 119.3077153, 122.9848335, 130.8706497, 133.667459, 144.0537967, 147.1986429};
+
+  for (int i = 0; !model_.IsReady() && i < piece_distance.size(); ++i) {
+    model_.Record(piece_distance[i], radius[i]);
+  }
+
+  ASSERT_TRUE(model_.IsReady());
+
+  for (int i = 0; i < piece_distance.size(); ++i) {
+    EXPECT_GE(radius[i], model_.Radius(piece_distance[i]));
+  }
+}
+
 }  // namespace game

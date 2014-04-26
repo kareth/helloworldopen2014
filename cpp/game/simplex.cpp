@@ -68,6 +68,7 @@ VT simplex(vector<VT>& AA, VT& bb, VT& cc){
 }
 
 double Optimize(const vector<vector<double>>& a, vector<double>& b, vector<double>& x) {
+  x.clear();
   vector<vector<double>> A;
   vector<double> B;
 

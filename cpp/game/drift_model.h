@@ -14,6 +14,7 @@
 #include "game/race.h"
 #include "game/simplex.h"
 
+
 namespace game {
 
 // We assume following drift model
@@ -96,7 +97,7 @@ class DriftModel {
             - x_[2] * velocity * angle +
             - direction * x_[4] * velocity) / (-direction * x_[3] * velocity * velocity), 2);
 
-    if (r > 0 && x_[3] * velocity * velocity * sqrt(1/r) - x_[4] * velocity < 0) {
+    if (r > 0 && x_[3] * velocity * velocity * sqrt(1/r) - x_[4] * velocity < 1e-5) {
       return 0;
     }
 
