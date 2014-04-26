@@ -17,7 +17,7 @@ namespace game {
 // velocity = x0 * previous_velocity + x1 * throttle
 class VelocityModel {
  public:
-  VelocityModel() {
+  VelocityModel() : error_tracker_("velocity") {
     x_ = {0.2, 0.98};
   }
   ~VelocityModel() {

@@ -44,15 +44,24 @@ class DriftModel {
     return 1.0 / radius;
   }
 
-  void Train() {
-    ready_ = true;
-    x_.clear();
-    Approximation(model_, b_, x_);
-  }
+  void Train();
+
+  void TrainWithStraight();
+
+  void RemoveOutliers();
+
+  void RemoveEmptyModels();
+
+  double ComputeError() const;
+
+  void TrimModels();
 
   std::ofstream file_;
 
   bool ready_ = false;
+
+  std::vector<vector<double>> model_from_straight_;
+  std::vector<double> b_from_straight_;
 
   std::vector<vector<double>> model_;
   std::vector<double> b_;

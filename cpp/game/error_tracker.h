@@ -1,6 +1,7 @@
 #ifndef CPP_GAME_ERROR_TRACKER_H_
 #define CPP_GAME_ERROR_TRACKER_H_
 
+#include <iostream>
 #include <algorithm>
 #include <cmath>
 
@@ -8,9 +9,12 @@ namespace game {
 
 class ErrorTracker {
  public:
+  ErrorTracker(){}
+  ErrorTracker(const std::string& name) : name_(name) {}
+
   void Add(double error) {
     if (error > 1e-5) {
-      std::cout << "Big error: " << error << std::endl;
+      std::cout << "Big error in " << name_ << " (" << error << ")" << std::endl;
     }
     error_max_ = fmax(error, error_max_);
     error_sum_ += error;
@@ -30,6 +34,7 @@ class ErrorTracker {
   }
 
  private:
+  std::string name_;
   double error_max_ = 0.0;
   double error_sum_ = 0.0;
   int error_count_ = 0;

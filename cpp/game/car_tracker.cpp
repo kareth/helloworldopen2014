@@ -139,9 +139,13 @@ void CarTracker::Record(const Position& position) {
     // so do not take those measurements into account.
     if (state_.position().piece() == position.piece()) {
       velocity_model_.Record(velocity, state_.velocity(), effective_throttle);
-      drift_model_.Record(
-          position.angle(), state_.position().angle(), state_.previous_angle(),
-          state_.velocity(), RadiusInPosition(state_.position()), direction);
+
+      // Do not learn drift model on switches.
+      if (state_.position().start_lane() == state_.position().end_lane()) {
+        drift_model_.Record(
+            position.angle(), state_.position().angle(), state_.previous_angle(),
+            state_.velocity(), RadiusInPosition(state_.position()), direction);
+      }
     }
 
     if (velocity_model_.IsReady()) {
@@ -154,7 +158,7 @@ void CarTracker::Record(const Position& position) {
           state_.velocity(), direction);
 
       double expected_angle = drift_model_.Predict(state_.position().angle(), state_.previous_angle(), state_.velocity(), r, direction);
-      if (fabs(expected_angle - position.angle()) > 1e-9) {
+      if (fabs(expected_angle - position.angle()) > 1e-5) {
         std::cout << "ERROR BAD RADIUS" << std::endl << std::endl;
       }
 
