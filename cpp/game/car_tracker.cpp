@@ -127,11 +127,6 @@ void CarTracker::Record(const Position& position) {
     }
   }
 
-  // TODO replace it with real bump tester
-  if (velocity_model_.IsReady() && fabs(velocity - velocity_model_.Predict(state_.velocity(), effective_throttle)) > 1e-9) {
-    bump = true;
-  }
-
   if (!bump) {
     double direction = -sgn(race_->track().pieces()[state_.position().piece()].angle());
 
@@ -144,7 +139,7 @@ void CarTracker::Record(const Position& position) {
     }
 
     // Do not learn the drift model on switches!
-    if (!drift_model_.IsReady() && state_.position().start_lane() == state_.position().end_lane()) {
+    if (state_.position().start_lane() == state_.position().end_lane()) {
       drift_model_.Record(
           position.angle(), state_.position().angle(), state_.previous_angle(),
           state_.velocity(), RadiusInPosition(state_.position()), direction);
