@@ -12,6 +12,7 @@
 #include "bots/piotr/bot.h"
 #include "bots/greedy/bot.h"
 #include "bots/stepping/bot.h"
+#include "bots/constant/bot.h"
 
 DEFINE_string(track, "", "The track to join the race. Possible options: keimola, germany, usa.");
 DEFINE_int32(num_players, 1, "The number of players that will race (including you)");
@@ -32,6 +33,8 @@ bots::BotInterface* GetBot(const string& bot_algorithm) {
     return new bots::greedy::Bot();
   if (bot_algorithm == "stepping")
     return new bots::stepping::Bot();
+  if (bot_algorithm == "constant")
+    return new bots::constant::Bot();
 
   return new bots::basic::Bot();
 }

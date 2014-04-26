@@ -17,6 +17,7 @@ add_subdirectory(tomek)
 add_subdirectory(piotr)
 add_subdirectory(greedy)
 add_subdirectory(stepping)
+add_subdirectory(constant)
 
 target_link_libraries(bots
   ${Boost_LIBRARIES}

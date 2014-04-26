@@ -43,6 +43,7 @@ target_link_libraries(bot
   bots_piotr
   bots_greedy
   bots_stepping
+  bots_constant
   game
   physics
   utils
