@@ -26,7 +26,7 @@ game::Command Bot::GetMove(const std::map<std::string, game::Position>& position
   return game::Command(0.65);
 }
 
-void Bot::CarFinishedLap(const std::string& color /* + results */)  {
+void Bot::CarFinishedLap(const std::string& color, const game::Result& result)  {
   return;
 }
 

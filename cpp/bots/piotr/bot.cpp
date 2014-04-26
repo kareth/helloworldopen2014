@@ -103,7 +103,7 @@ double Bot::DistanceFromBent(const game::Position& position, double* angle) cons
   }
 }
 
-void Bot::CarFinishedLap(const string& color /* + results */)  {
+void Bot::CarFinishedLap(const string& color, const game::Result& result)  {
   return;
 }
 

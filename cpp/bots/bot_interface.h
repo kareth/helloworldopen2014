@@ -6,6 +6,7 @@
 #include "game/command.h"
 #include "game/position.h"
 #include "game/turbo.h"
+#include "game/result.h"
 
 namespace game {
 class Race;
@@ -22,7 +23,7 @@ class BotInterface {
   virtual void GameStarted() = 0;
 
   virtual game::Command GetMove(const std::map<std::string, game::Position>& positions, int game_tick) = 0;
-  virtual void CarFinishedLap(const std::string& color) = 0;
+  virtual void CarFinishedLap(const std::string& color, const game::Result& result) = 0;
   virtual void CarFinishedRace(const std::string& color) = 0;
   virtual void GameEnd() = 0;
   virtual void TournamentEnd() = 0;

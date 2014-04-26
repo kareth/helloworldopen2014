@@ -88,7 +88,7 @@ void Bot::GameStarted() {
   car_tracker_->Reset();
 }
 
-void Bot::CarFinishedLap(const string& color /* + results */)  {
+void Bot::CarFinishedLap(const string& color, const game::Result& result)  {
 }
 
 void Bot::CarFinishedRace(const string& color)  {

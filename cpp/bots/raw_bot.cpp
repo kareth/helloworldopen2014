@@ -176,7 +176,7 @@ RawBot::msg_vector RawBot::OnLapFinished(const jsoncons::json& msg) {
 
   visualizer_.LapFinished(result);
 
-  bot_->CarFinishedLap(result.color() /* + results */);
+  bot_->CarFinishedLap(result.color(), result);
   return ping();
 }
 
