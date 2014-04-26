@@ -7,6 +7,7 @@ using std::vector;
 using std::map;
 
 using game::CarTracker;
+using game::RaceTracker;
 using game::CarState;
 using game::Command;
 using game::Position;
@@ -26,6 +27,7 @@ void Bot::NewRace(const Race& race) {
   // (kareth) Is resetting race enough? it only differs in laps/duration
   if (car_tracker_ == nullptr) {
     car_tracker_.reset(new CarTracker(&race_));
+    race_tracker_.reset(new RaceTracker(*car_tracker_.get(), race_, color_));
   } else {
     car_tracker_->set_race(&race_);
   }
@@ -44,6 +46,8 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
   car_tracker_->Record(position);
   auto& state = car_tracker_->current_state();
 
+  race_tracker_->Record(positions);
+
   // TODO
   if (crashed_)
     return Command(0);
@@ -57,6 +61,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
   Command command;
   if (car_tracker_->IsReady()) {
     SetStrategy(state);
+
     scheduler_->Schedule(state);
     command = scheduler_->command();
     scheduler_->IssuedCommand(command);
@@ -103,6 +108,7 @@ void Bot::GameStarted() {
 }
 
 void Bot::CarFinishedLap(const string& color, const game::Result& result)  {
+  race_tracker_->RecordLapTime(color, result.lap_time());
 }
 
 void Bot::CarFinishedRace(const string& color)  {
