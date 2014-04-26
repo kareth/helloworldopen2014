@@ -28,8 +28,20 @@ void RaceTracker::RecordLapTime(const std::string& color, int time) {
   enemies_[indexes_[color]].RecordLapTime(time);
 }
 
-Position BumpPosition(const std::string& color) {
+Position RaceTracker::BumpPosition(const std::string& color) {
+  int index = indexes_[color];
 
+  // TODO optimize:D
+  for (int i = 0; i < 100; i++) {
+    auto me = enemies_[indexes_[color_]].PositionAfterTime(i);
+    auto he = enemies_[indexes_[color]].PositionAfterTime(i);
+
+    if ((me.piece() == he.piece() && me.piece_distance() > he.piece_distance())
+        || (me.piece() + 1) % race_.track().pieces().size() == he.piece())
+      return me;
+  }
+  // This shouldnt reach here
+  return enemies_[indexes_[color_]].state().position();
 }
 
 }  // namespace game
