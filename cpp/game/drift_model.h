@@ -13,6 +13,7 @@
 #include "game/position.h"
 #include "game/race.h"
 #include "game/simplex.h"
+#include "game/approximation.h"
 
 
 namespace game {
@@ -117,7 +118,7 @@ class DriftModel {
   void Train() {
     ready_ = true;
     x_.clear();
-    Simplex::Optimize(model_, b_, x_);
+    Approximation(model_, b_, x_);
   }
 
   std::ofstream file_;

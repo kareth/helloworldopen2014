@@ -7,7 +7,7 @@
 #include <map>
 #include <algorithm>
 
-#include "game/gauss.h"
+#include "game/approximation.h"
 #include "game/error_tracker.h"
 
 namespace game {
@@ -63,7 +63,7 @@ class VelocityModel {
 
  private:
   void Train() {
-    GaussDouble(m_, b_, x_);
+    Approximation(m_, b_, x_);
     ready_ = true;
   }
 

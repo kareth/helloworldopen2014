@@ -1,4 +1,5 @@
 set(GAME_SOURCES
+  approximation.cpp
   car.cpp
   car_tracker.cpp
   command.cpp
@@ -14,6 +15,7 @@ set(GAME_SOURCES
 )
 
 set(GAME_HEADERS
+  approximation.h
   car.h
   car_predictor.h
   car_tracker.h
@@ -35,6 +37,7 @@ set(GAME_HEADERS
 )
 
 set(GAME_TESTS
+  approximation_test.cpp
   car_tracker_test.cpp
   drift_model_test.cpp
   gauss_test.cpp

@@ -5,7 +5,7 @@
 #include "game/position.h"
 #include "game/track.h"
 #include "game/piece.h"
-#include "game/simplex.h"
+#include "game/approximation.h"
 
 namespace game {
 
@@ -51,7 +51,7 @@ void RadiusModel::Record(const Position& position, double radius) {
 }
 
 double SwitchRadiusModel::Radius(double piece_distance) const {
-  double radius = 
+  double radius =
     x_[0] * piece_distance * piece_distance +
     x_[1] * piece_distance +
     x_[2] - 1;
@@ -74,7 +74,7 @@ void SwitchRadiusModel::Record(double piece_distance, double radius) {
 
   if (EnoughData()) {
     ready_ = true;
-    Simplex::Optimize(model_, b_, x_);
+    Approximation(model_, b_, x_);
   }
 }
 
