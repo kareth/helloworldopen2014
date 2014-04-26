@@ -88,6 +88,21 @@ class DriftModel {
            -direction * fmax(0, x_[3] * velocity * velocity * sqrt(InvRadius(radius)) - x_[4] * velocity);
   }
 
+  double EstimateRadius(double next_angle, double angle, double previous_angle, double velocity, double direction) {
+    double r =
+      1 / pow((next_angle
+            - x_[0] * angle +
+            - x_[1] * previous_angle +
+            - x_[2] * velocity * angle +
+            - direction * x_[4] * velocity) / (-direction * x_[3] * velocity * velocity), 2);
+
+    if (r > 0 && x_[3] * velocity * velocity * sqrt(1/r) - x_[4] * velocity < 0) {
+      return 0;
+    }
+
+    return r;
+  }
+
   bool IsReady() const {
     return ready_;
   }

@@ -11,6 +11,7 @@
 #include "game/car_predictor.h"
 #include "game/crash_model.h"
 #include "game/drift_model.h"
+#include "game/radius_model.h"
 #include "game/error_tracker.h"
 #include "game/lane_length_model.h"
 #include "game/gauss.h"
@@ -97,6 +98,7 @@ class CarTracker : public CarPredictor {
   VelocityModel velocity_model_;
   DriftModel drift_model_;
   LaneLengthModel lane_length_model_;
+  RadiusModel radius_model_;
 };
 
 }  // namespace game

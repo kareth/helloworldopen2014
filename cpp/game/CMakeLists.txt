@@ -5,6 +5,7 @@ set(GAME_SOURCES
   gauss.cpp
   position.cpp
   race.cpp
+  radius_model.cpp
   result.cpp
   simplex.cpp
   track.cpp
@@ -24,6 +25,7 @@ set(GAME_HEADERS
   lane.h
   position.h
   race.h
+  radius_model.h
   result.h
   simplex.h
   track.h
@@ -34,12 +36,14 @@ set(GAME_HEADERS
 
 set(GAME_TESTS
   car_tracker_test.cpp
+  drift_model_test.cpp
   gauss_test.cpp
   position_test.cpp
   race_test.cpp
   simplex_test.cpp
   track_test.cpp
   lane_length_model_test.cpp
+  radius_model_test.cpp
 )
 
 add_library(game ${GAME_SOURCES})

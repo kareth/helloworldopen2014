@@ -1,6 +1,9 @@
 #ifndef CPP_GAME_ERROR_TRACKER_H_
 #define CPP_GAME_ERROR_TRACKER_H_
 
+#include <algorithm>
+#include <cmath>
+
 namespace game {
 
 class ErrorTracker {

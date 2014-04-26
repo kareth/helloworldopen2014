@@ -8,7 +8,8 @@ template <typename T> int sgn(T val) {
 }
 }  // anonymous namespace
 
-CarTracker::CarTracker(const Race* race) : race_(race), lane_length_model_(&race_->track()) {
+CarTracker::CarTracker(const Race* race)
+  : race_(race), radius_model_(&race_->track()), lane_length_model_(&race_->track()) {
   stats_file_.open ("bin/stats.csv");
   stats_file_ << "piece_index,start_lane,end_lane,radius,in_piece_distance,angle,velocity,throttle" << std::endl;
 }
@@ -66,17 +67,8 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
   }
   switch_state = command.SwitchSet() ? command.get_switch() : switch_state;
 
-  // TODO
-  double radius = race_->track().LaneRadius(state.position().piece(), state.position().start_lane());
+  double radius = radius_model_.Radius(state.position());
   double direction = -sgn(race_->track().pieces()[state.position().piece()].angle());
-
-  // TODO
-  //
-  if (state.position().start_lane() != state.position().end_lane() && radius > 1e-12)
-    radius = 0.9 *
-      min(race_->track().LaneRadius(state.position().piece(), state.position().start_lane()),
-          race_->track().LaneRadius(state.position().piece(), state.position().end_lane()));
-
   double angle = drift_model_.Predict(
       state.position().angle(),
       state.previous_angle(),
@@ -96,6 +88,7 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
 }
 
 void CarTracker::Record(const Position& position) {
+  bool bump = false;
   if (just_started_) {
     just_started_ = false;
     state_ = CarState(position);
@@ -134,28 +127,44 @@ void CarTracker::Record(const Position& position) {
     }
   }
 
-  double direction = -sgn(race_->track().pieces()[state_.position().piece()].angle());
-
-  // Update models
-  crash_model_.RecordSafeAngle(position.angle());
-  // There is too many problems in between pieces (length of switches),
-  // so do not take those measurements into account.
-  if (state_.position().piece() == position.piece()) {
-    velocity_model_.Record(velocity, state_.velocity(), effective_throttle);
+  // TODO replace it with real bump tester
+  if (velocity_model_.IsReady() && fabs(velocity - velocity_model_.Predict(state_.velocity(), effective_throttle)) > 1e-9) {
+    bump = true;
   }
 
-  // Do not learn the drift model on switches!
-  if (!drift_model_.IsReady() && state_.position().start_lane() == state_.position().end_lane()) {
-    drift_model_.Record(
-        position.angle(), state_.position().angle(), state_.previous_angle(),
-        state_.velocity(), RadiusInPosition(state_.position()), direction);
-  }
-  if (velocity_model_.IsReady()) {
-    lane_length_model_.Record(state_.position(), position, velocity_model_.Predict(state_.velocity(), effective_throttle));
-  }
+  if (!bump) {
+    double direction = -sgn(race_->track().pieces()[state_.position().piece()].angle());
 
-  if (drift_model_.IsReady()) {
-    crash_model_.RecordDriftModelReady();
+    // Update models
+    crash_model_.RecordSafeAngle(position.angle());
+    // There is too many problems in between pieces (length of switches),
+    // so do not take those measurements into account.
+    if (state_.position().piece() == position.piece()) {
+      velocity_model_.Record(velocity, state_.velocity(), effective_throttle);
+    }
+
+    // Do not learn the drift model on switches!
+    if (!drift_model_.IsReady() && state_.position().start_lane() == state_.position().end_lane()) {
+      drift_model_.Record(
+          position.angle(), state_.position().angle(), state_.previous_angle(),
+          state_.velocity(), RadiusInPosition(state_.position()), direction);
+    }
+    if (velocity_model_.IsReady()) {
+      lane_length_model_.Record(state_.position(), position, velocity_model_.Predict(state_.velocity(), effective_throttle));
+    }
+
+    if (drift_model_.IsReady()) {
+      crash_model_.RecordDriftModelReady();
+      double r = drift_model_.EstimateRadius(position.angle(), state_.position().angle(), state_.previous_angle(),
+          state_.velocity(), direction);
+
+      double expected_angle = drift_model_.Predict(state_.position().angle(), state_.previous_angle(), state_.velocity(), r, direction);
+      if (fabs(expected_angle - position.angle()) > 1e-9) {
+        std::cout << "ERROR BAD RADIUS" << std::endl << std::endl;
+      }
+
+      radius_model_.Record(state_.position(), r);
+    }
   }
 
   state_ = CarState(position, velocity, state_.position().angle(), switch_state, throttle, turbo_state);

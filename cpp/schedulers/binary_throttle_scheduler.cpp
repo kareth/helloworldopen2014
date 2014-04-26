@@ -1,6 +1,10 @@
 #include "schedulers/binary_throttle_scheduler.h"
 
-#include<chrono>
+#include <chrono>
+
+#include "gflags/gflags.h"
+
+DEFINE_bool(log_masks, true, "");
 
 namespace schedulers {
 
@@ -135,6 +139,7 @@ int BinaryThrottleScheduler::FindBestMask(const CarState& state, double* distanc
 }
 
 void BinaryThrottleScheduler::Log(const game::CarState& state) {
+  if (!FLAGS_log_masks) return;
   int i = 0;
   for (int g = 0; g < groups_.size(); g++) {
     if (g >= schedule_.size()) break;
