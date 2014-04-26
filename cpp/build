@@ -19,7 +19,7 @@ function build_without_cmake() {
     main.cpp \
     utils/protocol.cpp utils/connection.cpp utils/game_visualizer.cpp \
     bots/raw_bot.cpp bots/tomek/bot.cpp bots/piotr/bot.cpp bots/greedy/bot.cpp bots/basic/bot.cpp bots/stepping/bot.cpp \
-    game/car.cpp game/car_tracker.cpp game/command.cpp game/gauss.cpp game/position.cpp game/race.cpp game/result.cpp game/simplex.cpp game/track.cpp game/turbo.cpp game/lane_length_model.cpp game/radius_model.cpp game/approximation.cpp \
+    game/car.cpp game/car_tracker.cpp game/command.cpp game/gauss.cpp game/position.cpp game/race.cpp game/result.cpp game/simplex.cpp game/track.cpp game/turbo.cpp game/lane_length_model.cpp game/radius_model.cpp game/approximation.cpp game/drift_model.cpp \
     schedulers/binary_throttle_scheduler.cpp schedulers/shortest_path_switch_scheduler.cpp schedulers/greedy_turbo_scheduler.cpp schedulers/bulk_scheduler.cpp schedulers/learning_scheduler.cpp \
     gflags/gflags.cc gflags/gflags_reporting.cc gflags/gflags_completions.cc \
     physics/speed_tracker.cpp
