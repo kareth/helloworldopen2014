@@ -28,7 +28,14 @@ void RaceTracker::RecordLapTime(const std::string& color, int time) {
   enemies_[indexes_[color]].RecordLapTime(time);
 }
 
-Position RaceTracker::BumpPosition(const std::string& color) {
+void RaceTracker::RecordCrash(const std::string& color) {
+  if (indexes_.find(color) == indexes_.end())
+    return;
+
+  enemies_[indexes_[color]].RecordCrash();
+}
+
+/* Position RaceTracker::BumpPosition(const std::string& color) {
   int index = indexes_[color];
 
   // TODO optimize:D
@@ -42,6 +49,6 @@ Position RaceTracker::BumpPosition(const std::string& color) {
   }
   // This shouldnt reach here
   return enemies_[indexes_[color_]].state().position();
-}
+} */
 
 }  // namespace game

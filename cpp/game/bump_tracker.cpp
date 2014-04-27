@@ -6,7 +6,9 @@ BumpTracker::BumpTracker(game::CarTracker& car_tracker,
     const game::Race& race)
   : race_(race), car_tracker_(car_tracker) {
   // TODO hardcoded time limit
-  throttle_scheduler_.reset(new schedulers::BinaryThrottleScheduler(race_, car_tracker_, 5));
+  throttle_scheduler_.reset(
+      new schedulers::BinaryThrottleScheduler(
+        race_, car_tracker_, {1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3}));
 }
 
 bool BumpTracker::CanBump(const CarState& bumping_state, const CarState& bumped_state) {
@@ -14,6 +16,9 @@ bool BumpTracker::CanBump(const CarState& bumping_state, const CarState& bumped_
 }
 
 bool BumpTracker::CanBumpOptimalEnemy(const CarState& bumping_state, const CarState& bumped_state) {
+  if (race_.track().IsFirstInFront(bumping_state.position(), bumped_state.position()))
+    return false;
+
   throttle_scheduler_->Schedule(bumped_state);
   auto& schedule = throttle_scheduler_->full_schedule();
 
@@ -22,7 +27,7 @@ bool BumpTracker::CanBumpOptimalEnemy(const CarState& bumping_state, const CarSt
 
   for (double bumped_throttle : schedule) {
     bumping = car_tracker_.Predict(bumping, Command(1));
-    bumped = car_tracker_.Predict(bumping, Command(bumped_throttle));
+    bumped = car_tracker_.Predict(bumped, Command(bumped_throttle));
 
     if (!car_tracker_.crash_model().IsSafe(bumping.position().angle()))
       return false;
@@ -34,12 +39,15 @@ bool BumpTracker::CanBumpOptimalEnemy(const CarState& bumping_state, const CarSt
 }
 
 bool BumpTracker::CanBumpForSure(const CarState& bumping_state, const CarState& bumped_state, int in_ticks) {
+  if (race_.track().IsFirstInFront(bumping_state.position(), bumped_state.position()))
+    return false;
+
   auto bumping = bumping_state;
   auto bumped = bumped_state;
 
   for (int i = 0; i < in_ticks; i++) {
     bumping = car_tracker_.Predict(bumping, Command(1));
-    bumped = car_tracker_.Predict(bumping, Command(1));
+    bumped = car_tracker_.Predict(bumped, Command(0));
 
     if (!car_tracker_.crash_model().IsSafe(bumping.position().angle()))
       return false;

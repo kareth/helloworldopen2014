@@ -17,19 +17,21 @@ class RaceTracker {
 
   void RecordLapTime(const std::string& color, int time);
 
+  void RecordCrash(const std::string& color);
+
   // Resets positions, keeps speed stats.
   // TODO is it necessary?
-  void Reset() {}
+  // void Reset() {}
 
   const EnemyTracker& enemy(const std::string& color) const { return enemies_.at(indexes_.at(color)); }
 
-  int TimeToReach(int piece, double position);
+  /* int TimeToReach(int piece, double position);
 
-  Position BumpPosition(const std::string& color);
+  Position BumpPosition(const std::string& color);*/
 
  private:
-  void RecordEnemy(int index, const game::Position& position);
-  void UpdateSpeedStats(int index, const game::Position& position);
+  // void RecordEnemy(int index, const game::Position& position);
+  // void UpdateSpeedStats(int index, const game::Position& position);
 
 
   std::vector<EnemyTracker> enemies_;
