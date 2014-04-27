@@ -76,7 +76,6 @@ double DriftModel::ComputeError() const {
 }
 
 void DriftModel::Train() {
-  ready_ = true;
 
   vector<double> old_x = x_;
 
@@ -85,12 +84,13 @@ void DriftModel::Train() {
   if (ComputeError() / model_.size() > 1e-9) {
     x_ = old_x;
     ready_ = false;
+  } else {
+    ready_ = true;
   }
 }
 
 void DriftModel::TrainWithStraight() {
   vector<double> old_x = x_;
-  ready_ = true;
   vector<double> xs;
 
   Approximation(model_from_straight_, b_from_straight_, xs);
@@ -148,7 +148,8 @@ void DriftModel::TrainWithStraight() {
 
   if (ComputeError() / model_.size() > 1e-9) {
     x_ = old_x;
-    ready_ = false;
+  } else {
+    ready_ = true;
   }
 }
 

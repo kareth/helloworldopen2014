@@ -158,10 +158,6 @@ void CarTracker::Record(const Position& position) {
           state_.velocity(), direction);
 
       double expected_angle = drift_model_.Predict(state_.position().angle(), state_.previous_angle(), state_.velocity(), r, direction);
-      if (fabs(expected_angle - position.angle()) > 1e-5) {
-        std::cout << "ERROR BAD RADIUS" << std::endl << std::endl;
-      }
-
       radius_model_.Record(state_.position(), r);
     }
   }
