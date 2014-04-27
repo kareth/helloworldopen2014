@@ -42,6 +42,8 @@ class Command {
   bool ThrottleSet() const { return throttle_set_; }
   bool TurboSet() const { return turbo_set_; }
 
+  static Command Turbo() { return Command(TurboToggle::kToggleOn); }
+
   std::string DebugString() const {
     std::stringstream ss;
     if (switch_set_) {

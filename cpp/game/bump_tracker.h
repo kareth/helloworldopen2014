@@ -21,6 +21,11 @@ class BumpTracker {
   // We go 1
   // Enemy go 1
   bool CanBumpForSure(const CarState& bumping, const CarState& bumped, int in_ticks = 50);
+
+  // I use turbo and run all out
+  // he go 1
+  bool CanBumpWithTurbo(const CarState& bumping, const CarState& bumped, int in_ticks = 50);
+
  private:
 
   const game::Race& race_;

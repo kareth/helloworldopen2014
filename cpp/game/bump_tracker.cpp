@@ -58,4 +58,24 @@ bool BumpTracker::CanBumpForSure(const CarState& bumping_state, const CarState& 
   return false;
 }
 
+bool BumpTracker::CanBumpWithTurbo(const CarState& bumping_state, const CarState& bumped_state, int in_ticks) {
+  if (race_.track().IsFirstInFront(bumping_state.position(), bumped_state.position()))
+    return false;
+
+  auto bumping = car_tracker_.Predict(bumping_state, Command::Turbo());
+  auto bumped = car_tracker_.Predict(bumped_state, Command(1));
+
+  for (int i = 0; i < in_ticks - 1; i++) {
+    bumping = car_tracker_.Predict(bumping, Command(1));
+    bumped = car_tracker_.Predict(bumped, Command(1));
+
+    if (!car_tracker_.crash_model().IsSafe(bumping.position().angle()))
+      return false;
+
+    if (race_.track().IsFirstInFront(bumping.position(), bumped.position()))
+      return true;
+  }
+  return false;
+}
+
 }  // namespace game
