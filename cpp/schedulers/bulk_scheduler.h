@@ -16,6 +16,7 @@ namespace schedulers {
 class BulkScheduler : public Scheduler {
  public:
    BulkScheduler(const game::Race& race,
+                 game::RaceTracker& race_tracker,
                  game::CarTracker& car_tracker,
                  int time_limit);
 
@@ -34,6 +35,7 @@ class BulkScheduler : public Scheduler {
    game::Command command_;
 
    game::CarTracker& car_tracker_;
+   game::RaceTracker& race_tracker_;
    const game::Race& race_;
 
    std::unique_ptr<schedulers::ThrottleScheduler> throttle_scheduler_;

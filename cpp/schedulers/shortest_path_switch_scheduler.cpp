@@ -1,5 +1,7 @@
 #include "schedulers/shortest_path_switch_scheduler.h"
 
+DEFINE_bool(overtake, true, "Should car overtake others?");
+
 // TODO refactor whole code here, its copypaste
 
 using game::Position;
@@ -7,8 +9,11 @@ using game::Position;
 namespace schedulers {
 
 ShortestPathSwitchScheduler::ShortestPathSwitchScheduler(
-    const game::Race& race, game::CarTracker& car_tracker)
-  : race_(race), car_tracker_(car_tracker), should_switch_now_(false),
+    const game::Race& race,
+    game::RaceTracker& race_tracker,
+    game::CarTracker& car_tracker)
+  : race_(race), car_tracker_(car_tracker), race_tracker_(race_tracker),
+    should_switch_now_(false), waiting_for_switch_(false),
     target_switch_(-1) {
   //ComputeShortestPaths();
 }
@@ -21,28 +26,33 @@ void ShortestPathSwitchScheduler::Overtake(const string& color) {
 // Updates the state and calculates next state
 // TODO switch time
 void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
-  // TODO by far, it doesnt react on strategy change, it shouldnt be like that
   if (state.position().piece() == target_switch_)
-    target_switch_ = -1;
-
-  // already scheduled
-  if (target_switch_ != -1 || should_switch_now_ == true)
+    waiting_for_switch_ = false;
+  if (waiting_for_switch_)
     return;
 
   // TODO its greedy :D
   const Position& position = state.position();
 
-  int from = NextSwitch(position.piece());
-  int to = NextSwitch(from);
+  int from = race_.track().NextSwitch(position.piece());
+  int to = race_.track().NextSwitch(from);
 
+  // TODO lane model?
   double current = LaneLength(position, position.end_lane(), from, to);
-  double left = 1000000000;
-  double right = 1000000000;
+  double left = kInf;
+  double right = kInf;
 
   if (position.end_lane() > 0)
     left = LaneLength(position, position.end_lane() - 1, from, to);
   if (position.end_lane() < race_.track().lanes().size() - 1)
     right = LaneLength(position, position.end_lane() + 1, from, to);
+
+  // Overtaking
+  if (FLAGS_overtake) {
+    if (!IsLaneSafe(state, from, to - 1, position.end_lane() - 1)) left = kInf;
+    if (!IsLaneSafe(state, from, to - 1, position.end_lane() + 1)) right = kInf;
+    if (!IsLaneSafe(state, from, to - 1, position.end_lane()))     current = kInf;
+  }
 
   if (left < current && left < right) {
     scheduled_switch_ = game::Switch::kSwitchLeft;
@@ -55,6 +65,20 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
   }
 }
 
+bool ShortestPathSwitchScheduler::IsLaneSafe(const game::CarState& state,
+    int from, int to, int lane) {
+  auto cars = race_tracker_.CarsBetween(from, to, lane);
+
+  if (cars.size() > 0) {
+    //printf("Unsafe lane! %d\n", lane);
+    //for (auto c : cars)
+    //  std::cout << c << " ";
+    //std::cout << std::endl;
+    return false;
+  }
+  return true;
+}
+
 // From -> To excliding both
 double ShortestPathSwitchScheduler::LaneLength(const game::Position& position, int lane, int from, int to) {
   double distance = 0;
@@ -63,34 +87,27 @@ double ShortestPathSwitchScheduler::LaneLength(const game::Position& position, i
   return distance;
 }
 
-// Next, not including given one
-int ShortestPathSwitchScheduler::NextSwitch(int piece_index) {
-  int index = 1;
-  auto& pieces = race_.track().pieces();
-
-  auto piece = pieces[(piece_index + 1) % pieces.size()];
-
-  while (index <= pieces.size() && piece.has_switch() == false) {
-    index++;
-    piece = pieces[(piece_index + index) % pieces.size()];
-  }
-  return (piece_index + index) % pieces.size();
-}
-
 void ShortestPathSwitchScheduler::ComputeShortestPaths() {
   // TODO
 }
 
 void ShortestPathSwitchScheduler::Switched() {
   should_switch_now_ = false;
+  waiting_for_switch_ = true;
 }
 
 // Returns scheduled switch
 bool ShortestPathSwitchScheduler::ShouldSwitch() {
-  if (should_switch_now_) {
+  if (should_switch_now_ &&
+      !waiting_for_switch_) {
+    auto s = car_tracker_.current_state();
+    s = car_tracker_.Predict(s, game::Command(1));
+    s = car_tracker_.Predict(s, game::Command(1));
+    if (s.position().piece() != target_switch_)
+      return false;
+
     if (car_tracker_.current_state().velocity() > 0 &&
-        car_tracker_.IsSafe(
-          car_tracker_.current_state(), game::Command(scheduled_switch_)))
+        car_tracker_.IsSafe(car_tracker_.current_state(), game::Command(scheduled_switch_)))
       return true;
   }
   return false;

@@ -3,15 +3,16 @@
 namespace schedulers {
 
 BulkScheduler::BulkScheduler(const game::Race& race,
+               game::RaceTracker& race_tracker,
                game::CarTracker& car_tracker,
                int time_limit)
- : race_(race), car_tracker_(car_tracker){
+ : race_(race), car_tracker_(car_tracker), race_tracker_(race_tracker) {
   throttle_scheduler_.reset(
       new BinaryThrottleScheduler(race_, car_tracker_, time_limit));
   turbo_scheduler_.reset(
       new GreedyTurboScheduler(race_, car_tracker_));
   switch_scheduler_.reset(
-      new ShortestPathSwitchScheduler(race_, car_tracker_));
+      new ShortestPathSwitchScheduler(race_, race_tracker_, car_tracker_));
 }
 
 void BulkScheduler::Schedule(const game::CarState& state) {

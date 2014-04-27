@@ -22,6 +22,9 @@ class Track {
   bool IsFirstInFront(const Position& front, const Position& back) const;
   bool IsBetween(const Position& front, int piece1, int piece2) const;
 
+  // Not including this one
+  int NextSwitch(int piece_index) const;
+
   bool IsLastStraight(const Position& position) const;
   double Distance(const Position& position, const Position& previous) const;
   double LaneRadius(int piece, int lane) const;

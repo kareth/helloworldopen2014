@@ -49,6 +49,8 @@ class Bot : public bots::BotInterface {
 
  private:
   void SetStrategy(const game::CarState& state);
+  void ScheduleOvertakes();
+
   game::Race race_;
 
   std::string color_;

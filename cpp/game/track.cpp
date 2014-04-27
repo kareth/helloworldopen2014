@@ -149,4 +149,15 @@ bool Track::IsBetween(const Position& position, int from, int to) const {
   }
 }
 
+int Track::NextSwitch(int piece_index) const {
+  int index = 1;
+  auto piece = pieces_[(piece_index + 1) % pieces_.size()];
+
+  while (index <= pieces_.size() && piece.has_switch() == false) {
+    index++;
+    piece = pieces_[(piece_index + index) % pieces_.size()];
+  }
+  return (piece_index + index) % pieces_.size();
+}
+
 }  // namespace game

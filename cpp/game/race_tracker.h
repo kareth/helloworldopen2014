@@ -32,6 +32,8 @@ class RaceTracker {
   // from to inclusive
   std::vector<std::string> CarsBetween(int piece1, int piece2, int lane);
 
+  std::vector<std::string> PredictedCarsBetween(int from, int to, int lane, int time);
+
  private:
   // void RecordEnemy(int index, const game::Position& position);
   // void UpdateSpeedStats(int index, const game::Position& position);
