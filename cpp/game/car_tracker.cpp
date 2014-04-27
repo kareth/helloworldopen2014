@@ -37,6 +37,7 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
   int start_lane = state.position().start_lane();
   int end_lane = state.position().end_lane();
   Switch switch_state = state.switch_state();
+  switch_state = command.SwitchSet() ? command.get_switch() : switch_state;
 
   // Is it next piece?
   double lane_length = lane_length_model_.Length(state.position());
@@ -68,7 +69,6 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
       start_lane = end_lane;
     }
   }
-  switch_state = command.SwitchSet() ? command.get_switch() : switch_state;
 
   double radius = radius_model_.Radius(state.position());
   double direction = -sgn(race_->track().pieces()[state.position().piece()].angle());
