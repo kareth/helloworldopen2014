@@ -62,14 +62,23 @@ bool BumpTracker::CanBumpWithTurbo(const CarState& bumping_state, const CarState
   if (race_.track().IsFirstInFront(bumping_state.position(), bumped_state.position()))
     return false;
 
-  auto bumping = car_tracker_.Predict(bumping_state, Command::Turbo());
-  auto bumped = car_tracker_.Predict(bumped_state, Command(1));
+  if (!bumping_state.turbo_state().available())
+    return false;
+
+  auto bumping = bumping_state;
+  auto bumped = bumped_state;
 
   for (int i = 0; i < in_ticks - 1; i++) {
-    bumping = car_tracker_.Predict(bumping, Command(1));
+    if (i == 0)
+      bumping = car_tracker_.Predict(bumping, Command::Turbo());
+    else
+      bumping = car_tracker_.Predict(bumping, Command(1));
     bumped = car_tracker_.Predict(bumped, Command(1));
 
     if (!car_tracker_.crash_model().IsSafe(bumping.position().angle()))
+      return false;
+
+    if (!car_tracker_.crash_model().IsSafe(bumped.position().angle()))
       return false;
 
     if (race_.track().IsFirstInFront(bumping.position(), bumped.position()))

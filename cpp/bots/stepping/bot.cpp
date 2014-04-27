@@ -75,17 +75,21 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
     command = scheduler_->command();
 
     // TODO not safe
-    /*for (auto& p : positions) {
+    for (auto& p : positions) {
       if (p.first != color_) {
         auto& enemy = race_tracker_->enemy(p.first).state();
         if (!race_tracker_->enemy(p.first).is_dead() &&
             car_tracker_->IsSafe(enemy) &&
-            bump_tracker_->CanBump(state, enemy) &&
+            bump_tracker_->CanBumpWithTurbo(state, enemy) &&
             state.position().end_lane() == enemy.position().end_lane()) {
-              command = Command(1);
+              if (state.turbo_state().is_on() ||
+                  !state.turbo_state().available())
+                command = Command(1);
+              else
+                command = Command::Turbo();
         }
       }
-    }*/
+    }
 
     scheduler_->IssuedCommand(command);
   } else {
