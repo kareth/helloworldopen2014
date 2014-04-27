@@ -243,6 +243,7 @@ std::string RawBot::ColorPrint(const std::string& color) const {
     { "red", "\x1B[31m" },
     { "blue", "\x1B[34m" },
     { "green", "\x1B[32m" },
+    { "yellow", "\x1B[33m" },
     { "normal", "\x1B[0m" }
   };
 

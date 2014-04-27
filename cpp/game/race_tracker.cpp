@@ -56,6 +56,14 @@ std::vector<std::string> RaceTracker::PredictedCarsBetween(int from, int to, int
   std::vector<std::string> result;
   for (auto& i : indexes_) {
     if (i.first == color_) continue;
+
+    // If Im already ahead - ignore
+    if (race_.track().IsFirstInFront(
+          enemies_[indexes_[color_]].state().position(),
+          enemies_[i.second].state().position()))
+      continue;
+
+    // Check lane
     if (enemies_[i.second].state().position().end_lane() == lane) {
       auto position = enemies_[i.second].PositionAfterTime(time);
 
