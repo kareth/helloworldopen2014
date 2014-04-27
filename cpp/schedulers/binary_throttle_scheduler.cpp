@@ -95,7 +95,8 @@ void BinaryThrottleScheduler::Optimize(const CarState& state) {
     printf("Current state is not safe!\n");
 
   if (!car_tracker_.IsSafe(state, game::Command(schedule_[0])))
-    schedule_[0] = 0;
+    for (int i = 0; i < schedule_.size(); i++)
+      schedule_[i] = 0;
 }
 
 int BinaryThrottleScheduler::FindBestMask(const CarState& state, double* distance, int from) {

@@ -16,10 +16,11 @@ class EnemyTracker {
   // lap time is measured in game ticks
   void RecordLapTime(int time);
   void RecordPosition(const game::Position& position);
+  void RecordCrash();
 
   // time = game_ticks
-  Position PositionAfterTime(int time);
-  int TimeToPosition(const Position& p);
+  // Position PositionAfterTime(int time);
+  // int TimeToPosition(const Position& p);
 
   /*
   int expected_bump_time() const { return expected_bump_time_; }
@@ -27,6 +28,7 @@ class EnemyTracker {
   */
 
   const CarState& state() const { return state_; }
+  bool is_dead() const { return dead_; }
 
  private:
   // double speed_factor_;
@@ -45,6 +47,7 @@ class EnemyTracker {
   std::string color_;
 
   int skip_;
+  bool dead_;
 };
 }  // namespace game
 

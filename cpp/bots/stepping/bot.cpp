@@ -43,6 +43,8 @@ void Bot::NewRace(const Race& race) {
         race_, *car_tracker_.get(), FLAGS_answer_time));
 }
 
+std::map<string, CarState> tmp_states;
+
 game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick)  {
   const Position& position = positions.at(color_);
   car_tracker_->Record(position);
@@ -53,6 +55,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
   }
 
   //race_tracker_->Record(positions);
+  race_tracker_->Record(positions);
 
   // TODO
   if (crashed_)
@@ -71,12 +74,17 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
     scheduler_->Schedule(state);
     command = scheduler_->command();
 
-
-    /*for (auto& p : positions)
-      if (p.first != color_)
-        if (bump_tracker_->CanBump(state, CarState(p.second)))
-          command = Command(1);*/
-
+    for (auto& p : positions) {
+      if (p.first != color_) {
+        auto& enemy = race_tracker_->enemy(p.first).state();
+        if (!race_tracker_->enemy(p.first).is_dead() &&
+            car_tracker_->IsSafe(enemy) &&
+            bump_tracker_->CanBump(state, enemy) &&
+            state.position().end_lane() == enemy.position().end_lane()) {
+              command = Command(1);
+        }
+      }
+    }
 
     scheduler_->IssuedCommand(command);
   } else {
@@ -122,7 +130,7 @@ void Bot::GameStarted() {
 }
 
 void Bot::CarFinishedLap(const string& color, const game::Result& result)  {
-  //race_tracker_->RecordLapTime(color, result.lap_time());
+  race_tracker_->RecordLapTime(color, result.lap_time());
 }
 
 void Bot::CarFinishedRace(const string& color)  {
@@ -143,6 +151,8 @@ void Bot::CarCrashed(const string& color)  {
     crashed_ = true;
     car_tracker_->RecordCarCrash();
   }
+
+  race_tracker_->RecordCrash(color);
 }
 
 void Bot::CarSpawned(const string& color)  {
