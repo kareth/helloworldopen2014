@@ -29,6 +29,7 @@ class EnemyTracker {
 
   const CarState& state() const { return state_; }
   bool is_dead() const { return dead_; }
+  int time_to_spawn() const { return time_to_spawn_; }
 
  private:
   double Velocity(int piece);
@@ -50,6 +51,10 @@ class EnemyTracker {
 
   int skip_;
   bool dead_;
+
+  int time_to_spawn_;
+  static const int kRespawnTime = 300;
+  static const int kSkipTime = 20;
 };
 }  // namespace game
 

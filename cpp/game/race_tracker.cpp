@@ -48,26 +48,31 @@ std::vector<std::string> RaceTracker::CarsBetween(int from, int to, int lane) {
 }
 
 std::vector<std::string> RaceTracker::PredictedCarsBetween(int from, int to, int lane) {
+  auto& me = enemies_[indexes_[color_]];
   Position position;
   position.set_piece(to);
   position.set_piece_distance(0);
-  int time = enemies_[indexes_[color_]].TimeToPosition(position);
+  int time = me.TimeToPosition(position);
 
   std::vector<std::string> result;
   for (auto& i : indexes_) {
     if (i.first == color_) continue;
+    auto& enemy = enemies_[i.second];
 
     // If Im already ahead - ignore
-    if (race_.track().IsFirstInFront(
-          enemies_[indexes_[color_]].state().position(),
-          enemies_[i.second].state().position()))
+    if (race_.track().IsFirstInFront(me.state().position(), enemy.state().position()))
       continue;
 
     // Check lane
-    if (enemies_[i.second].state().position().end_lane() == lane) {
-      auto position = enemies_[i.second].PositionAfterTime(time);
+    if (enemy.state().position().end_lane() == lane) {
 
-      if (race_.track().IsBetween(position, from, to))
+      // If dead, check if he respawns after I pass him
+      if (enemy.is_dead() && race_.track().IsFirstInFront(
+            me.PositionAfterTime(enemy.time_to_spawn() - 3),
+            enemy.state().position()))
+        continue;
+
+      if (race_.track().IsBetween(enemy.PositionAfterTime(time), from, to))
         result.push_back(i.first);
     }
   }

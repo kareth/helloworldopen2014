@@ -22,13 +22,13 @@ class GameVisualizer {
   void Print() {
     if (FLAGS_disable_visualizer) return;
     if (print_) {
-      if (visible_)
-        CarriageReturn(positions_.size() * kPlayerLines + 1);
-      else
+      if (!visible_)
         visible_ = true;
 
       for (auto car : positions_)
         PrintCar(car.first, car.second);
+
+      CarriageReturn(positions_.size() * kPlayerLines + 1);
     }
   }
 
@@ -74,11 +74,11 @@ class GameVisualizer {
 
  private:
   void PrintCar(const std::string& color, const game::Position& position) {
-    std::cout << std::endl;
+    std::cout << "                                                                                                " << std::endl;
     PrintLapTimes(color);
-    std::cout << "                                           " << std::endl;
+    std::cout << "                                                                                                " << std::endl;
     PrintTrackInfo(color, position);
-    std::cout << "                                           " << std::endl;
+    std::cout << "                                                                                                " << std::endl;
   }
 
   void PrintTrackInfo(const std::string& color, const game::Position& position) {

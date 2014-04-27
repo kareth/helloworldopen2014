@@ -9,8 +9,8 @@ EnemyTracker::EnemyTracker(game::CarTracker& car_tracker,
     const game::Race& race,
     const std::string& color,
     const Position& position)
-  : car_tracker_(car_tracker), race_(race), color_(color), skip_(0),
-    dead_(false) {
+  : car_tracker_(car_tracker), race_(race), color_(color), skip_(kSkipTime),
+    dead_(false), time_to_spawn_(0) {
   state_ = CarState(position);
   piece_speed_.resize(race_.track().pieces().size(), 0);
   piece_data_points_.resize(race_.track().pieces().size(), 0);
@@ -22,12 +22,13 @@ void EnemyTracker::RecordLapTime(int time) {
 }
 
 void EnemyTracker::RecordCrash() {
-  skip_ = 30;
+  skip_ = kRespawnTime + kSkipTime;
+  time_to_spawn_ = kRespawnTime;
   dead_ = true;
 }
 
 void EnemyTracker::RecordPosition(const game::Position& position) {
-  if (skip_ == 0)
+  if (time_to_spawn_-- == 0)
     dead_ = false;
   if (skip_-- > 0)
     return;
@@ -51,7 +52,7 @@ void EnemyTracker::RecordPosition(const game::Position& position) {
 
 Position EnemyTracker::PositionAfterTime(int time) {
   auto state = state_;
-  for (int i = 0; i < time; i++) {
+  for (int i = 0; i < min(time, 1000); i++) {
     double throttle = car_tracker_.velocity_model().PredictThrottle(
         Velocity(state.position().piece()));
     state = car_tracker_.Predict(state, Command(throttle));
@@ -69,7 +70,9 @@ double EnemyTracker::Velocity(int piece) {
 int EnemyTracker::TimeToPosition(const Position& target) {
   auto state = state_;
 
-  for (int limit = 0, time = 0; limit < 300; limit++, time++) {
+  int time = 0;
+  if (dead_) time = time_to_spawn_;
+  for (int limit = 0; limit < 300; limit++, time++) {
     double throttle = car_tracker_.velocity_model().PredictThrottle(
         Velocity(state.position().piece()));
     state = car_tracker_.Predict(state, Command(throttle));
@@ -77,7 +80,7 @@ int EnemyTracker::TimeToPosition(const Position& target) {
     if (race_.track().IsFirstInFront(state.position(), target))
       return time;
   }
-  return 1000000;
+  return 100000;
 }
 
 }  // namespace game
