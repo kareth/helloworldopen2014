@@ -12,8 +12,8 @@ EnemyTracker::EnemyTracker(game::CarTracker& car_tracker,
   : car_tracker_(car_tracker), race_(race), color_(color), skip_(0),
     dead_(false) {
   state_ = CarState(position);
-  //piece_speed_.resize(race_.track().pieces().size(), 0);
-  //piece_speed_.resize(race_.track().pieces().size(), 0);
+  piece_speed_.resize(race_.track().pieces().size(), 0);
+  piece_data_points_.resize(race_.track().pieces().size(), 0);
 }
 
 void EnemyTracker::RecordLapTime(int time) {
@@ -27,18 +27,14 @@ void EnemyTracker::RecordCrash() {
 }
 
 void EnemyTracker::RecordPosition(const game::Position& position) {
-  if (skip_ == 0) {
+  if (skip_ == 0)
     dead_ = false;
-  }
-  if (skip_ >= 0 )
-    skip_--;
-
-  // if (skip_-- > 0)
-  //  return;
+  if (skip_-- > 0)
+    return;
 
   state_ = car_tracker_.CreateCarState(state_, position);
 
-/*  int piece = state_.position().piece();
+  int piece = state_.position().piece();
 
   piece_speed_[piece] =
     double(piece_speed_[piece] * piece_data_points_[piece] + state_.velocity()) /
@@ -50,40 +46,38 @@ void EnemyTracker::RecordPosition(const game::Position& position) {
     double(average_speed_ * average_data_points_ + state_.velocity()) /
     double(average_data_points_ + 1);
 
-  average_data_points_++;*/
+  average_data_points_++;
 }
 
-/*Position EnemyTracker::PositionAfterTime(int time) {
-  Position pos = state_.position();
+Position EnemyTracker::PositionAfterTime(int time) {
+  auto state = state_;
   for (int i = 0; i < time; i++) {
-    double velocity = piece_speed_[state_.position().piece()];
-    if (velocity < 1e-9) // Not yet calculated
-      velocity = average_speed_;
-
-    pos = race_.track().PositionAfter(pos, velocity);
+    double throttle = car_tracker_.velocity_model().PredictThrottle(
+        Velocity(state.position().piece()));
+    state = car_tracker_.Predict(state, Command(throttle));
   }
-  return pos;
+  return state.position();
+}
+
+double EnemyTracker::Velocity(int piece) {
+  double velocity = piece_speed_[state_.position().piece()];
+  if (velocity < 1e-9) // Not yet calculated
+    velocity = average_speed_;
+  return velocity;
 }
 
 int EnemyTracker::TimeToPosition(const Position& target) {
-  Position pos = state_.position();
+  auto state = state_;
 
-  int time = 0;
-  int limit = 300;
-  while (++time) {
-    if (limit-- < 0) return 1000000;
-    double velocity = piece_speed_[state_.position().piece()];
-    if (velocity < 1e-9) // Not yet calculated
-      velocity = average_speed_;
+  for (int limit = 0, time = 0; limit < 300; limit++, time++) {
+    double throttle = car_tracker_.velocity_model().PredictThrottle(
+        Velocity(state.position().piece()));
+    state = car_tracker_.Predict(state, Command(throttle));
 
-    pos = race_.track().PositionAfter(pos, velocity);
-
-    // TODO unsafe...
-    if ((pos.piece() == target.piece() && pos.piece_distance() > target.piece_distance())
-        || (pos.piece() + 1) % race_.track().pieces().size() == target.piece())
-      break;
+    if (race_.track().IsFirstInFront(state.position(), target))
+      return time;
   }
-  return time;
-}*/
+  return 1000000;
+}
 
 }  // namespace game

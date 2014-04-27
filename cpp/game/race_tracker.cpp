@@ -47,19 +47,23 @@ std::vector<std::string> RaceTracker::CarsBetween(int from, int to, int lane) {
   return result;
 }
 
-std::vector<std::string> RaceTracker::PredictedCarsBetween(int from, int to, int lane, int time) {
-  return CarsBetween(from, to, lane);
-/*  std::vector<std::string> result;
+std::vector<std::string> RaceTracker::PredictedCarsBetween(int from, int to, int lane) {
+  Position position;
+  position.set_piece(to);
+  position.set_piece_distance(0);
+  int time = enemies_[indexes_[color_]].TimeToPosition(position);
+
+  std::vector<std::string> result;
   for (auto& i : indexes_) {
     if (i.first == color_) continue;
-    if (enemies_[i.second].state().position().end_lane() == lane()) {
-      auto position = enemies_[i.second].PositionAfter(time);
+    if (enemies_[i.second].state().position().end_lane() == lane) {
+      auto position = enemies_[i.second].PositionAfterTime(time);
 
       if (race_.track().IsBetween(position, from, to))
         result.push_back(i.first);
     }
   }
-  return result;*/
+  return result;
 }
 
 /* Position RaceTracker::BumpPosition(const std::string& color) {

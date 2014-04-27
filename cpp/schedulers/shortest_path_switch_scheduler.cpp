@@ -26,8 +26,10 @@ void ShortestPathSwitchScheduler::Overtake(const string& color) {
 // Updates the state and calculates next state
 // TODO switch time
 void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
-  if (state.position().piece() == target_switch_)
+  if (state.position().piece() == target_switch_) {
     waiting_for_switch_ = false;
+    target_switch_ = -1;
+  }
   if (waiting_for_switch_)
     return;
 
@@ -62,12 +64,15 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
     scheduled_switch_ = game::Switch::kSwitchRight;
     target_switch_ = from;
     should_switch_now_ = true;
+  } else {
+    should_switch_now_ = false;
+    target_switch_ = -1;
   }
 }
 
 bool ShortestPathSwitchScheduler::IsLaneSafe(const game::CarState& state,
     int from, int to, int lane) {
-  auto cars = race_tracker_.CarsBetween(from, to, lane);
+  auto cars = race_tracker_.PredictedCarsBetween(from, to, lane);
 
   if (cars.size() > 0) {
     //printf("Unsafe lane! %d\n", lane);

@@ -19,8 +19,8 @@ class EnemyTracker {
   void RecordCrash();
 
   // time = game_ticks
-  // Position PositionAfterTime(int time);
-  // int TimeToPosition(const Position& p);
+  Position PositionAfterTime(int time);
+  int TimeToPosition(const Position& p);
 
   /*
   int expected_bump_time() const { return expected_bump_time_; }
@@ -31,6 +31,8 @@ class EnemyTracker {
   bool is_dead() const { return dead_; }
 
  private:
+  double Velocity(int piece);
+
   // double speed_factor_;
   std::vector<int> lap_times_;
 
