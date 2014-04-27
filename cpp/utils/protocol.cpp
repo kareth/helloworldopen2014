@@ -1,4 +1,7 @@
 #include "utils/protocol.h"
+#include "gflags/gflags.h"
+
+DEFINE_string(password, "", "");
 
 namespace utils {
 
@@ -26,6 +29,10 @@ jsoncons::json make_join_race(const std::string& name, const std::string& key,
   data["trackName"] = track;
   data["carCount"] = players;
   data["botId"] = bot;
+
+  if (!FLAGS_password.empty()) {
+    data["password"] = FLAGS_password;
+  }
 
   return make_request("joinRace", data);
 }

@@ -50,7 +50,11 @@ void DriftModel::Record(double next_angle, double angle, double previous_angle, 
     Train();
   } else if (!IsReady() && model_.size() > 20) {
     std::cout << "ERROR We got a lot of samples, but model is not ready yet :(" << std::endl;
-    TrainWithStraight();
+    if (model_from_straight_.size() > 0) {
+      TrainWithStraight();
+    } else {
+      Train();
+    }
   }
 
 
@@ -90,6 +94,7 @@ void DriftModel::Train() {
 }
 
 void DriftModel::TrainWithStraight() {
+  TrimModels();
   vector<double> old_x = x_;
   vector<double> xs;
 
@@ -119,7 +124,6 @@ void DriftModel::TrainWithStraight() {
   }
   RemoveEmptyModels();
 
-  TrimModels();
   Approximation(model_, b_, x_);
 
   // Remove outliers

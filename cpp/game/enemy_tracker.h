@@ -13,9 +13,11 @@ class EnemyTracker {
   EnemyTracker(game::CarTracker& car_tracker, const game::Race& race,
       const std::string& color, const game::Position& position);
 
+  // lap time is measured in game ticks
   void RecordLapTime(int time);
   void RecordPosition(const game::Position& position);
 
+  // time = game_ticks
   Position PositionAfterTime(int time);
   int TimeToPosition(const Position& p);
 
