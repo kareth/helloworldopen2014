@@ -15,6 +15,7 @@ set(GAME_SOURCES
   turbo.cpp
   enemy_tracker.cpp
   race_tracker.cpp
+  bump_tracker.cpp
 )
 
 set(GAME_HEADERS
@@ -39,6 +40,7 @@ set(GAME_HEADERS
   velocity_model.h
   enemy_tracker.h
   race_tracker.h
+  bump_tracker.h
 )
 
 set(GAME_TESTS

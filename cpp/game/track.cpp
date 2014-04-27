@@ -127,4 +127,20 @@ Position Track::PositionAfter(const Position& start, double distance) const {
   return position;
 }
 
+
+bool Track::IsFirstInFront(const Position& front, const Position& back) const {
+  int left, right;
+  if (front.piece() >= back.piece()) {
+    left = front.piece() - back.piece();
+    right = back.piece() + pieces_.size() - front.piece();
+  } else {
+    right = back.piece() - front.piece();
+    left = front.piece() + pieces_.size() - back.piece();
+  }
+  if (left == 0)
+    return front.piece_distance() - back.piece_distance() > 0;
+  return left < right;
+}
+
+
 }  // namespace game

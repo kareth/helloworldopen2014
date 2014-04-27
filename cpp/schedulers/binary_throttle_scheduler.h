@@ -31,6 +31,8 @@ class BinaryThrottleScheduler : public ThrottleScheduler {
   // Updates the state and calculates next state
   void Schedule(const game::CarState& state) override;
 
+  const std::vector<double>& full_schedule() const override { return schedule_; }
+
  private:
   static const bool kLoggerOn = true;
 
