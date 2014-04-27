@@ -7,6 +7,10 @@
 #include <string>
 #include <vector>
 
+#include "gflags/gflags.h"
+
+DECLARE_double(safe_angle);
+
 namespace game {
 
 class CrashModel {
@@ -29,7 +33,7 @@ class CrashModel {
   }
 
   void RecordDriftModelReady() {
-    guess_safe_angle_ = 60.0;
+    guess_safe_angle_ = FLAGS_safe_angle;
   }
 
   bool IsSafe(double angle) const {

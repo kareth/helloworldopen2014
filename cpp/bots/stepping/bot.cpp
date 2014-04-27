@@ -1,6 +1,7 @@
 #include "bots/stepping/bot.h"
 
 DEFINE_int32(answer_time, 10, "Time limit for answer in ms");
+DECLARE_int32(handicap);
 
 using std::string;
 using std::vector;
@@ -46,6 +47,10 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
   const Position& position = positions.at(color_);
   car_tracker_->Record(position);
   auto& state = car_tracker_->current_state();
+
+  if (game_tick < FLAGS_handicap) {
+    return Command(0);
+  }
 
   //race_tracker_->Record(positions);
 
