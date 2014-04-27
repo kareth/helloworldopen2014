@@ -28,6 +28,7 @@ void Bot::NewRace(const Race& race) {
   if (car_tracker_ == nullptr) {
     car_tracker_.reset(new CarTracker(&race_));
     race_tracker_.reset(new RaceTracker(*car_tracker_.get(), race_, color_));
+    bump_tracker_.reset(new game::BumpTracker(*car_tracker_.get(), race_));
   } else {
     car_tracker_->set_race(&race_);
   }
@@ -46,7 +47,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
   car_tracker_->Record(position);
   auto& state = car_tracker_->current_state();
 
-  race_tracker_->Record(positions);
+  //race_tracker_->Record(positions);
 
   // TODO
   if (crashed_)
@@ -64,6 +65,14 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 
     scheduler_->Schedule(state);
     command = scheduler_->command();
+
+
+    /*for (auto& p : positions)
+      if (p.first != color_)
+        if (bump_tracker_->CanBump(state, CarState(p.second)))
+          command = Command(1);*/
+
+
     scheduler_->IssuedCommand(command);
   } else {
     learning_scheduler_->Schedule(state);
@@ -108,7 +117,7 @@ void Bot::GameStarted() {
 }
 
 void Bot::CarFinishedLap(const string& color, const game::Result& result)  {
-  race_tracker_->RecordLapTime(color, result.lap_time());
+  //race_tracker_->RecordLapTime(color, result.lap_time());
 }
 
 void Bot::CarFinishedRace(const string& color)  {
