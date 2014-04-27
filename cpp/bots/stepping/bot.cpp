@@ -74,7 +74,8 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
     scheduler_->Schedule(state);
     command = scheduler_->command();
 
-    for (auto& p : positions) {
+    // TODO not safe
+    /*for (auto& p : positions) {
       if (p.first != color_) {
         auto& enemy = race_tracker_->enemy(p.first).state();
         if (!race_tracker_->enemy(p.first).is_dead() &&
@@ -84,7 +85,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
               command = Command(1);
         }
       }
-    }
+    }*/
 
     scheduler_->IssuedCommand(command);
   } else {

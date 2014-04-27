@@ -29,10 +29,15 @@ class Race {
   const Track& track() const { return track_; }
   const std::vector<Car> cars() const { return cars_; }
 
+  bool qualification_phase() const { return duration_ != 0; }
+  bool race_phase() const { return duration_ == 0; }
+
  private:
   int laps_ = 0;
   int max_lap_time_ms_ = 0;
   bool quick_race_ = false;
+
+  int duration_ = 0;
 
   Track track_;
   std::vector<Car> cars_;
