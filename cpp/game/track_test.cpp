@@ -125,5 +125,29 @@ TEST_F(LaneLengthTest, TurnSwitchLane4) {
   EXPECT_NEAR(81.054652206375, track_.LaneLength(position), 1);
 }
 
+TEST_F(TrackParseJsonTest, RegularBetween) {
+  Position position;
+  position.set_piece(10);
+  int from = 8;
+  int to = 15;
+  EXPECT_EQ(true, track_.IsBetween(position, from, to));
+}
+
+TEST_F(TrackParseJsonTest, AfterCyclicBetween) {
+  Position position;
+  position.set_piece(0);
+  int from = 8;
+  int to = 2;
+  EXPECT_EQ(true, track_.IsBetween(position, from, to));
+}
+
+TEST_F(TrackParseJsonTest, BeforeCyclicBetween) {
+  Position position;
+  position.set_piece(9);
+  int from = 7;
+  int to = 1;
+  EXPECT_EQ(true, track_.IsBetween(position, from, to));
+}
+
 }  // anonymous namespace
 }  // namespace game

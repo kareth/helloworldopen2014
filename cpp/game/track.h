@@ -20,6 +20,7 @@ class Track {
   }
 
   bool IsFirstInFront(const Position& front, const Position& back) const;
+  bool IsBetween(const Position& front, int piece1, int piece2) const;
 
   bool IsLastStraight(const Position& position) const;
   double Distance(const Position& position, const Position& previous) const;

@@ -35,6 +35,18 @@ void RaceTracker::RecordCrash(const std::string& color) {
   enemies_[indexes_[color]].RecordCrash();
 }
 
+// TODO test
+std::vector<std::string> RaceTracker::CarsBetween(int from, int to, int lane) {
+  std::vector<std::string> result;
+  for (auto& i : indexes_) {
+    if (race_.track().IsBetween(enemies_[i.second].state().position(), from, to) &&
+        enemies_[i.second].state().position().end_lane() == lane &&
+        i.first != color_)
+      result.push_back(i.first);
+  }
+  return result;
+}
+
 /* Position RaceTracker::BumpPosition(const std::string& color) {
   int index = indexes_[color];
 

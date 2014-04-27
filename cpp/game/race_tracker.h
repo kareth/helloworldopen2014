@@ -29,10 +29,12 @@ class RaceTracker {
 
   Position BumpPosition(const std::string& color);*/
 
+  // from to inclusive
+  std::vector<std::string> CarsBetween(int piece1, int piece2, int lane);
+
  private:
   // void RecordEnemy(int index, const game::Position& position);
   // void UpdateSpeedStats(int index, const game::Position& position);
-
 
   std::vector<EnemyTracker> enemies_;
 
