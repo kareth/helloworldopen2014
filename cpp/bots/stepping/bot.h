@@ -21,8 +21,6 @@
 #include "game/race_tracker.h"
 #include "game/bump_tracker.h"
 
-DECLARE_int32(answer_time);
-
 namespace bots {
 namespace stepping {
 

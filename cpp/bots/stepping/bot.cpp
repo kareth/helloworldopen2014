@@ -3,6 +3,7 @@
 DECLARE_int32(handicap);
 DECLARE_bool(check_if_safe_ahead);
 DECLARE_int32(answer_time);
+DECLARE_bool(bump_with_turbo);
 
 using std::string;
 using std::vector;
@@ -75,27 +76,30 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 
     scheduler_->Schedule(state);
     command = scheduler_->command();
+
+    // Bumping. Temporary, with turbo. Grreedy.
+    if (FLAGS_bump_with_turbo) {
+      for (auto& p : positions) {
+        if (p.first != color_) {
+          auto& enemy = race_tracker_->enemy(p.first).state();
+          if (!race_tracker_->enemy(p.first).is_dead() &&
+              car_tracker_->IsSafe(enemy) &&
+              bump_tracker_->CanBumpWithTurbo(state, enemy) &&
+              state.position().end_lane() == enemy.position().end_lane()) {
+                if (state.turbo_state().is_on() ||
+                    !state.turbo_state().available())
+                  command = Command(1);
+                else
+                  command = Command::Turbo();
+          }
+        }
+      }
+    }
+
     Command safe_command;
     if (FLAGS_check_if_safe_ahead && !race_tracker_->IsSafeInFront(command, &safe_command)) {
       command = safe_command;
     }
-
-    // TODO not safe
-    /*for (auto& p : positions) {
-      if (p.first != color_) {
-        auto& enemy = race_tracker_->enemy(p.first).state();
-        if (!race_tracker_->enemy(p.first).is_dead() &&
-            car_tracker_->IsSafe(enemy) &&
-            bump_tracker_->CanBumpWithTurbo(state, enemy) &&
-            state.position().end_lane() == enemy.position().end_lane()) {
-              if (state.turbo_state().is_on() ||
-                  !state.turbo_state().available())
-                command = Command(1);
-              else
-                command = Command::Turbo();
-        }
-      }
-    }*/
 
     ScheduleOvertakes();
 
