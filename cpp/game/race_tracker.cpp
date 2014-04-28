@@ -91,6 +91,7 @@ bool RaceTracker::IsSafeInFront(const Command& command, Command* safe_command) {
 
 bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Command& our_command) {
   const auto& my_state = car_tracker_.current_state();
+  bool attack = our_command.throttle() == 1.0;
 
   std::map<std::string, CarState> states;
   for (const auto& enemy : enemies_) {
@@ -131,6 +132,8 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
           cars_bumped.insert(p.first);
           bumped = true;
           min_velocity = fmin(min_velocity, velocity);
+
+          // TODO make sure he actually will be dead
         }
       } else {
         // This means, he is not able to run away from us, so there is no point

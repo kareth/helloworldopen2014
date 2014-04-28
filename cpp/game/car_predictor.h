@@ -19,31 +19,35 @@ class TurboState {
  public:
   TurboState() {}
 
-  bool available() const { return available_; }
+  bool available() const { return available_ && !is_on_; }
   const Turbo& turbo() const { return turbo_; }
   bool is_on() const { return is_on_; }
   int ticks_left() const { return ticks_left_; }
 
   void Enable() {
     if (!available_) std::cerr << "Cannot enable turbo if unavailable" << std::endl;
-    is_on_ = true;
+    if (is_on_) {
+      std::cerr << "Cannot enable turbo if already on!" << std::endl;
+    } else {
+      available_ = false;
+      is_on_ = true;
+      turbo_in_use_ = turbo_;
+      ticks_left_ = turbo_.duration() + 2;
+    }
   }
 
   void Decrement() {
     if (is_on_) {
       ticks_left_--;
       if (ticks_left_ == 0) {
-        available_ = false;
         is_on_ = false;
       }
     }
   }
 
-  // TODO allow multiple turbos ?
   void Add(const Turbo& turbo) {
     turbo_ = turbo;
     available_ = true;
-    ticks_left_ = turbo_.duration() + 2;
   }
 
   void Reset() {
@@ -53,10 +57,12 @@ class TurboState {
   }
 
  private:
+  bool is_on_ = false;
+  Turbo turbo_in_use_;
+  int ticks_left_ = 0;
+
   bool available_ = false;
   Turbo turbo_;
-  bool is_on_ = false;
-  int ticks_left_ = 0;
 };
 
 class CarState {
