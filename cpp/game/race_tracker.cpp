@@ -141,11 +141,11 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
       }
     }
 
-    if (!bumped) continue;
     if (bump_inevitable) {
       std::cout << "He is not able to run away from us, we got this :)." << std::endl;
       break;
     }
+    if (!bumped) continue;
 
     CarState state = my_new;
     state.set_velocity(0.8 * min_velocity);
