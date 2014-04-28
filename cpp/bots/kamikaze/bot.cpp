@@ -1,4 +1,4 @@
-#include "bots/stepping/bot.h"
+#include "bots/kamikaze/bot.h"
 
 DECLARE_int32(handicap);
 DECLARE_int32(answer_time);
@@ -16,7 +16,7 @@ using game::Race;
 using schedulers::Strategy;
 
 namespace bots {
-namespace stepping {
+namespace kamikaze {
 
 Bot::Bot() {
 }
@@ -74,8 +74,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
     scheduler_->Schedule(state);
     command = scheduler_->command();
 
-    // TODO not safe
-    /*for (auto& p : positions) {
+    for (auto& p : positions) {
       if (p.first != color_) {
         auto& enemy = race_tracker_->enemy(p.first).state();
         if (!race_tracker_->enemy(p.first).is_dead() &&
@@ -89,9 +88,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
                 command = Command::Turbo();
         }
       }
-    }*/
-
-    ScheduleOvertakes();
+    }
 
     scheduler_->IssuedCommand(command);
   } else {
@@ -118,9 +115,6 @@ void Bot::SetStrategy(const game::CarState& state) {
     scheduler_->set_strategy(Strategy::kOptimizeCurrentLap);
   else
     scheduler_->set_strategy(Strategy::kOptimizeRace);
-}
-
-void Bot::ScheduleOvertakes() {
 }
 
 void Bot::OnTurbo(const game::Turbo& turbo) {
@@ -179,5 +173,5 @@ void Bot::TurboStarted(const std::string& color) {
 void Bot::TurboEnded(const std::string& color) {
 }
 
-}  // namespace stepping
+}  // namespace kamikaze
 }  // namespace bots
