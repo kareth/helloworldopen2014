@@ -108,6 +108,7 @@ TEST_F(CarTrackerTest, BothOnTheSameSwitchDifferentLanes) {
   position2.set_piece_distance(10.0);
   EXPECT_NEAR(3440.0089916087445, car_tracker_->DistanceBetween(position1, position2), kEps);
 }
+
 TEST_F(CarTrackerTest, TwoOtherSwitches) {
   Position position1;
   position1.set_piece(3);
@@ -123,9 +124,6 @@ TEST_F(CarTrackerTest, TwoOtherSwitches) {
   position2.set_piece_distance(10.0);
   EXPECT_NEAR(389.72372909493703, car_tracker_->DistanceBetween(position1, position2), kEps);
 }
-
-// Both on the same switch
-// Both on the same switch but different lanes
 
 TEST_F(CarTrackerTest, GreedyRun) {
   auto history = json::parse_file("data/greedyRun.json");

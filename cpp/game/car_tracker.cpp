@@ -261,39 +261,6 @@ double CarTracker::DistanceBetween(const Position& position1, const Position& po
     }
   }
   return distance;
-/*
-  if (position1.start_lane() != position1.end_lane()) {
-    // std::cout << "position1 on switch. Not supported yet." << std::endl;
-    return 100000;
-  }
-
-  if (position2.start_lane() != position2.end_lane()) {
-    // std::cout << "position2 on switch. Not supported yet." << std::endl;
-    return 100000;
-  }
-
-  if (position1.start_lane() != position2.start_lane()) {
-    // std::cout << "positions on different lanes, not supported." << std::endl;
-    return 100000;
-  }
-
-  double distance = 0.0;
-
-  Position position = position1;
-  if (position1.piece() == position2.piece()) {
-    if (position1.piece_distance() < position2.piece_distance()) {
-      return position2.piece_distance() - position1.piece_distance();
-    }
-  }
-  distance += lane_length_model_.Length(position1) - position1.piece_distance();
-  position.set_piece((position.piece() + 1) % race_->track().pieces().size());
-
-  while (position.piece() != position2.piece()) {
-    distance += lane_length_model_.Length(position);
-    position.set_piece((position.piece() + 1) % race_->track().pieces().size());
-  }
-  distance += position2.piece_distance();
-  return distance;*/
 }
 
 Position CarTracker::PredictPosition(const Position& position, double distance) {

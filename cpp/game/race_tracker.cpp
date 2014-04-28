@@ -111,8 +111,11 @@ bool RaceTracker::IsSafeInFront(const Command& command, Command* safe_command) {
       if (car_tracker_.MinVelocity(p.second, i + 1, bump_position, &velocity)) {
         // std::cout << "possible bump in " << i + 1 << " ticks" << std::endl;
         // std::cout << "min_velocity = " << velocity << std::endl;
-        bumped = true;
-        min_velocity = fmin(min_velocity, velocity);
+        // If the velocity is higher than ours, he probably was behind us.
+        if (velocity < my_new.velocity()) {
+          bumped = true;
+          min_velocity = fmin(min_velocity, velocity);
+        }
       }
     }
 
