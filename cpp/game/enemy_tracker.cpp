@@ -83,4 +83,10 @@ int EnemyTracker::TimeToPosition(const Position& target) {
   return 100000;
 }
 
+void EnemyTracker::CarDNF() {
+  skip_ = 10000000;
+  time_to_spawn_ = 10000000;
+  dead_ = true;
+}
+
 }  // namespace game

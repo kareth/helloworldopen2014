@@ -34,6 +34,8 @@ class BotInterface {
   virtual void OnTurbo(const game::Turbo& turbo) = 0;
   virtual void TurboStarted(const std::string& color) {}
   virtual void TurboEnded(const std::string& color) {}
+
+  virtual void CarDNF(const std::string& color) {}
 };
 
 }  // namespace bots

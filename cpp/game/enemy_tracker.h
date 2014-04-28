@@ -31,6 +31,8 @@ class EnemyTracker {
   bool is_dead() const { return dead_; }
   int time_to_spawn() const { return time_to_spawn_; }
 
+  void CarDNF();
+
  private:
   double Velocity(int piece);
 

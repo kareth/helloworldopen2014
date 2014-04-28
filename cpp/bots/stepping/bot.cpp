@@ -172,6 +172,9 @@ void Bot::CarSpawned(const string& color)  {
   }
 }
 
+void Bot::CarDNF(const std::string& color) {
+  race_tracker_->CarDNF(color);
+}
 
 void Bot::TurboStarted(const std::string& color) {
 }

@@ -79,6 +79,13 @@ std::vector<std::string> RaceTracker::PredictedCarsBetween(int from, int to, int
   return result;
 }
 
+void RaceTracker::CarDNF(const std::string& color) {
+  if (indexes_.find(color) == indexes_.end())
+    return;
+
+  enemies_[indexes_[color]].CarDNF();
+}
+
 /* Position RaceTracker::BumpPosition(const std::string& color) {
   int index = indexes_[color];
 

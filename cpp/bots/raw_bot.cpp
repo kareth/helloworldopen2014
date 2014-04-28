@@ -235,6 +235,7 @@ RawBot::msg_vector RawBot::OnDNF(const jsoncons::json& msg) {
   const auto& data = msg.get("data", jsoncons::json(""));
   std::cout << "Server: Disqualification - " << data["reason"].as<std::string>() <<  std::endl;
   std::cout << data["car"] << std::endl;
+  bot_->CarDNF(data["car"]["color"].as_string());
   return ping();
 }
 

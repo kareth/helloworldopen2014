@@ -47,6 +47,8 @@ class Bot : public bots::BotInterface {
   void TurboStarted(const std::string& color) override;
   void TurboEnded(const std::string& color) override;
 
+  void CarDNF(const std::string& color) override;
+
  private:
   void SetStrategy(const game::CarState& state);
   void ScheduleOvertakes();
