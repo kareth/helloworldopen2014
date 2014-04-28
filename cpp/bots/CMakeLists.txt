@@ -18,6 +18,7 @@ add_subdirectory(piotr)
 add_subdirectory(greedy)
 add_subdirectory(stepping)
 add_subdirectory(constant)
+add_subdirectory(kamikaze)
 
 target_link_libraries(bots
   ${Boost_LIBRARIES}

@@ -47,6 +47,7 @@ target_link_libraries(bot
   bots_greedy
   bots_stepping
   bots_constant
+  bots_kamikaze
   common_flags
   game
   physics

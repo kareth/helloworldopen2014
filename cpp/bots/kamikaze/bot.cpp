@@ -1,7 +1,6 @@
-#include "bots/stepping/bot.h"
+#include "bots/kamikaze/bot.h"
 
 DECLARE_int32(handicap);
-DECLARE_bool(check_if_safe_ahead);
 DECLARE_int32(answer_time);
 
 using std::string;
@@ -17,7 +16,7 @@ using game::Race;
 using schedulers::Strategy;
 
 namespace bots {
-namespace stepping {
+namespace kamikaze {
 
 Bot::Bot() {
 }
@@ -33,7 +32,6 @@ void Bot::NewRace(const Race& race) {
     bump_tracker_.reset(new game::BumpTracker(*car_tracker_.get(), race_));
   } else {
     car_tracker_->set_race(&race_);
-    race_tracker_->ResurrectCars();
   }
 
   scheduler_.reset(
@@ -75,13 +73,8 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 
     scheduler_->Schedule(state);
     command = scheduler_->command();
-    Command safe_command;
-    if (FLAGS_check_if_safe_ahead && !race_tracker_->IsSafe(command, &safe_command)) {
-      command = safe_command;
-    }
 
-    // TODO not safe
-    /*for (auto& p : positions) {
+    for (auto& p : positions) {
       if (p.first != color_) {
         auto& enemy = race_tracker_->enemy(p.first).state();
         if (!race_tracker_->enemy(p.first).is_dead() &&
@@ -95,9 +88,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
                 command = Command::Turbo();
         }
       }
-    }*/
-
-    ScheduleOvertakes();
+    }
 
     scheduler_->IssuedCommand(command);
   } else {
@@ -126,9 +117,6 @@ void Bot::SetStrategy(const game::CarState& state) {
     scheduler_->set_strategy(Strategy::kOptimizeRace);
 }
 
-void Bot::ScheduleOvertakes() {
-}
-
 void Bot::OnTurbo(const game::Turbo& turbo) {
   if (!crashed_) {
     car_tracker_->RecordTurboAvailable(turbo);
@@ -150,7 +138,6 @@ void Bot::CarFinishedLap(const string& color, const game::Result& result)  {
 }
 
 void Bot::CarFinishedRace(const string& color)  {
-  race_tracker_->FinishedRace(color);
 }
 
 void Bot::GameEnd(/* results */)  {
@@ -162,7 +149,7 @@ void Bot::TournamentEnd()  {
 void Bot::CarCrashed(const string& color)  {
   auto& state = car_tracker_->current_state();
   auto next = car_tracker_->Predict(state, Command(car_tracker_->throttle()));
-  printf("Crash! %lf %lf %lf %s\n", next.position().angle(), state.position().angle(), state.previous_angle(), color.c_str());
+  printf("Crash! %lf %lf %lf\n", next.position().angle(), state.position().angle(), state.previous_angle());
 
   if (color == color_) {
     crashed_ = true;
@@ -179,9 +166,6 @@ void Bot::CarSpawned(const string& color)  {
   }
 }
 
-void Bot::CarDNF(const std::string& color) {
-  race_tracker_->DNF(color);
-}
 
 void Bot::TurboStarted(const std::string& color) {
 }
@@ -189,5 +173,5 @@ void Bot::TurboStarted(const std::string& color) {
 void Bot::TurboEnded(const std::string& color) {
 }
 
-}  // namespace stepping
+}  // namespace kamikaze
 }  // namespace bots

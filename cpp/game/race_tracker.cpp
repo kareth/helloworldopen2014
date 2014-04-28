@@ -118,6 +118,23 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command) {
   return true;
 }
 
+void RaceTracker::FinishedRace(const std::string& color) {
+  if (indexes_.find(color) == indexes_.end())
+    return;
+  enemies_[indexes_[color]].FinishedRace();
+}
+
+void RaceTracker::DNF(const std::string& color) {
+  if (indexes_.find(color) == indexes_.end())
+    return;
+  enemies_[indexes_[color]].DNF();
+}
+
+void RaceTracker::ResurrectCars() {
+  for (auto& enemy : enemies_)
+    enemy.Resurrect();
+}
+
 /* Position RaceTracker::BumpPosition(const std::string& color) {
   int index = indexes_[color];
 

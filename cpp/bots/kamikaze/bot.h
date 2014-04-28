@@ -1,5 +1,5 @@
-#ifndef CPP_BOTS_STEPPING_BOT_H_
-#define CPP_BOTS_STEPPING_BOT_H_
+#ifndef CPP_BOTS_KAMIKAZE_BOT_H_
+#define CPP_BOTS_KAMIKAZE_BOT_H_
 
 #include <string>
 #include <map>
@@ -24,7 +24,7 @@
 DECLARE_int32(answer_time);
 
 namespace bots {
-namespace stepping {
+namespace kamikaze {
 
 class Bot : public bots::BotInterface {
  public:
@@ -47,11 +47,8 @@ class Bot : public bots::BotInterface {
   void TurboStarted(const std::string& color) override;
   void TurboEnded(const std::string& color) override;
 
-  void CarDNF(const std::string& color) override;
-
  private:
   void SetStrategy(const game::CarState& state);
-  void ScheduleOvertakes();
 
   game::Race race_;
 
@@ -73,4 +70,4 @@ class Bot : public bots::BotInterface {
 }  // namespace stepping
 }  // namespace bots
 
-#endif  // CPP_BOTS_STEPPING_BOT_H_
+#endif  // CPP_BOTS_KAMIKAZE_BOT_H_

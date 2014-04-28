@@ -32,6 +32,9 @@ class EnemyTracker {
   int time_to_spawn() const { return time_to_spawn_; }
 
   const std::string& color() const { return color_; }
+  void DNF();
+  void FinishedRace();
+  void Resurrect();
 
  private:
   double Velocity(int piece);
@@ -53,6 +56,7 @@ class EnemyTracker {
 
   int skip_;
   bool dead_;
+  bool dnf_;
 
   int time_to_spawn_;
   static const int kRespawnTime = 300;

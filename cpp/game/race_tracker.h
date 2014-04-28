@@ -34,8 +34,17 @@ class RaceTracker {
 
   std::vector<std::string> PredictedCarsBetween(int from, int to, int lane);
 
-  // If false, returns command that is safe.
+  // Detects if issueing the given command is safe based on cars
+  // in front of us. If false, also returns command that is safe in safe_command.
+  //
+  // It only checks cars that are ahead of us (200 units), and makes sure that
+  // if we bump them, we will not crash.
   bool IsSafe(const Command& command, Command* safe_command);
+
+  void FinishedRace(const std::string& color);
+  void DNF(const std::string& color);
+
+  void ResurrectCars();
 
  private:
   // void RecordEnemy(int index, const game::Position& position);
