@@ -90,6 +90,8 @@ class CarState {
     std::stringstream ss;
     ss << "position: " << position_.DebugString();
     ss << "switch: " << as_integer(switch_) << std::endl;
+    ss << "velocity: " << velocity_ << std::endl;
+    ss << "previous_angle: " << previous_angle_ << std::endl;
     return ss.str();
   }
 

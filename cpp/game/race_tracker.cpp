@@ -79,42 +79,61 @@ std::vector<std::string> RaceTracker::PredictedCarsBetween(int from, int to, int
   return result;
 }
 
-bool RaceTracker::IsSafe(const Command& command, Command* safe_command) {
+bool RaceTracker::IsSafeInFront(const Command& command, Command* safe_command) {
   const auto& my_state = car_tracker_.current_state();
 
-  // TODO get only cars after mines within two pieces
-
   std::map<std::string, CarState> states;
-  std::vector<string> cars_tracked;
-  double min_velocity = 1000;
   for (const auto& enemy : enemies_) {
-    if (enemy.color() == color_) continue;
-
-    if (car_tracker_.DistanceBetween(my_state.position(), enemy.state().position()) < 200) {
-      cars_tracked.push_back(enemy.color());
+    if (enemy.color() == color_) {
+      states[color_] = car_tracker_.Predict(my_state, command);
+      continue;
     }
 
-    states[enemy.color()] = enemy.state();
-    min_velocity = fmin(min_velocity, enemy.state().velocity());
+    states[enemy.color()] = car_tracker_.Predict(enemy.state(), Command(0));
+  }
+  const double kCarLength = race_.cars().at(0).length();
+
+  std::set<string> cars_bumped;
+  for (int i = 0; i < 100; ++i) {
+    CarState my_prev = states[color_];
+    Command c(0);
+    if (i == 0) { c = command; }
+    CarState my_new = car_tracker_.Predict(my_prev, c);
+    states[color_] = my_new;
+
+    bool bumped = false;
+    double min_velocity = 100000.0;
+    for (const auto& p : states) {
+      if (p.first == color_) continue;
+
+      double velocity = 0.0;
+      Position bump_position = car_tracker_.PredictPosition(my_new.position(), kCarLength);
+      if (car_tracker_.MinVelocity(p.second, i + 1, bump_position, &velocity)) {
+        // std::cout << "possible bump in " << i + 1 << " ticks" << std::endl;
+        // std::cout << "min_velocity = " << velocity << std::endl;
+        bumped = true;
+        min_velocity = fmin(min_velocity, velocity);
+      }
+    }
+
+    if (!bumped) continue;
+
+    CarState state = my_new;
+    state.set_velocity(0.8 * min_velocity);
+    if (!car_tracker_.IsSafe(state)) {
+      if (fabs(my_state.position().angle()) < 7) {
+        // std::cout << "decided after " << i << " ticks" << std::endl;
+        // std::cout << "State that is dangerous: " << std::endl;
+        // std::cout << my_new.DebugString();
+        // std::cout << "min_velocity * 0.8 = " << min_velocity * 0.8 << std::endl;
+      }
+      std::cout << "WE ARE TOO CLOSE AND WILL DIE. Slowing down." << std::endl;
+      *safe_command = Command(0);
+      return false;
+    }
   }
 
-  if (cars_tracked.size() == 0) {
-    std::cout << "No-one is in front of us." << std::endl;
-    return true;
-  }
-
-  std::cout << "Someone is in front of us." << std::endl;
-
-  CarState state = car_tracker_.Predict(my_state, command);
-  state.set_velocity(0.8 * min_velocity);
-  bool is_safe = car_tracker_.IsSafe(state);
-
-  if (!is_safe) {
-    std::cout << "WE ARE TOO CLOSE AND WILL DIE. Slowing down." << std::endl;
-    *safe_command = Command(0);
-    return false;
-  }
-
+  // We survived 100 ticks, we should be ok.
   return true;
 }
 

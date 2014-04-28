@@ -231,17 +231,17 @@ CarState CarTracker::CreateCarState(const CarState& prev, const Position& positi
 
 double CarTracker::DistanceBetween(const Position& position1, const Position& position2) {
   if (position1.start_lane() != position1.end_lane()) {
-    std::cout << "position1 on switch. Not supported yet." << std::endl;
+    // std::cout << "position1 on switch. Not supported yet." << std::endl;
     return 100000;
   }
 
   if (position2.start_lane() != position2.end_lane()) {
-    std::cout << "position2 on switch. Not supported yet." << std::endl;
+    // std::cout << "position2 on switch. Not supported yet." << std::endl;
     return 100000;
   }
 
   if (position1.start_lane() != position2.start_lane()) {
-    std::cout << "positions on different lanes, not supported." << std::endl;
+    // std::cout << "positions on different lanes, not supported." << std::endl;
     return 100000;
   }
 
@@ -262,6 +262,51 @@ double CarTracker::DistanceBetween(const Position& position1, const Position& po
   }
   distance += position2.piece_distance();
   return distance;
+}
+
+Position CarTracker::PredictPosition(const Position& position, double distance) {
+  double piece_distance = position.piece_distance() + distance;
+  double lane_length = lane_length_model_.Length(position);
+  int piece = position.piece();
+
+  if (piece_distance > lane_length) {
+    piece_distance = piece_distance - lane_length;
+    piece++;
+    if (piece >= race_->track().pieces().size()) {
+      piece = 0;
+    }
+  }
+
+  Position result = position;
+  result.set_piece_distance(piece_distance);
+  result.set_piece(piece);
+  return result;
+}
+
+bool CarTracker::MinVelocity(const CarState& car_state, int ticks, const Position& target, double* min_velocity) {
+  // TODO we should improve this method!
+  double distance = DistanceBetween(car_state.position(), target);
+  if (distance > 10000) return false;
+
+  // std::cout << "Distance to reach: " << distance << " in " << ticks << " ticks" << std::endl;
+
+  bool smaller = false;
+  bool greater = false;
+  for (int full_throttle_ticks = 0; full_throttle_ticks < ticks; ++full_throttle_ticks) {
+    double v = car_state.velocity();
+    double d = 0.0;
+    for (int i = 0; i < full_throttle_ticks; ++i) { d += v; v = velocity_model_.Predict(v, 1); }
+    for (int i = 0; i < ticks - full_throttle_ticks; ++i) { d += v; v = velocity_model_.Predict(v, 0); }
+    if (d < distance) {
+      smaller = true;
+      *min_velocity = v;
+    }
+    if (d > distance) {
+      greater = true;
+    }
+  }
+
+  return smaller && greater;
 }
 
 }  // namespace game

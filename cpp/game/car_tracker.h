@@ -94,6 +94,25 @@ class CarTracker : public CarPredictor {
   // - both positions are on the same lane
   double DistanceBetween(const Position& position1, const Position& position2);
 
+
+  // Returns true if the car starting from "car_state" can reach "target" using
+  // "ticks" ticks.
+  //
+  // If true is returned, min_velocity will contain the minimal velocity the car
+  // will have in "target" position.
+  //
+  // Assumptions / BUGS:
+  // - car_state.position and target has to be correct for DistanceBetween()
+  //   - no switches, etc.
+  // - no turbo :(
+  // - it is only lower bound (it is possible such min_velocity cannot be achieved.
+  bool MinVelocity(const CarState& car_state, int ticks, const Position& target, double* min_velocity);
+
+  // Returns position that is "distance" units farther.
+  //
+  // We assume distance > 0
+  Position PredictPosition(const Position& position, double distance);
+
  private:
   bool just_started_ = true;
 

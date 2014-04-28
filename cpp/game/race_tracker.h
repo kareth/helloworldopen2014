@@ -39,7 +39,12 @@ class RaceTracker {
   //
   // It only checks cars that are ahead of us (200 units), and makes sure that
   // if we bump them, we will not crash.
-  bool IsSafe(const Command& command, Command* safe_command);
+  //
+  // What is not working:
+  // - if someone is much slower, and will take a switch just before us and
+  //   we bump into him.
+  // - if we ride on switch (or someone is on switch)
+  bool IsSafeInFront(const Command& command, Command* safe_command);
 
   void FinishedRace(const std::string& color);
   void DNF(const std::string& color);
@@ -54,6 +59,8 @@ class RaceTracker {
 
   std::map<std::string, int> indexes_;
 
+  // TODO DO NOT HARD CODE IT
+  const double kCarLength = 40.0;
   const Race& race_;
   CarTracker& car_tracker_;
   std::string color_;
