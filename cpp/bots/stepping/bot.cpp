@@ -172,7 +172,6 @@ void Bot::CarCrashed(const string& color)  {
     crashed_ = true;
     car_tracker_->RecordCarCrash();
   }
-
   race_tracker_->RecordCrash(color);
 }
 
