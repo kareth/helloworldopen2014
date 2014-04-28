@@ -134,4 +134,16 @@ bool EnemyTracker::CanOvertake(const EnemyTracker& noobek, int from, int to) {
   return false;
 }
 
+void EnemyTracker::TurboStarted() {
+  // TODO start turbo
+}
+
+void EnemyTracker::Spawned() {
+  // TODO reset turbo
+}
+
+void EnemyTracker::NewTurbo(const Turbo& turbo) {
+  state_.AddNewTurbo(turbo);
+}
+
 }  // namespace game

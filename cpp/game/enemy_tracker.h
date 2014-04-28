@@ -40,6 +40,10 @@ class EnemyTracker {
 
   int best_lap() const { return best_lap_; }
 
+  void TurboStarted();
+  void Spawned();
+  void NewTurbo(const Turbo& turbo);
+
  private:
   double Velocity(int piece);
 
