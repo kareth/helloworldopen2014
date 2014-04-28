@@ -34,7 +34,10 @@ class RaceTracker {
 
   std::vector<std::string> PredictedCarsBetween(int from, int to, int lane);
 
-  void CarDNF(const std::string& color);
+  void FinishedRace(const std::string& color);
+  void DNF(const std::string& color);
+
+  void ResurrectCars();
 
  private:
   // void RecordEnemy(int index, const game::Position& position);

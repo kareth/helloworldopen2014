@@ -10,7 +10,7 @@ EnemyTracker::EnemyTracker(game::CarTracker& car_tracker,
     const std::string& color,
     const Position& position)
   : car_tracker_(car_tracker), race_(race), color_(color), skip_(kSkipTime),
-    dead_(false), time_to_spawn_(0) {
+    dead_(false), time_to_spawn_(0), dnf_(false) {
   state_ = CarState(position);
   piece_speed_.resize(race_.track().pieces().size(), 0);
   piece_data_points_.resize(race_.track().pieces().size(), 0);
@@ -83,10 +83,23 @@ int EnemyTracker::TimeToPosition(const Position& target) {
   return 100000;
 }
 
-void EnemyTracker::CarDNF() {
+void EnemyTracker::DNF() {
+  dnf_ = true;
+  FinishedRace();
+}
+
+void EnemyTracker::FinishedRace() {
   skip_ = 10000000;
   time_to_spawn_ = 10000000;
   dead_ = true;
+}
+
+void EnemyTracker::Resurrect() {
+  if (!dnf_) {
+    skip_ = kSkipTime;
+    dead_ = false;
+    time_to_spawn_ = 0;
+  }
 }
 
 }  // namespace game
