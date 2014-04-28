@@ -98,7 +98,7 @@ bool RaceTracker::IsSafeInFront(const Command& command, Command* safe_command) {
   const double kCarLength = race_.cars().at(0).length();
 
   std::set<string> cars_bumped;
-  for (int i = 0; i < 100; ++i) {
+  for (int i = 0; i < 50; ++i) {
     CarState my_prev = states[color_];
     Command c(0);
     if (i == 0) { c = command; }
