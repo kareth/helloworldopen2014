@@ -138,6 +138,7 @@ void Bot::OnTurbo(const game::Turbo& turbo) {
     car_tracker_->RecordTurboAvailable(turbo);
     printf("Turbo Available\n");
   }
+  race_tracker_->TurboForEveryone(turbo);
 }
 
 void Bot::YourCar(const string& color) {
@@ -180,6 +181,7 @@ void Bot::CarSpawned(const string& color)  {
     crashed_ = false;
     car_tracker_->Reset();
   }
+  race_tracker->CarSpawned(color);
 }
 
 void Bot::CarDNF(const std::string& color) {
@@ -187,6 +189,7 @@ void Bot::CarDNF(const std::string& color) {
 }
 
 void Bot::TurboStarted(const std::string& color) {
+  race_tracker_->TurboStarted(color);
 }
 
 void Bot::TurboEnded(const std::string& color) {

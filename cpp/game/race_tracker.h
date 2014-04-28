@@ -55,6 +55,10 @@ class RaceTracker {
 
   EnemyTracker& enemy(const std::string& color) { return enemies_[indexes_[color]]; }
 
+  void TurboForEveryone(const game::Turbo& turbo);
+  void CarSpawned(const std::string& color);
+  void TurboStarted(const std::string& color);
+
  private:
   // void RecordEnemy(int index, const game::Position& position);
   // void UpdateSpeedStats(int index, const game::Position& position);

@@ -165,6 +165,19 @@ bool RaceTracker::ShouldTryToOvertake(const std::string& color, int from, int to
   return enemy(color_).CanOvertake(enemy(color), from, to);
 }
 
+void RaceTracker::TurboForEveryone(const game::Turbo& turbo) {
+  for (auto& enemy : enemies_)
+    enemy.NewTurbo(turbo);
+}
+
+void RaceTracker::CarSpawned(const std::string& color) {
+  enemy(color).Spawned();
+}
+
+void RaceTracker::TurboStarted(const std::string& color) {
+  enemy(color).TurboStarted();
+}
+
 /* Position RaceTracker::BumpPosition(const std::string& color) {
   int index = indexes_[color];
 
