@@ -55,8 +55,10 @@ bool BumpTracker::CanBumpForSure(const CarState& bumping_state, const CarState& 
     if (!car_tracker_.crash_model().IsSafe(bumping.position().angle()))
       return false;
 
-    if (race_.track().IsFirstInFront(bumping.position(), bumped.position()))
+    if (race_.track().IsFirstInFront(bumping.position(), bumped.position())) {
+      printf("CanBumpForSure in %d ticks\n", i);
       return true;
+    }
   }
   return false;
 }

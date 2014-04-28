@@ -52,7 +52,7 @@ void BumpScheduler::Schedule(const game::CarState& state) {
       if (bump_tracker_->CanBumpForSure(state, enemy.state()) &&
           !enemy.is_dead() &&
           race_tracker_.IsSafeAttack(Command(1), &safe_command)) {
-        printf("Safe bump coming!\n");
+        printf("Safe bump coming! Target: %s\n", enemy.color().c_str());
         has_bump_target_ = true;
         bump_target_ = enemy.color();
         command_ = Command(1);
