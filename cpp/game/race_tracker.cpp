@@ -147,6 +147,7 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
     states[color_] = my_new;
 
     if (car_tracker_.crash_model().IsSafe(my_new.position().angle())) {
+      *safe_command = Command(0);
       return false;
     }
 
@@ -203,6 +204,7 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
   }
 
   if (middle_state_not_safe && !bump_inevitable) {
+    *safe_command = Command(0);
     return false;
   }
 
