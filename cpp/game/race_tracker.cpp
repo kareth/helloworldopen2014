@@ -78,10 +78,13 @@ std::vector<std::string> RaceTracker::PredictedCarsBetween(int from, int to, int
   }
   return result;
 }
+
+// Check if I can die by just going all out
 bool RaceTracker::IsSafeAttack(const Command& command, Command* safe_command) {
   return IsSafe(command, safe_command, Command(1));
 }
 
+// Check if I can die if he brakes and me either
 bool RaceTracker::IsSafeInFront(const Command& command, Command* safe_command) {
   return IsSafe(command, safe_command, Command(0));
 }
