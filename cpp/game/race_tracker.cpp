@@ -11,6 +11,7 @@ RaceTracker::RaceTracker(game::CarTracker& car_tracker,
 }
 
 void RaceTracker::Record(const std::map<std::string, Position>& positions) {
+  DetectBumps(positions);
   for (auto& p : positions) {
     if (indexes_.find(p.first) == indexes_.end()) {
       indexes_[p.first] = enemies_.size();
@@ -19,6 +20,35 @@ void RaceTracker::Record(const std::map<std::string, Position>& positions) {
       enemies_[indexes_[p.first]].RecordPosition(p.second);
     }
   }
+}
+
+void RaceTracker::DetectBumps(const std::map<std::string, Position>& positions) {
+  bumps_.clear();
+
+  const double kCarLength = race_.cars()[0].length();
+  for (auto& a : positions) {
+    for (auto& b : positions) {
+      Position left = race_.track().PositionAfter(a.second, kCarLength);
+      Position right = b.second;
+
+      if (left.piece() == right.piece()) {
+        double diff = (left.piece_distance() - right.piece_distance());
+        if (diff <= 1e-10 && diff >= -1e-10) {
+          bumps_.push_back({ a.first, b.first });
+          printf("Bump detected! %s %s\n", a.first.c_str(), b.first.c_str());
+        }
+      }
+    }
+  }
+}
+
+bool RaceTracker::BumpOccured(const std::string& color, const std::string& color2) {
+  for (auto& b : bumps_) {
+    if ((b.first == color && b.second == color2) ||
+        (b.second == color && b.first == color2))
+      return true;
+  }
+  return false;
 }
 
 void RaceTracker::RecordLapTime(const std::string& color, int time) {

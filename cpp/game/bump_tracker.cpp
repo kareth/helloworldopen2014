@@ -39,6 +39,9 @@ bool BumpTracker::CanBumpOptimalEnemy(const CarState& bumping_state, const CarSt
 }
 
 bool BumpTracker::CanBumpForSure(const CarState& bumping_state, const CarState& bumped_state, int in_ticks) {
+  if (bumping_state.position().end_lane() != bumped_state.position().end_lane())
+    return false;
+
   if (race_.track().IsFirstInFront(bumping_state.position(), bumped_state.position()))
     return false;
 
@@ -47,7 +50,7 @@ bool BumpTracker::CanBumpForSure(const CarState& bumping_state, const CarState& 
 
   for (int i = 0; i < in_ticks; i++) {
     bumping = car_tracker_.Predict(bumping, Command(1));
-    bumped = car_tracker_.Predict(bumped, Command(0));
+    bumped = car_tracker_.Predict(bumped, Command(1));
 
     if (!car_tracker_.crash_model().IsSafe(bumping.position().angle()))
       return false;
@@ -59,6 +62,9 @@ bool BumpTracker::CanBumpForSure(const CarState& bumping_state, const CarState& 
 }
 
 bool BumpTracker::CanBumpWithTurbo(const CarState& bumping_state, const CarState& bumped_state, int in_ticks) {
+  if (bumping_state.position().end_lane() != bumped_state.position().end_lane())
+    return false;
+
   if (race_.track().IsFirstInFront(bumping_state.position(), bumped_state.position()))
     return false;
 

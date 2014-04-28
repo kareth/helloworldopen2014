@@ -1,5 +1,7 @@
 #include "schedulers/bulk_scheduler.h"
 
+DECLARE_bool(check_if_safe_ahead);
+
 namespace schedulers {
 
 BulkScheduler::BulkScheduler(const game::Race& race,
@@ -37,6 +39,11 @@ void BulkScheduler::Schedule(const game::CarState& state) {
   } else {
     command_ = game::Command(throttle_scheduler_->throttle());
   }
+
+  game::Command safe_command;
+  if (FLAGS_check_if_safe_ahead &&
+      !race_tracker_.IsSafeInFront(command_, &safe_command))
+    command_ = safe_command;
 }
 
 void BulkScheduler::set_strategy(const Strategy& strategy) {

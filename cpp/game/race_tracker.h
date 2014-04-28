@@ -67,8 +67,15 @@ class RaceTracker {
 
   bool WorthBumping(const std::string& color);
 
+  const std::string& my_color() const { return color_; }
+
+  bool BumpOccured(const std::string& color, const std::string& color2);
+
  private:
   bool IsSafe(const Command& command, Command* safe_command, const Command& our_command);
+
+  void DetectBumps(const std::map<std::string, Position>& positions);
+
   // void RecordEnemy(int index, const game::Position& position);
   // void UpdateSpeedStats(int index, const game::Position& position);
 
@@ -79,6 +86,8 @@ class RaceTracker {
   const Race& race_;
   CarTracker& car_tracker_;
   std::string color_;
+
+  vector<std::pair<std::string, std::string>> bumps_;
 };
 
 }  // namespace game

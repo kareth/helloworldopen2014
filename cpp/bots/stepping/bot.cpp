@@ -74,7 +74,6 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
   Command command;
   if (car_tracker_->IsReady()) {
     SetStrategy(state);
-
     scheduler_->Schedule(state);
     command = scheduler_->command();
 
