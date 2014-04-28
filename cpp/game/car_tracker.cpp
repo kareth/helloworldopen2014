@@ -226,7 +226,10 @@ CarState CarTracker::CreateCarState(const CarState& prev, const Position& positi
       lane_length_model_.Length(prev.position());
   }
 
-  return CarState(position, velocity, prev.position().angle(), Switch::kStay, 0.0, prev.turbo_state());
+  TurboState turbo_state = prev.turbo_state();
+  turbo_state.Decrement();
+
+  return CarState(position, velocity, prev.position().angle(), Switch::kStay, 0.0, turbo_state);
 }
 
 double CarTracker::DistanceBetween(const Position& position1, const Position& position2) {
