@@ -42,23 +42,27 @@ bool BumpTracker::CanBumpForSure(const CarState& bumping_state, const CarState& 
   if (bumping_state.position().end_lane() != bumped_state.position().end_lane())
     return false;
 
-  if (race_.track().IsFirstInFront(bumping_state.position(), bumped_state.position()))
-    return false;
-
   auto bumping = bumping_state;
   auto bumped = bumped_state;
+
+  double distance = car_tracker_.DistanceBetween(bumping.position(), bumped.position());
 
   for (int i = 0; i < in_ticks; i++) {
     bumping = car_tracker_.Predict(bumping, Command(1));
     bumped = car_tracker_.Predict(bumped, Command(1));
 
-    if (!car_tracker_.crash_model().IsSafe(bumping.position().angle()))
+    double new_distance = car_tracker_.DistanceBetween(bumping.position(), bumped.position());
+
+    if (!car_tracker_.crash_model().IsSafe(bumping.position().angle()) ||
+        !car_tracker_.crash_model().IsSafe(bumped.position().angle()))
       return false;
 
-    if (race_.track().IsFirstInFront(bumping.position(), bumped.position())) {
+    if (distance < new_distance) {
       printf("CanBumpForSure in %d ticks\n", i);
       return true;
     }
+
+    distance = new_distance;
   }
   return false;
 }
@@ -67,14 +71,13 @@ bool BumpTracker::CanBumpWithTurbo(const CarState& bumping_state, const CarState
   if (bumping_state.position().end_lane() != bumped_state.position().end_lane())
     return false;
 
-  if (race_.track().IsFirstInFront(bumping_state.position(), bumped_state.position()))
-    return false;
-
   if (!bumping_state.turbo_state().available() && !bumping_state.turbo_state().is_on())
     return false;
 
   auto bumping = bumping_state;
   auto bumped = bumped_state;
+
+  double distance = car_tracker_.DistanceBetween(bumping.position(), bumped.position());
 
   for (int i = 0; i < in_ticks - 1; i++) {
     if (i == 0 && bumping_state.turbo_state().available())
@@ -83,14 +86,16 @@ bool BumpTracker::CanBumpWithTurbo(const CarState& bumping_state, const CarState
       bumping = car_tracker_.Predict(bumping, Command(1));
     bumped = car_tracker_.Predict(bumped, Command(1));
 
-    if (!car_tracker_.crash_model().IsSafe(bumping.position().angle()))
+    if (!car_tracker_.crash_model().IsSafe(bumping.position().angle()) ||
+        !car_tracker_.crash_model().IsSafe(bumped.position().angle()))
       return false;
 
-    if (!car_tracker_.crash_model().IsSafe(bumped.position().angle()))
-      return false;
-
-    if (race_.track().IsFirstInFront(bumping.position(), bumped.position()))
+    double new_distance = car_tracker_.DistanceBetween(bumping.position(), bumped.position());
+    if (distance < new_distance) {
+      printf("CanBumpForSureWithTURBO in %d ticks\n", i);
       return true;
+    }
+    distance = new_distance;
   }
   return false;
 }
