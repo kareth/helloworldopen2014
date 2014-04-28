@@ -138,13 +138,14 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
   }
   const double kCarLength = race_.cars().at(0).length();
 
+  bool middle_state_not_safe = false;
+  bool bump_inevitable = false;
   std::set<string> cars_bumped;
-  for (int i = 0; i < 50; ++i) {
+  for (int i = 0; i < 100; ++i) {
     CarState my_prev = states[color_];
     CarState my_new = car_tracker_.Predict(my_prev, our_command);
     states[color_] = my_new;
 
-    bool bump_inevitable = false;
     bool bumped = false;
     double min_velocity = 100000.0;
     for (const auto& p : states) {
@@ -178,6 +179,10 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
     }
     if (!bumped) continue;
 
+    if (!car_tracker_.IsSafe(my_new)) {
+      min_velocity
+    }
+
     CarState state = my_new;
     state.set_velocity(0.8 * min_velocity);
     if (!car_tracker_.IsSafe(state)) {
@@ -191,6 +196,10 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
       *safe_command = Command(0);
       return false;
     }
+  }
+
+  if (middle_state_not_safe && !bump_inevitable) {
+    return false;
   }
 
   // We survived 50 ticks, we should be ok.
