@@ -4,6 +4,7 @@ DECLARE_int32(handicap);
 DECLARE_bool(check_if_safe_ahead);
 DECLARE_int32(answer_time);
 DECLARE_bool(bump_with_turbo);
+DECLARE_bool(defend_turbo_bump);
 
 using std::string;
 using std::vector;
@@ -100,6 +101,13 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
                 }
           }
         }
+      }
+    }
+
+    if (FLAGS_defend_turbo_bump) {
+      Command safe_command;
+      if (!race_tracker_->IsSafeBehind(command, &safe_command)) {
+        command = safe_command;
       }
     }
 

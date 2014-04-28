@@ -48,6 +48,8 @@ class RaceTracker {
 
   bool IsSafeAttack(const Command& command, Command* safe_command);
 
+  bool IsSafeBehind(const Command& command, Command* safe_command);
+
   void FinishedRace(const std::string& color);
   void DNF(const std::string& color);
 
@@ -70,8 +72,6 @@ class RaceTracker {
 
   std::map<std::string, int> indexes_;
 
-  // TODO DO NOT HARD CODE IT
-  const double kCarLength = 40.0;
   const Race& race_;
   CarTracker& car_tracker_;
   std::string color_;

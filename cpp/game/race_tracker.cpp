@@ -112,7 +112,6 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
   for (int i = 0; i < 50; ++i) {
     CarState my_prev = states[color_];
     Command c = our_command;
-    if (i == 0) { c = command; }
     CarState my_new = car_tracker_.Predict(my_prev, c);
     states[color_] = my_new;
 
@@ -166,6 +165,10 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
   }
 
   // We survived 50 ticks, we should be ok.
+  return true;
+}
+
+bool RaceTracker::IsSafeBehind(const Command& command, Command* safe_command) {
   return true;
 }
 

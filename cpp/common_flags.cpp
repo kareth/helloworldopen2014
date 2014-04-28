@@ -9,3 +9,4 @@ DEFINE_int32(answer_time, 10, "Time limit for answer in ms");
 
 
 DEFINE_bool(bump_with_turbo, false, "kamikazebumps");
+DEFINE_bool(defend_turbo_bump, false, "Defend against people that have bump_with_turbo");
