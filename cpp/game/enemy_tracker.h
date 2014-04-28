@@ -38,11 +38,14 @@ class EnemyTracker {
   void FinishedRace();
   void Resurrect();
 
+  int best_lap() const { return best_lap_; }
+
  private:
   double Velocity(int piece);
 
   // double speed_factor_;
   std::vector<int> lap_times_;
+  int best_lap_;
 
   std::vector<double> piece_speed_;
   std::vector<int> piece_data_points_;

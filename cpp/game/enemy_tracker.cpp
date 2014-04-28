@@ -10,7 +10,7 @@ EnemyTracker::EnemyTracker(game::CarTracker& car_tracker,
     const std::string& color,
     const Position& position)
   : car_tracker_(car_tracker), race_(race), color_(color), skip_(kSkipTime),
-    dead_(false), time_to_spawn_(0), dnf_(false) {
+    dead_(false), time_to_spawn_(0), dnf_(false), best_lap_(-1) {
   state_ = CarState(position);
   piece_speed_.resize(race_.track().pieces().size(), 0);
   piece_data_points_.resize(race_.track().pieces().size(), 0);
@@ -19,6 +19,8 @@ EnemyTracker::EnemyTracker(game::CarTracker& car_tracker,
 void EnemyTracker::RecordLapTime(int time) {
   // TODO what about that?:D
   lap_times_.push_back(time);
+  if (best_lap_ == -1 || best_lap_ > time)
+    best_lap_ = time;
 }
 
 void EnemyTracker::RecordCrash() {
@@ -102,9 +104,30 @@ void EnemyTracker::Resurrect() {
   }
 }
 
+// Checks if time difference on that part of track is enough to overtake him
+// Based on best laptime right now
 bool EnemyTracker::CanOvertake(const EnemyTracker& noobek, int from, int to) {
-  //if (lap_times_.size() == 0 || noobek.lap_times().size() == 0)
-  return true;
+  if (best_lap_ == 0 || noobek.best_lap() == 0)
+    return true;
+
+  // TODO hella inaccurate
+  int pieces = from > to ? from - to + 1 : to + race_.track().pieces().size() - from;
+
+  double percent = double(pieces) / double(race_.track().pieces().size());
+
+  int ticks_difference = double(best_lap_ - noobek.best_lap()) * percent;
+
+  const double kCarLength = race_.cars().at(0).length();
+
+  double distance = 0;
+  for (int i = 0; i < ticks_difference; i++) {
+    distance += piece_speed_[to];
+    // TODO
+    if (distance > 1.5 * kCarLength)
+      return true;
+  }
+
+  return false;
 }
 
 }  // namespace game
