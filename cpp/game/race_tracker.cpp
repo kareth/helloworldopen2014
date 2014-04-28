@@ -180,7 +180,7 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
     if (!bumped) continue;
 
     if (!car_tracker_.IsSafe(my_new)) {
-      min_velocity
+      middle_state_not_safe = true;
     }
 
     CarState state = my_new;
