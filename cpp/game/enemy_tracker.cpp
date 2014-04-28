@@ -107,15 +107,19 @@ void EnemyTracker::Resurrect() {
 // Checks if time difference on that part of track is enough to overtake him
 // Based on best laptime right now
 bool EnemyTracker::CanOvertake(const EnemyTracker& noobek, int from, int to) {
-  if (best_lap_ == 0 || noobek.best_lap() == 0)
+  if (best_lap_ == -1 || noobek.best_lap() == -1)
     return true;
 
+  // Cant overtake faster
+  if (best_lap_ > noobek.best_lap())
+    return false;
+
   // TODO hella inaccurate
-  int pieces = from > to ? from - to + 1 : to + race_.track().pieces().size() - from;
+  int pieces = from <= to ? to - from + 1 : to + race_.track().pieces().size() - from + 1;
 
   double percent = double(pieces) / double(race_.track().pieces().size());
 
-  int ticks_difference = double(best_lap_ - noobek.best_lap()) * percent;
+  int ticks_difference = double(noobek.best_lap() - best_lap_) * percent;
 
   const double kCarLength = race_.cars().at(0).length();
 
