@@ -262,6 +262,13 @@ void RaceTracker::TurboStarted(const std::string& color) {
   enemy(color).TurboStarted();
 }
 
+bool RaceTracker::WorthBumping(const std::string& color) {
+  // TODO
+  if (enemy(color).is_dead())
+    return false;
+  return true;
+}
+
 /* Position RaceTracker::BumpPosition(const std::string& color) {
   int index = indexes_[color];
 

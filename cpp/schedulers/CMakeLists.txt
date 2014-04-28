@@ -4,6 +4,7 @@ set(SCHEDULERS_SOURCES
   shortest_path_switch_scheduler.cpp
   bulk_scheduler.cpp
   learning_scheduler.cpp
+  bump_scheduler.cpp
 )
 
 set(SCHEDULERS_HEADERS
@@ -16,6 +17,7 @@ set(SCHEDULERS_HEADERS
   scheduler.h
   bulk_scheduler.h
   learning_scheduler.h
+  bump_scheduler.h
 )
 
 add_library(schedulers ${SCHEDULERS_SOURCES})

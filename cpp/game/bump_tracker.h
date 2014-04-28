@@ -27,7 +27,6 @@ class BumpTracker {
   bool CanBumpWithTurbo(const CarState& bumping, const CarState& bumped, int in_ticks = 50);
 
  private:
-
   const game::Race& race_;
   CarTracker& car_tracker_;
 

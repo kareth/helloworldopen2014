@@ -13,9 +13,19 @@ BulkScheduler::BulkScheduler(const game::Race& race,
       new GreedyTurboScheduler(race_, car_tracker_));
   switch_scheduler_.reset(
       new ShortestPathSwitchScheduler(race_, race_tracker_, car_tracker_));
+  bump_scheduler_.reset(
+      new BumpScheduler(race_, race_tracker_, car_tracker_));
 }
 
 void BulkScheduler::Schedule(const game::CarState& state) {
+  bump_scheduler_->Schedule(state);
+
+  if (bump_scheduler_->HasTarget()) {
+    command_ = bump_scheduler_->command();
+    return;
+  }
+  // Bumper has priority over anything else.
+
   throttle_scheduler_->Schedule(state);
   switch_scheduler_->Schedule(state);
   turbo_scheduler_->Schedule(state);

@@ -23,7 +23,7 @@ class RaceTracker {
   // TODO is it necessary?
   // void Reset() {}
 
-  const EnemyTracker& enemy(const std::string& color) const { return enemies_.at(indexes_.at(color)); }
+  // const EnemyTracker& enemy(const std::string& color) const { return enemies_.at(indexes_.at(color)); }
 
   /* int TimeToReach(int piece, double position);
 
@@ -62,6 +62,10 @@ class RaceTracker {
   void TurboForEveryone(const game::Turbo& turbo);
   void CarSpawned(const std::string& color);
   void TurboStarted(const std::string& color);
+
+  const std::vector<EnemyTracker>& enemies() const { return enemies_; }
+
+  bool WorthBumping(const std::string& color);
 
  private:
   bool IsSafe(const Command& command, Command* safe_command, const Command& our_command);

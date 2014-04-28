@@ -10,6 +10,7 @@
 #include "schedulers/greedy_turbo_scheduler.h"
 #include "schedulers/shortest_path_switch_scheduler.h"
 #include "schedulers/binary_throttle_scheduler.h"
+#include "schedulers/bump_scheduler.h"
 
 namespace schedulers {
 
@@ -41,6 +42,7 @@ class BulkScheduler : public Scheduler {
    std::unique_ptr<schedulers::ThrottleScheduler> throttle_scheduler_;
    std::unique_ptr<schedulers::SwitchScheduler> switch_scheduler_;
    std::unique_ptr<schedulers::TurboScheduler> turbo_scheduler_;
+   std::unique_ptr<schedulers::BumpScheduler> bump_scheduler_;
 };
 
 }  // namespace schedulers
