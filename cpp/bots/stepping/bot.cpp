@@ -181,7 +181,7 @@ void Bot::CarSpawned(const string& color)  {
     crashed_ = false;
     car_tracker_->Reset();
   }
-  race_tracker->CarSpawned(color);
+  race_tracker_->CarSpawned(color);
 }
 
 void Bot::CarDNF(const std::string& color) {
