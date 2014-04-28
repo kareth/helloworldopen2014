@@ -78,8 +78,15 @@ std::vector<std::string> RaceTracker::PredictedCarsBetween(int from, int to, int
   }
   return result;
 }
+bool RaceTracker::IsSafeAttack(const Command& command, Command* safe_command) {
+  return IsSafe(command, safe_command, Command(1));
+}
 
 bool RaceTracker::IsSafeInFront(const Command& command, Command* safe_command) {
+  return IsSafe(command, safe_command, Command(0));
+}
+
+bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Command& our_command) {
   const auto& my_state = car_tracker_.current_state();
 
   std::map<std::string, CarState> states;
@@ -100,11 +107,12 @@ bool RaceTracker::IsSafeInFront(const Command& command, Command* safe_command) {
   std::set<string> cars_bumped;
   for (int i = 0; i < 50; ++i) {
     CarState my_prev = states[color_];
-    Command c(0);
+    Command c = our_command;
     if (i == 0) { c = command; }
     CarState my_new = car_tracker_.Predict(my_prev, c);
     states[color_] = my_new;
 
+    bool bump_inevitable = false;
     bool bumped = false;
     double min_velocity = 100000.0;
     for (const auto& p : states) {
@@ -117,13 +125,24 @@ bool RaceTracker::IsSafeInFront(const Command& command, Command* safe_command) {
         // std::cout << "min_velocity = " << velocity << std::endl;
         // If the velocity is higher than ours, he probably was behind us.
         if (velocity < my_new.velocity()) {
+          cars_bumped.insert(p.first);
           bumped = true;
           min_velocity = fmin(min_velocity, velocity);
+        }
+      } else {
+        // This means, he is not able to run away from us, so there is no point
+        // in simulating more ticks.
+        if (cars_bumped.count(p.first) > 0) {
+          bump_inevitable = true;
         }
       }
     }
 
     if (!bumped) continue;
+    if (bump_inevitable) {
+      std::cout << "He is not able to run away from us, we got this :)." << std::endl;
+      break;
+    }
 
     CarState state = my_new;
     state.set_velocity(0.8 * min_velocity);
@@ -140,7 +159,7 @@ bool RaceTracker::IsSafeInFront(const Command& command, Command* safe_command) {
     }
   }
 
-  // We survived 100 ticks, we should be ok.
+  // We survived 50 ticks, we should be ok.
   return true;
 }
 

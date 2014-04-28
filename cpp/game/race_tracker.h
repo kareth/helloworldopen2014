@@ -46,6 +46,8 @@ class RaceTracker {
   // - if we ride on switch (or someone is on switch)
   bool IsSafeInFront(const Command& command, Command* safe_command);
 
+  bool IsSafeAttack(const Command& command, Command* safe_command);
+
   void FinishedRace(const std::string& color);
   void DNF(const std::string& color);
 
@@ -56,6 +58,7 @@ class RaceTracker {
   EnemyTracker& enemy(const std::string& color) { return enemies_[indexes_[color]]; }
 
  private:
+  bool IsSafe(const Command& command, Command* safe_command, const Command& our_command);
   // void RecordEnemy(int index, const game::Position& position);
   // void UpdateSpeedStats(int index, const game::Position& position);
 
