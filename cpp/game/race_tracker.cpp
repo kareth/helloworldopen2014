@@ -196,7 +196,7 @@ bool RaceTracker::IsSafeBehind(const Command& command, Command* safe_command) {
       his_prev = car_tracker_.Predict(his_prev, Command(1));
     } else {
       // TODO use last turbo we know about instead of hardcoded 30, 3.
-      if (his_prev.turbo_state().available())
+      if (!his_prev.turbo_state().available())
         his_prev.AddNewTurbo(Turbo(30, 3));
       his_prev = car_tracker_.Predict(his_prev, Command::Turbo());
     }
@@ -207,13 +207,21 @@ bool RaceTracker::IsSafeBehind(const Command& command, Command* safe_command) {
       // BUMP
       if (car_tracker_.DistanceBetween(his_new.position(), my_new.position()) < kCarLength ||
           car_tracker_.DistanceBetween(my_new.position(), his_new.position()) < 100) {
-        my_new.set_velocity(0.9 * his_new.velocity());
-        if (!car_tracker_.IsSafe(my_new)) {
+        CarState tmp = my_new;
+        tmp.set_velocity(0.9 * his_new.velocity());
+        if (!car_tracker_.IsSafe(tmp)) {
           std::cout << "Not safe, he can turbo bump me :(" << std::endl;
           *safe_command = Command(0);
           return false;
         }
+        break;
       }
+
+      if (!car_tracker_.crash_model().IsSafe(his_new.position().angle()))
+        break;
+
+      my_prev = my_new;
+      his_prev = his_new;
     }
   }
 
