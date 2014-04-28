@@ -111,8 +111,7 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
   std::set<string> cars_bumped;
   for (int i = 0; i < 50; ++i) {
     CarState my_prev = states[color_];
-    Command c = our_command;
-    CarState my_new = car_tracker_.Predict(my_prev, c);
+    CarState my_new = car_tracker_.Predict(my_prev, our_command);
     states[color_] = my_new;
 
     bool bump_inevitable = false;
@@ -132,7 +131,7 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
           bumped = true;
           min_velocity = fmin(min_velocity, velocity);
 
-          // TODO make sure he actually will be dead
+          // TODO make sure he actually will crash
         }
       } else {
         // This means, he is not able to run away from us, so there is no point
@@ -169,6 +168,55 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
 }
 
 bool RaceTracker::IsSafeBehind(const Command& command, Command* safe_command) {
+  const auto& my_state = car_tracker_.current_state();
+  const double kCarLength = race_.cars().at(0).length();
+
+  // TODO check if he is even able to get to us first!
+
+  for (const auto& enemy : enemies_) {
+    if (enemy.color() == color_) {
+      // states[color_] = car_tracker_.Predict(my_state, command);
+      continue;
+    }
+
+    if (enemy.is_dead()) {
+      continue;
+    }
+
+    double distance = car_tracker_.DistanceBetween(enemy.state().position(), my_state.position());
+    if (distance > 400) {
+      // std::cout << "He is too far, assuming safe" << std::endl;
+      continue;
+    }
+
+    CarState my_prev = car_tracker_.Predict(my_state, command);
+    CarState his_prev = enemy.state();
+    // Assume he has a turbo.
+    if (his_prev.turbo_state().is_on()) {
+      his_prev = car_tracker_.Predict(his_prev, Command(1));
+    } else {
+      // TODO use last turbo we know about instead of hardcoded 30, 3.
+      if (his_prev.turbo_state().available())
+        his_prev.AddNewTurbo(Turbo(30, 3));
+      his_prev = car_tracker_.Predict(his_prev, Command::Turbo());
+    }
+    for (int i = 0; i < 30; ++i) {
+      CarState my_new = car_tracker_.Predict(my_prev, Command(0));
+      CarState his_new = car_tracker_.Predict(his_prev, Command(1));
+
+      // BUMP
+      if (car_tracker_.DistanceBetween(his_new.position(), my_new.position()) < kCarLength ||
+          car_tracker_.DistanceBetween(my_new.position(), his_new.position()) < 100) {
+        my_new.set_velocity(0.9 * his_new.velocity());
+        if (!car_tracker_.IsSafe(my_new)) {
+          std::cout << "Not safe, he can turbo bump me :(" << std::endl;
+          *safe_command = Command(0);
+          return false;
+        }
+      }
+    }
+  }
+
   return true;
 }
 
