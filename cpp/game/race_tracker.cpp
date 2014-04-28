@@ -146,6 +146,10 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
     CarState my_new = car_tracker_.Predict(my_prev, our_command);
     states[color_] = my_new;
 
+    if (1car_tracker_.crash_model().IsSafe(my_new.angle())) {
+      return false;
+    }
+
     bool bumped = false;
     double min_velocity = 100000.0;
     for (const auto& p : states) {
