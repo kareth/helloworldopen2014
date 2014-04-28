@@ -15,6 +15,10 @@ namespace game {
 
 class CrashModel {
  public:
+  CrashModel() {
+    guess_safe_angle_ = fmin(55.0, FLAGS_safe_angle - 5.0);
+  }
+
   ~CrashModel() {
     std::cout << "==== Crash Model ====" << std::endl;
     std::cout << "safe_angle: " << safe_angle_ << std::endl;
@@ -55,7 +59,7 @@ class CrashModel {
   bool ready_ = false;
 
   // The angle that will not cause crash.
-  double guess_safe_angle_ = 55.0;
+  double guess_safe_angle_;
   double safe_angle_ = 0.0;
   double unsafe_angle_ = 90.0;
 };

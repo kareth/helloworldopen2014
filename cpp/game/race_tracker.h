@@ -34,6 +34,9 @@ class RaceTracker {
 
   std::vector<std::string> PredictedCarsBetween(int from, int to, int lane);
 
+  // If false, returns command that is safe.
+  bool IsSafe(const Command& command, Command* safe_command);
+
  private:
   // void RecordEnemy(int index, const game::Position& position);
   // void UpdateSpeedStats(int index, const game::Position& position);

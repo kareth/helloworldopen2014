@@ -87,6 +87,13 @@ class CarTracker : public CarPredictor {
 
   void set_race(const Race* race) { race_ = race; }
 
+  // Start from position1, how much do I have to go to get to position2.
+  //
+  // Assumptions:
+  // - no switches
+  // - both positions are on the same lane
+  double DistanceBetween(const Position& position1, const Position& position2);
+
  private:
   bool just_started_ = true;
 

@@ -93,6 +93,13 @@ class CarState {
     return ss.str();
   }
 
+
+  // This is used to predict bumps. Maybe we should write
+  // method in car tracker (Bump(state1, state2)?).
+  void set_velocity(double velocity) {
+    velocity_ = velocity;
+  }
+
  private:
   Position position_;
   Switch switch_ = Switch::kStay;

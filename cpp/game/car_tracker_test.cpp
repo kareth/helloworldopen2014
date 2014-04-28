@@ -9,6 +9,8 @@ namespace game {
 
 class CarTrackerTest : public testing::Test {
  protected:
+  const double kEps = 1e-9;
+
   void SetUp() {
     json game_init_json = json::parse_file("data/gameInit.json");
     const auto& race_json = game_init_json["data"]["race"];
@@ -34,6 +36,25 @@ class CarTrackerTest : public testing::Test {
   std::unique_ptr<CarTracker> car_tracker_;
 };
 
+TEST_F(CarTrackerTest, DistanceBetweenTheSamePiece) {
+  Position position1;
+  position1.set_piece_distance(25.0);
+
+  Position position2;
+  position2.set_piece_distance(75.0);
+  EXPECT_NEAR(50.0, car_tracker_->DistanceBetween(position1, position2), kEps);
+}
+
+TEST_F(CarTrackerTest, DistanceBetweenTheOtherPiece) {
+  Position position1;
+  position1.set_piece_distance(25.0);
+
+  Position position2;
+  position2.set_piece(2);
+  position2.set_piece_distance(75.0);
+  EXPECT_NEAR(250.0, car_tracker_->DistanceBetween(position1, position2), kEps);
+}
+
 TEST_F(CarTrackerTest, GreedyRun) {
   auto history = json::parse_file("data/greedyRun.json");
   auto commands = history["commands"];
@@ -51,7 +72,6 @@ TEST_F(CarTrackerTest, GreedyRun) {
   ASSERT_TRUE(car_tracker_->IsReady());
 
   CarState state;
-  const double kEps = 1e-9;
   for (int i = 0; i < positions.size() - 1; ++i) {
     Command command = ParseCommand(commands[i]);
     Position position;
@@ -85,7 +105,6 @@ TEST_F(CarTrackerTest, TurboRun) {
   // Note: We ride too slow to simulate the angles, so car_tracker is not ready.
 
   CarState state;
-  const double kEps = 1e-9;
   for (int i = 0; i < positions.size() - 1; ++i) {
     Command command = ParseCommand(commands[i]);
     Position position;
@@ -139,7 +158,6 @@ TEST_F(CarTrackerTest, TurboRun2) {
 }
 
 TEST_F(CarTrackerTest, SwitchRun) {
-  const double kEps = 1e-9;
   auto history = json::parse_file("data/switchRun.json");
   auto commands = history["commands"];
   auto positions = history["positions"];
@@ -169,7 +187,6 @@ TEST_F(CarTrackerTest, SwitchRun) {
 }
 
 TEST_F(CarTrackerTest, SwitchRun2) {
-  const double kEps = 1e-9;
   auto history = json::parse_file("data/switchRun.json");
   auto commands = history["commands"];
   auto positions = history["positions"];

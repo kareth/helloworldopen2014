@@ -2,6 +2,7 @@
 
 DEFINE_int32(answer_time, 10, "Time limit for answer in ms");
 DECLARE_int32(handicap);
+DECLARE_bool(check_if_safe_ahead);
 
 using std::string;
 using std::vector;
@@ -73,6 +74,10 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 
     scheduler_->Schedule(state);
     command = scheduler_->command();
+    Command safe_command;
+    if (FLAGS_check_if_safe_ahead && !race_tracker_->IsSafe(command, &safe_command)) {
+      command = safe_command;
+    }
 
     // TODO not safe
     /*for (auto& p : positions) {

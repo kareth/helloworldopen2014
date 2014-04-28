@@ -79,6 +79,45 @@ std::vector<std::string> RaceTracker::PredictedCarsBetween(int from, int to, int
   return result;
 }
 
+bool RaceTracker::IsSafe(const Command& command, Command* safe_command) {
+  const auto& my_state = car_tracker_.current_state();
+
+  // TODO get only cars after mines within two pieces
+
+  std::map<std::string, CarState> states;
+  std::vector<string> cars_tracked;
+  double min_velocity = 1000;
+  for (const auto& enemy : enemies_) {
+    if (enemy.color() == color_) continue;
+
+    if (car_tracker_.DistanceBetween(my_state.position(), enemy.state().position()) < 200) {
+      cars_tracked.push_back(enemy.color());
+    }
+
+    states[enemy.color()] = enemy.state();
+    min_velocity = fmin(min_velocity, enemy.state().velocity());
+  }
+
+  if (cars_tracked.size() == 0) {
+    std::cout << "No-one is in front of us." << std::endl;
+    return true;
+  }
+
+  std::cout << "Someone is in front of us." << std::endl;
+
+  CarState state = car_tracker_.Predict(my_state, command);
+  state.set_velocity(0.8 * min_velocity);
+  bool is_safe = car_tracker_.IsSafe(state);
+
+  if (!is_safe) {
+    std::cout << "WE ARE TOO CLOSE AND WILL DIE. Slowing down." << std::endl;
+    *safe_command = Command(0);
+    return false;
+  }
+
+  return true;
+}
+
 /* Position RaceTracker::BumpPosition(const std::string& color) {
   int index = indexes_[color];
 
