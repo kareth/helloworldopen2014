@@ -55,6 +55,78 @@ TEST_F(CarTrackerTest, DistanceBetweenTheOtherPiece) {
   EXPECT_NEAR(250.0, car_tracker_->DistanceBetween(position1, position2), kEps);
 }
 
+TEST_F(CarTrackerTest, AroundTheTrack) {
+  const double kTrackLength = 3399.7874452256719;
+  Position position1;
+  position1.set_piece_distance(75.0);
+
+  Position position2;
+  position2.set_piece_distance(25.0);
+  EXPECT_NEAR(kTrackLength + 50, car_tracker_->DistanceBetween(position1, position2), kEps);
+}
+
+TEST_F(CarTrackerTest, WeCanSwitchTheLane) {
+  Position position1;
+  position1.set_piece_distance(0.0);
+
+  Position position2;
+  position2.set_piece(4);
+  position2.set_start_lane(1);
+  position2.set_end_lane(1);
+  position2.set_piece_distance(0.0);
+  EXPECT_NEAR(401.9803902718557, car_tracker_->DistanceBetween(position1, position2), kEps);
+}
+
+TEST_F(CarTrackerTest, BothOnTheSameSwitch) {
+  Position position1;
+  position1.set_piece(3);
+  position1.set_start_lane(0);
+  position1.set_end_lane(1);
+  position1.set_piece_distance(5.0);
+
+
+  Position position2;
+  position2.set_piece(3);
+  position2.set_start_lane(0);
+  position2.set_end_lane(1);
+  position2.set_piece_distance(10.0);
+  EXPECT_NEAR(5.0, car_tracker_->DistanceBetween(position1, position2), kEps);
+}
+
+TEST_F(CarTrackerTest, BothOnTheSameSwitchDifferentLanes) {
+  Position position1;
+  position1.set_piece(3);
+  position1.set_start_lane(0);
+  position1.set_end_lane(1);
+  position1.set_piece_distance(5.0);
+
+
+  Position position2;
+  position2.set_piece(3);
+  position2.set_start_lane(0);
+  position2.set_end_lane(0);
+  position2.set_piece_distance(10.0);
+  EXPECT_NEAR(3440.0089916087445, car_tracker_->DistanceBetween(position1, position2), kEps);
+}
+TEST_F(CarTrackerTest, TwoOtherSwitches) {
+  Position position1;
+  position1.set_piece(3);
+  position1.set_start_lane(0);
+  position1.set_end_lane(1);
+  position1.set_piece_distance(5.0);
+
+
+  Position position2;
+  position2.set_piece(8);
+  position2.set_start_lane(1);
+  position2.set_end_lane(0);
+  position2.set_piece_distance(10.0);
+  EXPECT_NEAR(389.72372909493703, car_tracker_->DistanceBetween(position1, position2), kEps);
+}
+
+// Both on the same switch
+// Both on the same switch but different lanes
+
 TEST_F(CarTrackerTest, GreedyRun) {
   auto history = json::parse_file("data/greedyRun.json");
   auto commands = history["commands"];

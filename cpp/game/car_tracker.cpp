@@ -230,6 +230,38 @@ CarState CarTracker::CreateCarState(const CarState& prev, const Position& positi
 }
 
 double CarTracker::DistanceBetween(const Position& position1, const Position& position2) {
+  double distance = 0.0;
+  Position position = position1;
+  // We could add while(true) but for safety 100 pieces should be enough
+  for (int i = 0; i < 100; ++i) {
+    if (position.piece() == position2.piece() &&
+        position.piece_distance() <= position2.piece_distance() &&
+        position.start_lane() == position2.start_lane()) {
+
+      if (position.piece_distance() != 0.0 && position.end_lane() != position2.end_lane()) {
+      } else {
+        distance += position2.piece_distance() - position.piece_distance();
+        break;
+      }
+    }
+
+    double lane_length = lane_length_model_.Length(position);
+    distance += lane_length - position.piece_distance();
+
+    position.set_piece_distance(0);
+    position.set_piece((position.piece() + 1) % race_->track().pieces().size());
+    position.set_start_lane(position.end_lane());
+    if (race_->track().pieces()[position.piece()].has_switch()) {
+      if (position.end_lane() < position2.start_lane()) {
+        position.set_end_lane(position.end_lane() + 1);
+      }
+      if (position.end_lane() > position2.start_lane()) {
+        position.set_end_lane(position.end_lane() - 1);
+      }
+    }
+  }
+  return distance;
+/*
   if (position1.start_lane() != position1.end_lane()) {
     // std::cout << "position1 on switch. Not supported yet." << std::endl;
     return 100000;
@@ -261,7 +293,7 @@ double CarTracker::DistanceBetween(const Position& position1, const Position& po
     position.set_piece((position.piece() + 1) % race_->track().pieces().size());
   }
   distance += position2.piece_distance();
-  return distance;
+  return distance;*/
 }
 
 Position CarTracker::PredictPosition(const Position& position, double distance) {
@@ -286,7 +318,7 @@ Position CarTracker::PredictPosition(const Position& position, double distance) 
 bool CarTracker::MinVelocity(const CarState& car_state, int ticks, const Position& target, double* min_velocity) {
   // TODO we should improve this method!
   double distance = DistanceBetween(car_state.position(), target);
-  if (distance > 10000) return false;
+  if (distance > 1000) return false;
 
   // std::cout << "Distance to reach: " << distance << " in " << ticks << " ticks" << std::endl;
 
