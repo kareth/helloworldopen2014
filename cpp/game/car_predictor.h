@@ -46,6 +46,12 @@ class TurboState {
     ticks_left_ = turbo_.duration() + 2;
   }
 
+  void Reset() {
+    available_ = false;
+    is_on_ = false;
+    ticks_left_ = 0;
+  }
+
  private:
   bool available_ = false;
   Turbo turbo_;
@@ -85,6 +91,10 @@ class CarState {
   void AddNewTurbo(const Turbo& turbo) {
     turbo_state_.Add(turbo);
   }
+
+  void EnableTurbo() { turbo_state_.Enable(); }
+
+  void ResetTurbo() { turbo_state_.Reset(); }
 
   std::string DebugString() const {
     std::stringstream ss;

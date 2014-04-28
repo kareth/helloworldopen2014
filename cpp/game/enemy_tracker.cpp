@@ -135,11 +135,11 @@ bool EnemyTracker::CanOvertake(const EnemyTracker& noobek, int from, int to) {
 }
 
 void EnemyTracker::TurboStarted() {
-  // TODO start turbo
+  state_.EnableTurbo();
 }
 
 void EnemyTracker::Spawned() {
-  // TODO reset turbo
+  state_.ResetTurbo();
 }
 
 void EnemyTracker::NewTurbo(const Turbo& turbo) {
