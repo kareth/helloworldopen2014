@@ -27,6 +27,8 @@ class EnemyTracker {
   std::pair<int, double> expected_bump_position() const { return expected_bump_position_; }
   */
 
+  bool CanOvertake(const EnemyTracker& noobek, int from, int to);
+
   const CarState& state() const { return state_; }
   bool is_dead() const { return dead_; }
   int time_to_spawn() const { return time_to_spawn_; }

@@ -74,14 +74,14 @@ bool ShortestPathSwitchScheduler::IsLaneSafe(const game::CarState& state,
     int from, int to, int lane) {
   auto cars = race_tracker_.PredictedCarsBetween(from, to, lane);
 
-  if (cars.size() > 0) {
-    //printf("Unsafe lane! %d\n", lane);
-    //for (auto c : cars)
-    //  std::cout << c << " ";
-    //std::cout << std::endl;
-    return false;
+  std::vector<std::string> cars_to_overtake;
+
+  for (auto c : cars) {
+    if (race_tracker_.ShouldTryToOvertake(c, from, to))
+      cars_to_overtake.push_back(c);
   }
-  return true;
+
+  return (cars_to_overtake.size() == 0);
 }
 
 // From -> To excliding both

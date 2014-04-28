@@ -102,4 +102,9 @@ void EnemyTracker::Resurrect() {
   }
 }
 
+bool EnemyTracker::CanOvertake(const EnemyTracker& noobek, int from, int to) {
+  //if (lap_times_.size() == 0 || noobek.lap_times().size() == 0)
+  return true;
+}
+
 }  // namespace game

@@ -154,6 +154,10 @@ void RaceTracker::ResurrectCars() {
     enemy.Resurrect();
 }
 
+bool RaceTracker::ShouldTryToOvertake(const std::string& color, int from, int to) {
+  return enemy(color_).CanOvertake(enemy(color), from, to);
+}
+
 /* Position RaceTracker::BumpPosition(const std::string& color) {
   int index = indexes_[color];
 

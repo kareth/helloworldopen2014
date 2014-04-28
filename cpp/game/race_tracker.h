@@ -51,6 +51,10 @@ class RaceTracker {
 
   void ResurrectCars();
 
+  bool ShouldTryToOvertake(const std::string& color, int from, int to);
+
+  EnemyTracker& enemy(const std::string& color) { return enemies_[indexes_[color]]; }
+
  private:
   // void RecordEnemy(int index, const game::Position& position);
   // void UpdateSpeedStats(int index, const game::Position& position);
