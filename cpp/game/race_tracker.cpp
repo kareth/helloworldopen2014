@@ -89,6 +89,10 @@ bool RaceTracker::IsSafeInFront(const Command& command, Command* safe_command) {
       continue;
     }
 
+    if (enemy.dead()) {
+      continue;
+    }
+
     states[enemy.color()] = car_tracker_.Predict(enemy.state(), Command(0));
   }
   const double kCarLength = race_.cars().at(0).length();
@@ -105,6 +109,7 @@ bool RaceTracker::IsSafeInFront(const Command& command, Command* safe_command) {
     double min_velocity = 100000.0;
     for (const auto& p : states) {
       if (p.first == color_) continue;
+      if (
 
       double velocity = 0.0;
       Position bump_position = car_tracker_.PredictPosition(my_new.position(), kCarLength);
