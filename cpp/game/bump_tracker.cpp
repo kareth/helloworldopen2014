@@ -57,7 +57,7 @@ bool BumpTracker::CanBumpForSure(const CarState& bumping_state, const CarState& 
         !car_tracker_.crash_model().IsSafe(bumped.position().angle()))
       return false;
 
-    if (distance < new_distance) {
+    if (new_distance - distance > 100) {
       printf("CanBumpForSure in %d ticks\n", i);
       return true;
     }
@@ -91,7 +91,7 @@ bool BumpTracker::CanBumpWithTurbo(const CarState& bumping_state, const CarState
       return false;
 
     double new_distance = car_tracker_.DistanceBetween(bumping.position(), bumped.position());
-    if (distance < new_distance) {
+    if (new_distance - distance > 100) {
       printf("CanBumpForSureWithTURBO in %d ticks\n", i);
       return true;
     }
