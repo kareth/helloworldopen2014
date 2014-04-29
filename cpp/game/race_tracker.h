@@ -88,6 +88,9 @@ class RaceTracker {
   std::string color_;
 
   vector<std::pair<std::string, std::string>> bumps_;
+
+  int crash_time_;
+  bool crash_recorded_;
 };
 
 }  // namespace game

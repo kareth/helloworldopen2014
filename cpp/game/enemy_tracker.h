@@ -44,6 +44,8 @@ class EnemyTracker {
   void Spawned();
   void NewTurbo(const Turbo& turbo);
 
+  void set_crash_length(int length) { kRespawnTime = length; }
+
  private:
   double Velocity(int piece);
 
@@ -68,7 +70,8 @@ class EnemyTracker {
   bool dnf_;
 
   int time_to_spawn_;
-  static const int kRespawnTime = 300;
+
+  int kRespawnTime = 0;
   static const int kSkipTime = 20;
 };
 }  // namespace game
