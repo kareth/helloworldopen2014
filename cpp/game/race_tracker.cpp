@@ -37,7 +37,7 @@ void RaceTracker::DetectBumps(const std::map<std::string, Position>& positions) 
         continue;
 
       double distance = car_tracker_.DistanceBetween(a.second, b.second);
-      if (distance < 40.0) {
+      if (distance <= kCarLength + 1e-9) {
         bumps_.push_back({ a.first, b.first });
         printf("Bump detected! %s %s\n", a.first.c_str(), b.first.c_str());
       }
