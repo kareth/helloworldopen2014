@@ -143,11 +143,12 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
 
   bool middle_state_not_safe = false;
   bool bump_inevitable = false;
+  bool attack_not_successful = false;
   std::set<string> cars_bumped;
-  for (int i = 0; i < 100; ++i) {
+  for (int ticks_after = 0; ticks_after < 100; ++ticks_after) {
     CarState my_prev = states[color_];
     Command c = our_command;
-    if (i == 0) c = command;
+    if (ticks_after == 0) c = command;
     CarState my_new = car_tracker_.Predict(my_prev, c);
     states[color_] = my_new;
 
@@ -162,8 +163,9 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
       if (p.first == color_) continue;
 
       double velocity = 0.0;
+      int full_throttle_ticks = 0;
       Position bump_position = car_tracker_.PredictPosition(my_new.position(), kCarLength);
-      if (car_tracker_.MinVelocity(p.second, i + 1, bump_position, &velocity)) {
+      if (car_tracker_.MinVelocity(p.second, ticks_after + 1, bump_position, &velocity, &full_throttle_ticks)) {
         // std::cout << "possible bump in " << i + 1 << " ticks" << std::endl;
         // std::cout << "min_velocity = " << velocity << std::endl;
         // If the velocity is higher than ours, he probably was behind us.
@@ -173,6 +175,15 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
           min_velocity = fmin(min_velocity, velocity);
 
           // TODO make sure he actually will crash
+          if (attack) {
+            CarState s = p.second;
+            for (int i = 0; i < full_throttle_ticks; ++i) { s = car_tracker_.Predict(s, Command(1)); }
+            for (int i = 0; i < ticks_after - full_throttle_ticks; ++i) { s = car_tracker_.Predict(s, Command(0)); }
+            s.set_velocity(my_new.velocity() * 0.9);
+            if (car_tracker_.IsSafe(s)) {
+              attack_not_successful = true;
+            }
+          }
         }
       } else {
         // This means, he is not able to run away from us, so there is no point
@@ -217,6 +228,12 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
   if (middle_state_not_safe && !bump_inevitable) {
     std::cout << "middle_state_not_safe && !bump_inevitable" << std::endl;
     *safe_command = Command(0);
+    return false;
+  }
+
+  if (attack && attack_not_successful) {
+    std::cout << "Attack would not crash the opponent." << std::endl;
+    *safe_command = command;
     return false;
   }
 

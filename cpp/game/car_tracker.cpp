@@ -285,7 +285,7 @@ Position CarTracker::PredictPosition(const Position& position, double distance) 
   return result;
 }
 
-bool CarTracker::MinVelocity(const CarState& car_state, int ticks, const Position& target, double* min_velocity) {
+bool CarTracker::MinVelocity(const CarState& car_state, int ticks, const Position& target, double* min_velocity, int* full_throttle_ticks) {
   // TODO we should improve this method!
   double distance = DistanceBetween(car_state.position(), target);
   if (distance > 1000) return false;

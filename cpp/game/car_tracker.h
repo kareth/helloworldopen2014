@@ -106,7 +106,7 @@ class CarTracker : public CarPredictor {
   //   - no switches, etc.
   // - no turbo :(
   // - it is only lower bound (it is possible such min_velocity cannot be achieved.
-  bool MinVelocity(const CarState& car_state, int ticks, const Position& target, double* min_velocity);
+  bool MinVelocity(const CarState& car_state, int ticks, const Position& target, double* min_velocity, int* full_throttle_ticks);
 
   // Returns position that is "distance" units farther.
   //
