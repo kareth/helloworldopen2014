@@ -34,7 +34,7 @@ void EnemyTracker::RecordPosition(const game::Position& position) {
     dead_ = false;
 
   skip_--;
-  if (skip_ = 0) state_ = CarState(position);
+  if (skip_ == 0) state_ = CarState(position);
   if (skip_ > 0) return;
 
   state_ = car_tracker_.CreateCarState(state_, position);
