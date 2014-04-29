@@ -148,7 +148,7 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
     CarState my_prev = states[color_];
     Command c = our_command;
     if (i == 0) c = command;
-    CarState my_new = car_tracker_.Predict(my_prev, our_command);
+    CarState my_new = car_tracker_.Predict(my_prev, c);
     states[color_] = my_new;
 
     if (!car_tracker_.crash_model().IsSafe(my_new.position().angle())) {
