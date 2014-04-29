@@ -30,6 +30,7 @@ void EnemyTracker::RecordCrash() {
 }
 
 void EnemyTracker::RecordPosition(const game::Position& position) {
+  time_to_spawn_--;
   if (skip_ == 0) state_ = CarState(position);
   skip_--;
   if (skip_ >= 0) return;

@@ -98,13 +98,14 @@ std::vector<EnemyTracker*> RaceTracker::PredictedCarsBetween(int from, int to, i
     if (enemy.state().position().end_lane() == lane) {
 
       // If dead, check if he respawns after I pass him
-      /*if (enemy.is_dead() && race_.track().IsFirstInFront(
-            me.PositionAfterTime(enemy.time_to_spawn() - 10),
-            enemy.state().position()))
-        continue;*/
-
-      if (enemy.is_dead())
-        result.push_back(&enemies_[i.second]);
+      if (enemy.is_dead()) {
+        if (!race_.track().IsFirstInFront(
+            me.PositionAfterTime(enemy.time_to_spawn() - 15),
+            enemy.state().position())) {
+          result.push_back(&enemies_[i.second]);
+        }
+        continue;
+      }
 
       if (race_.track().IsBetween(enemy.PositionAfterTime(time), from, to))
         result.push_back(&enemies_[i.second]);
@@ -312,9 +313,14 @@ void RaceTracker::ResurrectCars() {
 }
 
 bool RaceTracker::ShouldTryToOvertake(const std::string& color, int from, int to) {
-  // Overtake dead people no matter what
-  if (enemy(color).is_dead() && enemy(color).time_to_spawn() < 500)
-    return true;
+ if (enemy(color).is_dead()) {
+    if (race_.track().IsFirstInFront(
+        enemy(color_).PositionAfterTime(enemy(color).time_to_spawn() - 15),
+        enemy(color).state().position()))
+      return false;
+    else
+      return true;
+  }
 
   // Overtake everyone in the beginning
   if (car_tracker_.current_state().position().lap() < 1)
