@@ -72,8 +72,8 @@ void BumpScheduler::Schedule(const game::CarState& state) {
         Command safe_command;
         // TODO doesnt check if guy crashes
         if (bump_tracker_->CanBumpWithTurbo(state, enemy.state()) &&
-            race_tracker_.WorthBumping(enemy.color()) &&
-            race_tracker_.IsSafeAttack(Command::Turbo(), &safe_command)) {
+            race_tracker_.IsSafeAttack(Command::Turbo(), &safe_command) &&
+            race_tracker_.WorthBumping(enemy.color()) ) {
           printf("Tuuuurbooo bump! Dieeeeeee ;P\n");
           has_bump_target_ = true;
           bump_target_ = enemy.color();

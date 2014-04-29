@@ -330,10 +330,18 @@ void RaceTracker::TurboStarted(const std::string& color) {
 }
 
 bool RaceTracker::WorthBumping(const std::string& color) {
-  // TODO
   if (enemy(color).is_dead())
     return false;
-  return true;
+
+  int from = race_.track().NextSwitch(car_tracker_.current_state().position().piece());
+  int to = race_.track().NextSwitch(from);
+
+  bool result = !enemy(color_).CanOvertake(enemy(color), from, to);
+
+  if (!result)
+    printf("Could do Turbo bumping, but the guy (%s) is not worth it\n", color.c_str());
+
+  return result;
 }
 
 /* Position RaceTracker::BumpPosition(const std::string& color) {
