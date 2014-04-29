@@ -7,10 +7,14 @@ namespace game {
 
 RaceTracker::RaceTracker(game::CarTracker& car_tracker,
           const game::Race& race, const std::string& color)
-  : car_tracker_(car_tracker), race_(race), color_(color) {
+  : car_tracker_(car_tracker), race_(race), color_(color),
+    crash_time_(-1), crash_recorded_(false) {
 }
 
 void RaceTracker::Record(const std::map<std::string, Position>& positions) {
+  if (!crash_recorded_ && crash_time_ != -1)
+    crash_time_++;
+
   DetectBumps(positions);
   for (auto& p : positions) {
     if (indexes_.find(p.first) == indexes_.end()) {
@@ -61,12 +65,6 @@ void RaceTracker::RecordLapTime(const std::string& color, int time) {
   enemies_[indexes_[color]].RecordLapTime(time);
 }
 
-void RaceTracker::RecordCrash(const std::string& color) {
-  if (indexes_.find(color) == indexes_.end())
-    return;
-
-  enemies_[indexes_[color]].RecordCrash();
-}
 
 // TODO test
 std::vector<std::string> RaceTracker::CarsBetween(int from, int to, int lane) {
@@ -329,6 +327,23 @@ void RaceTracker::TurboForEveryone(const game::Turbo& turbo) {
 
 void RaceTracker::CarSpawned(const std::string& color) {
   enemy(color).Spawned();
+  if (crash_recorded_ == false) {
+    for (auto& e : enemies_) {
+      e.set_crash_length(crash_time_);
+    }
+    printf("Calculated Crash Length: %d\n", crash_time_);
+  }
+  crash_recorded_ = true;
+}
+
+void RaceTracker::RecordCrash(const std::string& color) {
+  if (indexes_.find(color) == indexes_.end())
+    return;
+
+  enemies_[indexes_[color]].RecordCrash();
+
+  if (crash_time_ == -1)
+    crash_time_ = 0;
 }
 
 void RaceTracker::TurboStarted(const std::string& color) {

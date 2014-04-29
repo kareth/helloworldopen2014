@@ -39,9 +39,6 @@ bool BumpTracker::CanBumpOptimalEnemy(const CarState& bumping_state, const CarSt
 }
 
 bool BumpTracker::CanBumpForSure(const CarState& bumping_state, const CarState& bumped_state, int in_ticks) {
-  if (bumping_state.position().end_lane() != bumped_state.position().end_lane())
-    return false;
-
   auto bumping = bumping_state;
   auto bumped = bumped_state;
 
@@ -64,9 +61,6 @@ bool BumpTracker::CanBumpForSure(const CarState& bumping_state, const CarState& 
 }
 
 bool BumpTracker::CanBumpWithTurbo(const CarState& bumping_state, const CarState& bumped_state, int in_ticks) {
-  if (bumping_state.position().end_lane() != bumped_state.position().end_lane())
-    return false;
-
   if (!bumping_state.turbo_state().available() && !bumping_state.turbo_state().is_on())
     return false;
 
