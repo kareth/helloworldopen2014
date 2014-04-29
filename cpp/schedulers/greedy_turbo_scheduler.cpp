@@ -53,11 +53,9 @@ void GreedyTurboScheduler::Schedule(const game::CarState& state) {
         last = &s;
 
     // If connected to 0
-    if (race_.track().id() != "usa") {
-      if (last->to() == race_.track().pieces().size() - 1)
-        if (state.position().piece() == last->from())
-          should_fire_now_ = true;
-    }
+    if (last->to() == race_.track().pieces().size() - 1)
+      if (state.position().piece() == last->from())
+        should_fire_now_ = true;
   }
 }
 

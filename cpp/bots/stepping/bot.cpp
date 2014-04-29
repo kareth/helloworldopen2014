@@ -64,12 +64,6 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
   // TODO
   if (crashed_)
     return Command(0);
-  if (race_.track().id() == "usa" &&
-      position.lap() == 0) {
-    auto command = Command(0.4);
-    car_tracker_->RecordCommand(command);
-    return command;
-  }
 
   Command command;
   if (car_tracker_->IsReady()) {
