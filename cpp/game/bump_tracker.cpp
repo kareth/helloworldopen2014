@@ -45,24 +45,20 @@ bool BumpTracker::CanBumpForSure(const CarState& bumping_state, const CarState& 
   auto bumping = bumping_state;
   auto bumped = bumped_state;
 
-  double distance = car_tracker_.DistanceBetween(bumping.position(), bumped.position());
-
   for (int i = 0; i < in_ticks; i++) {
     bumping = car_tracker_.Predict(bumping, Command(1));
     bumped = car_tracker_.Predict(bumped, Command(1));
 
-    double new_distance = car_tracker_.DistanceBetween(bumping.position(), bumped.position());
+    double distance = car_tracker_.DistanceBetween(bumping.position(), bumped.position());
 
     if (!car_tracker_.crash_model().IsSafe(bumping.position().angle()) ||
         !car_tracker_.crash_model().IsSafe(bumped.position().angle()))
       return false;
 
-    if (new_distance - distance > 100) {
+    if (distance < race_.cars()[0].length()) {
       printf("CanBumpForSure in %d ticks\n", i);
       return true;
     }
-
-    distance = new_distance;
   }
   return false;
 }
@@ -77,8 +73,6 @@ bool BumpTracker::CanBumpWithTurbo(const CarState& bumping_state, const CarState
   auto bumping = bumping_state;
   auto bumped = bumped_state;
 
-  double distance = car_tracker_.DistanceBetween(bumping.position(), bumped.position());
-
   for (int i = 0; i < in_ticks - 1; i++) {
     if (i == 0 && bumping_state.turbo_state().available())
       bumping = car_tracker_.Predict(bumping, Command::Turbo());
@@ -86,16 +80,16 @@ bool BumpTracker::CanBumpWithTurbo(const CarState& bumping_state, const CarState
       bumping = car_tracker_.Predict(bumping, Command(1));
     bumped = car_tracker_.Predict(bumped, Command(1));
 
+    double distance = car_tracker_.DistanceBetween(bumping.position(), bumped.position());
+
     if (!car_tracker_.crash_model().IsSafe(bumping.position().angle()) ||
         !car_tracker_.crash_model().IsSafe(bumped.position().angle()))
       return false;
 
-    double new_distance = car_tracker_.DistanceBetween(bumping.position(), bumped.position());
-    if (new_distance - distance > 100) {
+    if (distance < race_.cars()[0].length()) {
       printf("CanBumpForSureWithTURBO in %d ticks\n", i);
       return true;
     }
-    distance = new_distance;
   }
   return false;
 }
