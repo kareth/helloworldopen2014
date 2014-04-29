@@ -27,16 +27,19 @@ void RaceTracker::DetectBumps(const std::map<std::string, Position>& positions) 
 
   const double kCarLength = race_.cars()[0].length();
   for (auto& a : positions) {
+    if (indexes_.find(a.first) == indexes_.end()) continue;
     for (auto& b : positions) {
-      Position left = race_.track().PositionAfter(a.second, kCarLength);
-      Position right = b.second;
+      if (indexes_.find(b.first) == indexes_.end()) continue;
 
-      if (left.piece() == right.piece()) {
-        double diff = (left.piece_distance() - right.piece_distance());
-        if (diff <= 1e-10 && diff >= -1e-10) {
-          bumps_.push_back({ a.first, b.first });
-          printf("Bump detected! %s %s\n", a.first.c_str(), b.first.c_str());
-        }
+      if (a.first == b.first) continue;
+      if (enemy(a.first).is_dead() ||
+          enemy(b.first).is_dead())
+        continue;
+
+      double distance = car_tracker_.DistanceBetween(a.second, b.second);
+      if (distance < 40.0) {
+        bumps_.push_back({ a.first, b.first });
+        printf("Bump detected! %s %s\n", a.first.c_str(), b.first.c_str());
       }
     }
   }
