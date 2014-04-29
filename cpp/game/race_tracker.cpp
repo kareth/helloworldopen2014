@@ -78,14 +78,14 @@ std::vector<std::string> RaceTracker::CarsBetween(int from, int to, int lane) {
   return result;
 }
 
-std::vector<std::string> RaceTracker::PredictedCarsBetween(int from, int to, int lane) {
+std::vector<EnemyTracker*> RaceTracker::PredictedCarsBetween(int from, int to, int lane) {
   auto& me = enemies_[indexes_[color_]];
   Position position;
   position.set_piece(to);
   position.set_piece_distance(0);
   int time = me.TimeToPosition(position);
 
-  std::vector<std::string> result;
+  std::vector<EnemyTracker*> result;
   for (auto& i : indexes_) {
     if (i.first == color_) continue;
     auto& enemy = enemies_[i.second];
@@ -98,13 +98,13 @@ std::vector<std::string> RaceTracker::PredictedCarsBetween(int from, int to, int
     if (enemy.state().position().end_lane() == lane) {
 
       // If dead, check if he respawns after I pass him
-      if (enemy.is_dead() && race_.track().IsFirstInFront(
+      /*if (enemy.is_dead() && race_.track().IsFirstInFront(
             me.PositionAfterTime(enemy.time_to_spawn() - 10),
             enemy.state().position()))
-        continue;
+        continue;*/
 
       if (race_.track().IsBetween(enemy.PositionAfterTime(time), from, to))
-        result.push_back(i.first);
+        result.push_back(&enemies_[i.second]);
     }
   }
   return result;
@@ -310,7 +310,7 @@ void RaceTracker::ResurrectCars() {
 
 bool RaceTracker::ShouldTryToOvertake(const std::string& color, int from, int to) {
   // Overtake dead people no matter what
-  if (enemy(color).is_dead())
+  if (enemy(color).is_dead() && enemy(color).time_to_spawn() < 500)
     return true;
 
   // Overtake everyone in the beginning
@@ -333,6 +333,7 @@ void RaceTracker::CarSpawned(const std::string& color) {
     }
     printf("Calculated Crash Length: %d\n", crash_time_);
   }
+
   crash_recorded_ = true;
 }
 

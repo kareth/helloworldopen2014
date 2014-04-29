@@ -71,7 +71,7 @@ class EnemyTracker {
 
   int time_to_spawn_;
 
-  int kRespawnTime = 0;
+  int kRespawnTime = 300;
   static const int kSkipTime = 20;
 };
 }  // namespace game

@@ -24,18 +24,15 @@ void EnemyTracker::RecordLapTime(int time) {
 }
 
 void EnemyTracker::RecordCrash() {
-  skip_ = kRespawnTime + kSkipTime;
+  skip_ = 1000000;
   time_to_spawn_ = kRespawnTime;
   dead_ = true;
 }
 
 void EnemyTracker::RecordPosition(const game::Position& position) {
-  if (time_to_spawn_-- == 0)
-    dead_ = false;
-
-  skip_--;
   if (skip_ == 0) state_ = CarState(position);
-  if (skip_ > 0) return;
+  skip_--;
+  if (skip_ >= 0) return;
 
   state_ = car_tracker_.CreateCarState(state_, position);
 
@@ -129,7 +126,7 @@ bool EnemyTracker::CanOvertake(const EnemyTracker& noobek, int from, int to) {
   for (int i = 0; i < ticks_difference; i++) {
     distance += piece_speed_[to];
     // TODO
-    if (distance > 1.5 * kCarLength)
+    if (distance > 2.0 * kCarLength)
       return true;
   }
 
@@ -142,6 +139,9 @@ void EnemyTracker::TurboStarted() {
 
 void EnemyTracker::Spawned() {
   state_.ResetTurbo();
+  dead_ = false;
+  time_to_spawn_ = 0;
+  skip_ = kSkipTime;
 }
 
 void EnemyTracker::NewTurbo(const Turbo& turbo) {

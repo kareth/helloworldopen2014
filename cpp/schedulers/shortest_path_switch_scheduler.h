@@ -38,6 +38,8 @@ class ShortestPathSwitchScheduler : public SwitchScheduler {
 
    double LaneLength(const game::Position& position, int lane, int from, int to);
 
+   double SlowestCarOnLane(const game::CarState& state, int from, int to, int lane);
+
    const static int kInf = 1000000000;
 
    game::CarTracker& car_tracker_;

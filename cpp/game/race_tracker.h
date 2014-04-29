@@ -32,7 +32,7 @@ class RaceTracker {
   // from to inclusive
   std::vector<std::string> CarsBetween(int piece1, int piece2, int lane);
 
-  std::vector<std::string> PredictedCarsBetween(int from, int to, int lane);
+  std::vector<EnemyTracker*> PredictedCarsBetween(int from, int to, int lane);
 
   // Detects if issueing the given command is safe based on cars
   // in front of us. If false, also returns command that is safe in safe_command.
