@@ -90,6 +90,9 @@ std::vector<EnemyTracker*> RaceTracker::PredictedCarsBetween(int from, int to, i
     if (i.first == color_) continue;
     auto& enemy = enemies_[i.second];
 
+    if (enemy.is_dead() && enemy.time_to_spawn() > 10000)
+      continue;
+
     // If Im already ahead - ignore
     if (race_.track().IsFirstInFront(me.state().position(), enemy.state().position()))
       continue;
