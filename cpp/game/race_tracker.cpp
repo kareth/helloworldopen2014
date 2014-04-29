@@ -126,7 +126,7 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
   std::map<std::string, CarState> states;
   for (const auto& enemy : enemies_) {
     if (enemy.color() == color_) {
-      states[color_] = car_tracker_.Predict(my_state, command);
+      states[color_] = my_state;
       continue;
     }
 
@@ -134,7 +134,7 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
       continue;
     }
 
-    states[enemy.color()] = car_tracker_.Predict(enemy.state(), Command(0));
+    states[enemy.color()] = enemy.state();
   }
   const double kCarLength = race_.cars().at(0).length();
 
@@ -143,6 +143,8 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
   std::set<string> cars_bumped;
   for (int i = 0; i < 100; ++i) {
     CarState my_prev = states[color_];
+    Command c = our_command;
+    if (i == 0) c = command;
     CarState my_new = car_tracker_.Predict(my_prev, our_command);
     states[color_] = my_new;
 
