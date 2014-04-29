@@ -101,7 +101,7 @@ std::vector<std::string> RaceTracker::PredictedCarsBetween(int from, int to, int
 
       // If dead, check if he respawns after I pass him
       if (enemy.is_dead() && race_.track().IsFirstInFront(
-            me.PositionAfterTime(enemy.time_to_spawn() - 3),
+            me.PositionAfterTime(enemy.time_to_spawn() - 10),
             enemy.state().position()))
         continue;
 
