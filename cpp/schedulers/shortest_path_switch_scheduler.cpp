@@ -51,9 +51,9 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
 
   // Overtaking
   if (FLAGS_overtake) {
-    if (!IsLaneSafe(state, from, to - 1, position.end_lane() - 1)) left = kInf;
-    if (!IsLaneSafe(state, from, to - 1, position.end_lane() + 1)) right = kInf;
-    if (!IsLaneSafe(state, from, to - 1, position.end_lane())) current = kInf;
+    if (!IsLaneSafe(state, from, to, position.end_lane() - 1)) left = kInf;
+    if (!IsLaneSafe(state, from, to, position.end_lane() + 1)) right = kInf;
+    if (!IsLaneSafe(state, from, to, position.end_lane())) current = kInf;
   }
 
   if (left < current && left < right) {
