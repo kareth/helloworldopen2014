@@ -103,6 +103,9 @@ std::vector<EnemyTracker*> RaceTracker::PredictedCarsBetween(int from, int to, i
             enemy.state().position()))
         continue;*/
 
+      if (enemy.is_dead())
+        result.push_back(&enemies_[i.second]);
+
       if (race_.track().IsBetween(enemy.PositionAfterTime(time), from, to))
         result.push_back(&enemies_[i.second]);
     }
