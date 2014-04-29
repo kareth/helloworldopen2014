@@ -188,23 +188,25 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
       middle_state_not_safe = true;
     }
 
+    CarState state = my_prev;
+    state.set_velocity(0.8 * min_velocity);
+    if (!car_tracker_.IsSafe(state)) {
+      std::cout << "WE ARE TOO CLOSE AND WILL DIE. Slowing down (prev)." << std::endl;
+      *safe_command = Command(0);
+      return false;
+    }
+
     CarState state = my_new;
     state.set_velocity(0.8 * min_velocity);
     if (!car_tracker_.IsSafe(state)) {
-      if (fabs(my_state.position().angle()) < 7) {
-        // std::cout << "decided after " << i << " ticks" << std::endl;
-        // std::cout << "State that is dangerous: " << std::endl;
-        // std::cout << my_new.DebugString();
-        // std::cout << "min_velocity * 0.8 = " << min_velocity * 0.8 << std::endl;
-      }
-      std::cout << "WE ARE TOO CLOSE AND WILL DIE. Slowing down." << std::endl;
+      std::cout << "WE ARE TOO CLOSE AND WILL DIE. Slowing down (new)." << std::endl;
       *safe_command = Command(0);
       return false;
     }
   }
 
   if (middle_state_not_safe && !bump_inevitable) {
-    std::cout << "middle_state_not_safe && !bump_inevitable";
+    std::cout << "middle_state_not_safe && !bump_inevitable" << std::endl;
     *safe_command = Command(0);
     return false;
   }
