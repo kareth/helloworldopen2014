@@ -196,7 +196,7 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
       return false;
     }
 
-    CarState state = my_new;
+    state = my_new;
     state.set_velocity(0.8 * min_velocity);
     if (!car_tracker_.IsSafe(state)) {
       std::cout << "WE ARE TOO CLOSE AND WILL DIE. Slowing down (new)." << std::endl;
