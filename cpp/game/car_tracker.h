@@ -49,9 +49,10 @@ class CarTracker : public CarPredictor {
   // the car.
   void Reset() {
     just_started_ = true;
+    last_record_had_bump = false;
   }
 
-  void Record(const Position& position);
+  void Record(const Position& position, bool bump=false);
 
   void RecordCommand(const Command& command) {
     last_command_ = command;
@@ -92,7 +93,7 @@ class CarTracker : public CarPredictor {
   // Assumptions:
   // - no switches
   // - both positions are on the same lane
-  double DistanceBetween(const Position& position1, const Position& position2);
+  double DistanceBetween(const Position& position1, const Position& position2, bool* is_perfect=nullptr);
 
 
   // Returns true if the car starting from "car_state" can reach "target" using
@@ -113,8 +114,12 @@ class CarTracker : public CarPredictor {
   // We assume distance > 0
   Position PredictPosition(const Position& position, double distance);
 
+  // Returns true, if there is high probability that there was a bump.
+  bool HasSomeoneMaybeBumpedMe(const map<string, Position>& positions, const std::string& color);
+
  private:
   bool just_started_ = true;
+  bool last_record_had_bump = false;
 
   void LogState();
   double RadiusInPosition(const Position& position);

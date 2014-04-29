@@ -15,6 +15,7 @@ class LaneLengthModel {
  public:
   // Track has to outlive this model.
   LaneLengthModel(const Track* track) : track_(track) {}
+  ~LaneLengthModel();
 
   // perfect - return if the returned length is on 100% correct
   double Length(const Position& position, bool* perfect=nullptr) const;

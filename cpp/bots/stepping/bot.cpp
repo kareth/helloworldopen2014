@@ -51,7 +51,7 @@ std::map<string, CarState> tmp_states;
 
 game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick)  {
   const Position& position = positions.at(color_);
-  car_tracker_->Record(position);
+  car_tracker_->Record(position, car_tracker_->HasSomeoneMaybeBumpedMe(positions, color_));
   auto& state = car_tracker_->current_state();
 
   if (game_tick < FLAGS_handicap) {

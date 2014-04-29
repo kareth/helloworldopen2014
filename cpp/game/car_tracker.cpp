@@ -90,8 +90,7 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
   return CarState(position, velocity, state.position().angle(), switch_state, throttle, turbo_state);
 }
 
-void CarTracker::Record(const Position& position) {
-  bool bump = false;
+void CarTracker::Record(const Position& position, bool bump) {
   if (just_started_) {
     just_started_ = false;
     state_ = CarState(position);
@@ -130,7 +129,7 @@ void CarTracker::Record(const Position& position) {
     }
   }
 
-  if (!bump) {
+  if (!bump && !last_record_had_bump) {
     double direction = -sgn(race_->track().pieces()[state_.position().piece()].angle());
 
     // Update models
@@ -160,10 +159,13 @@ void CarTracker::Record(const Position& position) {
       double expected_angle = drift_model_.Predict(state_.position().angle(), state_.previous_angle(), state_.velocity(), r, direction);
       radius_model_.Record(state_.position(), r);
     }
+  } else {
+    // std::cout << "Someone probably bumped, do not learn models" << std::endl;
   }
 
   state_ = CarState(position, velocity, state_.position().angle(), switch_state, throttle, turbo_state);
   LogState();
+  last_record_had_bump = bump;
 }
 
 bool CarTracker::IsSafe(const CarState& state, const Command& command) {
@@ -232,7 +234,9 @@ CarState CarTracker::CreateCarState(const CarState& prev, const Position& positi
   return CarState(position, velocity, prev.position().angle(), Switch::kStay, 0.0, turbo_state);
 }
 
-double CarTracker::DistanceBetween(const Position& position1, const Position& position2) {
+double CarTracker::DistanceBetween(const Position& position1, const Position& position2, bool* is_perfect) {
+  bool tmp_perfect = true;
+  if (is_perfect != nullptr) *is_perfect = true;
   double distance = 0.0;
   Position position = position1;
   // We could add while(true) but for safety 100 pieces should be enough
@@ -248,7 +252,8 @@ double CarTracker::DistanceBetween(const Position& position1, const Position& po
       }
     }
 
-    double lane_length = lane_length_model_.Length(position);
+    double lane_length = lane_length_model_.Length(position, &tmp_perfect);
+    if (is_perfect != nullptr) *is_perfect = (*is_perfect) && tmp_perfect;
     distance += lane_length - position.piece_distance();
 
     position.set_piece_distance(0);
@@ -309,6 +314,32 @@ bool CarTracker::MinVelocity(const CarState& car_state, int ticks, const Positio
   }
 
   return smaller && greater;
+}
+
+bool CarTracker::HasSomeoneMaybeBumpedMe(const map<string, Position>& positions, const std::string& color) {
+  const double kCarLength = race_->cars().at(0).length();
+
+  for (const auto& p : positions) {
+    if (p.first == color) continue;
+
+    // We are adding 10 if the distance was not perfect, because
+    // it is possible we do not have the length of the switch
+    // yet.
+
+    bool perfect = false;
+    double d = DistanceBetween(positions.at(color), p.second, &perfect);
+    if (d < kCarLength + 1e-9 + (perfect ? 0 : 10.0)) {
+      return true;
+    }
+
+    perfect = false;
+    d = DistanceBetween(p.second, positions.at(color), &perfect);
+    if (d < kCarLength + 1e-9 + (perfect ? 0 : 10.0)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace game

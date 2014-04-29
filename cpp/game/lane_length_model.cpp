@@ -2,6 +2,18 @@
 
 namespace game {
 
+LaneLengthModel::~LaneLengthModel() {
+  std::cout << "==== Lane Length Model ====" << std::endl;
+  std::cout << "Straight:" << std::endl;
+  for (const auto& p : switch_on_straight_length_) {
+    std::cout << "(" << p.first.first << "," << p.first.second << ") => " << p.second << std::endl;
+  }
+  std::cout << "Turn:" << std::endl;
+  for (const auto& p : switch_on_turn_length_) {
+    std::cout << "(" << p.first.first << "," << p.first.second << ") => " << p.second << std::endl;
+  }
+}
+
 double LaneLengthModel::Length(const Position& position, bool* perfect) const {
   if (perfect) *perfect = true;
   const auto& piece = track_->pieces()[position.piece()];
@@ -59,6 +71,7 @@ void LaneLengthModel::Record(const Position& previous, const Position& current, 
   if (piece.type() == PieceType::kStraight) {
     const double width = fabs(track_->lanes()[previous.start_lane()].distance_from_center() - track_->lanes()[previous.end_lane()].distance_from_center());
     switch_on_straight_length_[{piece.length(), width}] = length;
+    std::cout << "Length of switch: " << length << std::endl;
     return;
   }
 
