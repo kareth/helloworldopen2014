@@ -138,6 +138,8 @@ void Bot::GameStarted() {
 
 void Bot::CarFinishedLap(const string& color, const game::Result& result)  {
   race_tracker_->RecordLapTime(color, result.lap_time());
+
+  printf("\x1B[35m*** %s Finished Lap %d in: %d ticks ***\x1B[0m\n", color.c_str(), result.lap(), result.lap_time());
 }
 
 void Bot::CarFinishedRace(const string& color)  {
