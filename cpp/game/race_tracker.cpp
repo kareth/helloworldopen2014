@@ -303,6 +303,11 @@ void RaceTracker::ResurrectCars() {
 }
 
 bool RaceTracker::ShouldTryToOvertake(const std::string& color, int from, int to) {
+  if (enemy(color).is_dead() && race_.track().IsFirstInFront(
+        enemy(color_).PositionAfterTime(enemy.time_to_spawn() - 10),
+        enemy(color).state().position()))
+    continue;
+
   return enemy(color_).CanOvertake(enemy(color), from, to);
 }
 
