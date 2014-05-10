@@ -107,17 +107,6 @@ bool Track::IsLastStraight(const Position& position) const {
   return true;
 }
 
-// TODO test
-Position Track::PositionAfter(const Position& start, double distance) const {
-  auto position = start;
-  position.set_piece_distance(position.piece_distance() + distance);
-  if (position.piece_distance() > LaneLength(position)) {
-    position.set_piece_distance(position.piece_distance() - LaneLength(position));
-    position.set_piece(position.piece());
-  }
-  return position;
-}
-
 bool Track::IsFirstInFront(const Position& front, const Position& back) const {
   int left, right;
   if (front.piece() >= back.piece()) {
