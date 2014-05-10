@@ -36,7 +36,11 @@ class ShortestPathSwitchScheduler : public SwitchScheduler {
    // TODO remove
    bool IsLaneSafe(const game::CarState& state, int from, int to, int lane);
 
-   double LaneLength(const game::Position& position, int lane, int from, int to);
+   // The distance between 'start' and 'end' assuming that 'end' position is on
+   // lane 'lane'.
+   //
+   // If lane is invalid, returns kInf.
+   double DistanceBetween(const game::Position& start, const game::Position& end, int lane);
 
    double SlowestCarOnLane(const game::CarState& state, int from, int to, int lane);
 

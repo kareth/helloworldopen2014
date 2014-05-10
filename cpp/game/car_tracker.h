@@ -98,7 +98,7 @@ class CarTracker : public CarPredictor {
   // off. The reason for incorrect distance are switches (we didn't come up with
   // the perfect model for them so we need to drive through them first).
   //
-  // Note: We only use 100 pieces to compute the distance, so if we need to travel
+  // Note: We only use 500 pieces to compute the distance, so if we need to travel
   // more to get to position2, the returned distance can bee too small. But because
   // we use it mainly to compute small distances (someone just ahead of use or
   // someone just behind us), it shouldn't matter.

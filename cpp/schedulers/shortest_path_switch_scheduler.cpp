@@ -36,18 +36,25 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
   // TODO its greedy :D
   const Position& position = state.position();
 
+  // We evaluate next two switches to decide if we should change the lane.
   int from = race_.track().NextSwitch(position.piece());
   int to = race_.track().NextSwitch(from);
 
-  // TODO lane model?
-  double current = LaneLength(position, position.end_lane(), from, to);
-  double left = kInf;
-  double right = kInf;
+  // Distance between current position and the 'to' switch:
+  // - if we stay on current lane
+  // - if we decide to switch to left lane
+  // - if we decide to switch to right lane
+  Position end_position;
+  end_position.set_piece(from);
+  double current = DistanceBetween(position, end_position, position.end_lane());
+  double left = DistanceBetween(position, end_position, position.end_lane() - 1);
+  double right = DistanceBetween(position, end_position, position.end_lane() + 1);
 
-  if (position.end_lane() > 0)
-    left = LaneLength(position, position.end_lane() - 1, from, to);
-  if (position.end_lane() < race_.track().lanes().size() - 1)
-    right = LaneLength(position, position.end_lane() + 1, from, to);
+  // TODO(tomek) Improve:
+  // - we should "score" every lane, based on opponents on them
+  // - even if someone has very good lap, he can crashed and respawned
+  // - consider instead of distance, trying to estimate how much time
+  //   it will take us to drive through given lanes
 
   // Overtaking
   if (FLAGS_overtake) {
@@ -55,7 +62,6 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
     if (!IsLaneSafe(state, from, to, position.end_lane() + 1)) right = kInf;
     if (!IsLaneSafe(state, from, to, position.end_lane())) current = kInf;
   }
-
 
   // All lanes taken
   if (left > kInf - 1 && right > kInf - 1 && current > kInf - 1) {
@@ -112,13 +118,15 @@ double ShortestPathSwitchScheduler::SlowestCarOnLane(
   return min_speed;
 }
 
+double ShortestPathSwitchScheduler::DistanceBetween(const Position& position1, const Position& position2, int lane) {
+  if (!race_.track().IsLaneCorrect(lane)) {
+    return kInf;
+  }
+  Position end_position = position2;
+  end_position.set_start_lane(lane);
+  end_position.set_end_lane(lane);
 
-// From -> To excliding both
-double ShortestPathSwitchScheduler::LaneLength(const game::Position& position, int lane, int from, int to) {
-  double distance = 0;
-  for (int p = from + 1; p < to; p++)
-    distance += race_.track().LaneLength(p, lane);
-  return distance;
+  return car_tracker_.DistanceBetween(position1, end_position);
 }
 
 void ShortestPathSwitchScheduler::ComputeShortestPaths() {
