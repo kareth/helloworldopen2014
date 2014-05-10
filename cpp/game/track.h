@@ -42,7 +42,6 @@ class Track {
   }
 
   // TODO remove
-  double LaneLength(int piece, int lane) const;
 
   // Returns current piece for car position.
   // offset returns current_index + offset
@@ -56,10 +55,8 @@ class Track {
   bool IsLastStraight(const Position& position) const;
   double LaneRadius(int piece, int lane) const;
 
-  // Test only.
-  double LaneLength(const Position& position) const;
  private:
-
+  double LaneLength(int piece, int lane) const;
   string id_;
   string name_;
 
