@@ -100,15 +100,6 @@ double Track::LaneLength(const Position& position) const {
   return 1.05 * M_PI * radius1 * (fabs(piece.angle()) / 360.0) + M_PI * radius2 * (fabs(piece.angle()) / 360.0);
 }
 
-double Track::Distance(const Position& position, const Position& previous) const {
-  if (position.piece() == previous.piece()) {
-    return position.piece_distance() - previous.piece_distance();
-  } else {
-    return position.piece_distance() - previous.piece_distance() +
-        LaneLength(previous.piece(), previous.start_lane());
-  }
-}
-
 bool Track::IsLastStraight(const Position& position) const {
   for (int i = pieces_.size() - 1; i >= position.piece(); i--)
     if (pieces_[i].type() == PieceType::kBent)

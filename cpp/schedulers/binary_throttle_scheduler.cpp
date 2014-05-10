@@ -116,7 +116,7 @@ int BinaryThrottleScheduler::FindBestMask(const CarState& state, double* distanc
     for (int tick = 0; tick < groups_[from]; tick++) {
       next.push_back(car_tracker_.Predict(next.back(), game::Command(throttle)));
 
-      tick_distance += race_.track().Distance(next.back().position(), next[next.size()-2].position());
+      tick_distance += car_tracker_.DistanceBetween(next[next.size()-2].position(), next.back().position());
       if (!car_tracker_.crash_model().IsSafe(next.back().position().angle())) {
         fail = true;
         break;

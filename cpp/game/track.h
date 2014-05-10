@@ -55,7 +55,6 @@ class Track {
   int NextSwitch(int piece_index) const;
 
   bool IsLastStraight(const Position& position) const;
-  double Distance(const Position& position, const Position& previous) const;
   double LaneRadius(int piece, int lane) const;
 
   // TODO deprecated, use method in car_tracker.
