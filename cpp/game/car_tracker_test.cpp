@@ -130,7 +130,7 @@ TEST_F(CarTrackerTest, GreedyRun) {
   auto commands = history["commands"];
   auto positions = history["positions"];
 
-  for (int i = 0; !car_tracker_->IsReady(); ++i) {
+  for (int i = 0; !car_tracker_->IsReady() && i < commands.size(); ++i) {
     Command command = ParseCommand(commands[i]);
     Position position;
     position.ParseFromJson(positions[i]);

@@ -19,54 +19,73 @@ namespace game {
 
 // We assume following drift model
 //
-// angle = x0 * previous_angle + x1 * previous_previous_angle + x2 * previous_velocity + x3
+// next_angle = x0 * angle +
+//              x1 * previous_angle +
+//              x2 * angle * velocity +
+//              -direction * max(0, x3 * velocity * velocity * sqrt(1 / radius) -
+//                                  x4 * velocity)
 class DriftModel {
  public:
   DriftModel();
 
   ~DriftModel();
 
-  // next_angle = f(angle, previous_previous_angle, previous_velocity, radius, direction)
+  // Called to train the model.
+  //
+  // TODO The following method assumes that it is called only with correct
+  // points (without bumps). If it will be called with incorrect point during
+  // learning (I don't think it happend but who knows), it will still learn correctly
+  // after gathering more points (only last X points are used to train the model).
   void Record(double next_angle, double angle, double previous_angle, double velocity, double radius, double direction);
 
   // direction = {-1, 0, 1}
+  //
+  // Returns 'next_angle'. If IsReady() is false, it doesn't have to be correct
+  // value but is at least some guess.
   double Predict(double angle, double previous_angle, double velocity, double radius, double direction);
 
+  // Returns the radius that would cause given 'next_angle'.
+  // This method is used to model switches on turns.
   double EstimateRadius(double next_angle, double angle, double previous_angle, double velocity, double direction);
 
+  // True if we are pretty confident in our model (~1e-9 accuracy)
+  // and we can start driving at our full potential.
   bool IsReady() const {
     return ready_;
   }
 
  private:
-  double InvRadius(double radius) {
-    if (radius < 1e-5 && radius > -1e-5) return 0;
-    return 1.0 / radius;
-  }
-
+  // Train the model 'x_' based on 'raw_points_'.
   void Train();
 
-  void TrainWithStraight();
+  double ComputeMaxError();
 
-  void RemoveOutliers();
-
-  void RemoveEmptyModels();
-
-  double ComputeError() const;
-
-  void TrimModels();
+  // This method is training the model assuming that only x3 is changing from
+  // defaults. It seems it is true for all tracks so far, and it allows us to
+  // get very good approximate from just one point!
+  //
+  // Even if only one point is enough, we will set ready_ flag only after 4 points
+  // because accuracy from one point is low.
+  void TrainOnlyOneVariable();
 
   std::ofstream file_;
 
+  // If true, we are pretty confident, that the model is ok.
+  // But it is still possible to improve it (e.g. get more points
+  // to get better accuracy) so we also use very ready below.
   bool ready_ = false;
 
-  std::vector<vector<double>> model_from_straight_;
-  std::vector<double> b_from_straight_;
+  // We use it when we are very confident that model is correct.
+  // Very confident means at least 30 points that prove our model is correct,
+  // including at least 20 points from turn with centrifugal force greater than
+  // friction (the part with 'max' is greater than 0).
+  bool very_ready_ = false;
 
-  std::vector<vector<double>> model_;
-  std::vector<double> b_;
-
+  // This is the actual model.
   std::vector<double> x_;
+
+  // {angle, previous_angle, velocity, radius, direction, next_angle}
+  std::vector<std::vector<double>> raw_points_;
 
   ErrorTracker error_tracker_;
 };
