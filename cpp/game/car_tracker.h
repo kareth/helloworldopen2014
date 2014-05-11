@@ -88,12 +88,23 @@ class CarTracker : public CarPredictor {
 
   void set_race(const Race* race) { race_ = race; }
 
-  // Start from position1, how much do I have to go to get to position2.
+  // Start from 'position1', how much do I have to go to get to 'position2'.
   //
-  // Assumptions:
-  // - no switches
-  // - both positions are on the same lane
-  double DistanceBetween(const Position& position1, const Position& position2, bool* is_perfect=nullptr);
+  // If positions are on different lanes, we assume we would switch lanes
+  // at first available position.
+  //
+  // 'is_perfect' is output parameter used to determine if we are sure that the
+  // distance is correct. If false it means that the distance can be slightly
+  // off. The reason for incorrect distance are switches (we didn't come up with
+  // the perfect model for them so we need to drive through them first).
+  //
+  // Note: We only iterate over const number of  pieces to compute the
+  // distance, so if we need to travel more to get to position2, the returned
+  // distance can bee too small. But because we use it mainly to compute small
+  // distances (someone just ahead of use or someone just behind us), it
+  // shouldn't matter.
+  double DistanceBetween(const Position& position1, const Position& position2,
+                         bool* is_perfect=nullptr);
 
 
   // Returns true if the car starting from "car_state" can reach "target" using
@@ -112,12 +123,17 @@ class CarTracker : public CarPredictor {
   // Returns position that is "distance" units farther.
   //
   // We assume distance > 0
+  //
+  // TODO
+  // - how switches are handled?
+  // - add is_perfect output parameter
   Position PredictPosition(const Position& position, double distance);
 
   // Returns true, if there is high probability that there was a bump.
   bool HasSomeoneMaybeBumpedMe(const map<string, Position>& positions, const std::string& color);
 
  private:
+  const int kDistanceBetweenIter = 500;
   bool just_started_ = true;
   bool last_record_had_bump = false;
 

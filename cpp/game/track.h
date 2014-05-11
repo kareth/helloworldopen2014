@@ -19,32 +19,10 @@ class Track {
   Track() {
   }
 
-  bool IsFirstInFront(const Position& front, const Position& back) const;
-  bool IsBetween(const Position& front, int piece1, int piece2) const;
-
-  // Not including this one
-  int NextSwitch(int piece_index) const;
-
-  bool IsLastStraight(const Position& position) const;
-  double Distance(const Position& position, const Position& previous) const;
-  double LaneRadius(int piece, int lane) const;
-
-  Position PositionAfter(const Position& position, double distance) const;
-
-  // TODO deprecate, use below version instead.
-  double LaneLength(int piece, int lane) const;
-
-  // TODO deprecated, use LaneLengthModel
-  double LaneLength(const Position& position) const;
-
   const string& id() const { return id_; }
   const string& name() const { return name_; }
   const vector<Piece>& pieces() const { return pieces_; }
   const vector<Lane>& lanes() const { return lanes_; }
-
-  // Returns current piece for car position.
-  // offset returns current_index + offset
-  const game::Piece& PieceFor(const game::Position& position, int offset = 0) const;
 
   // The input json should point to the "track" part of the "gameInit"
   // command. E.g.
@@ -56,8 +34,29 @@ class Track {
   // }
   void ParseFromJson(const jsoncons::json& data);
 
+  // ================== HELPER METHODS BELOW ======================
+
+  // TODO test
+  bool IsLaneCorrect(int lane) const {
+    return lane >= 0 && lane < lanes_.size();
+  }
+
+  // TODO remove
+
+  // Returns current piece for car position.
+  // offset returns current_index + offset
+  const game::Piece& PieceFor(const game::Position& position, int offset = 0) const;
+  bool IsFirstInFront(const Position& front, const Position& back) const;
+  bool IsBetween(const Position& front, int piece1, int piece2) const;
+
+  // Not including this one
+  int NextSwitch(int piece_index) const;
+
+  bool IsLastStraight(const Position& position) const;
+  double LaneRadius(int piece, int lane) const;
 
  private:
+  double LaneLength(int piece, int lane) const;
   string id_;
   string name_;
 

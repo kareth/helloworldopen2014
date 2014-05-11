@@ -60,71 +60,11 @@ double Track::LaneRadius(int piece, int lane) const {
     return pieces_[piece].radius() + lanes_[lane].distance_from_center();
 }
 
-double Track::LaneLength(int piece, int lane) const {
-  if (pieces_[piece].radius() < 1e-5)
-    return pieces_[piece].length();
-
-  double radius = LaneRadius(piece, lane);
-  double angle = pieces_[piece].angle();
-  return 2.0 * M_PI * radius * (fabs(angle) / 360.0);
-}
-
-double Track::LaneLength(const Position& position) const {
-  const auto& piece = pieces_[position.piece()];
-
-  if (piece.type() == PieceType::kStraight) {
-    if (position.start_lane() == position.end_lane()) {
-      return piece.length();
-    }
-    if (!piece.has_switch()) {
-      std::cerr << "Changing lane on non switch piece?" << std::endl;
-    }
-    // TODO this is just approximation. Add learning.
-
-    double width = fabs(lanes_[position.start_lane()].distance_from_center() - lanes_[position.end_lane()].distance_from_center());
-    return 1.000783334 * std::sqrt(width * width + piece.length() * piece.length());
-  }
-
-  if (position.start_lane() == position.end_lane()) {
-    double radius = LaneRadius(position.piece(), position.start_lane());
-    return 2.0 * M_PI * radius * (fabs(piece.angle()) / 360.0);
-  }
-
-  if (!piece.has_switch()) {
-    std::cerr << "Changing lane on non switch piece?" << std::endl;
-  }
-
-  // TODO this is just approximation. Add learning.
-  double radius1 = LaneRadius(position.piece(), position.start_lane());
-  double radius2 = LaneRadius(position.piece(), position.end_lane());
-  return 1.05 * M_PI * radius1 * (fabs(piece.angle()) / 360.0) + M_PI * radius2 * (fabs(piece.angle()) / 360.0);
-}
-
-double Track::Distance(const Position& position, const Position& previous) const {
-  if (position.piece() == previous.piece()) {
-    return position.piece_distance() - previous.piece_distance();
-  } else {
-    return position.piece_distance() - previous.piece_distance() +
-        LaneLength(previous.piece(), previous.start_lane());
-  }
-}
-
 bool Track::IsLastStraight(const Position& position) const {
   for (int i = pieces_.size() - 1; i >= position.piece(); i--)
     if (pieces_[i].type() == PieceType::kBent)
       return false;
   return true;
-}
-
-// TODO test
-Position Track::PositionAfter(const Position& start, double distance) const {
-  auto position = start;
-  position.set_piece_distance(position.piece_distance() + distance);
-  if (position.piece_distance() > LaneLength(position)) {
-    position.set_piece_distance(position.piece_distance() - LaneLength(position));
-    position.set_piece(position.piece());
-  }
-  return position;
 }
 
 bool Track::IsFirstInFront(const Position& front, const Position& back) const {
