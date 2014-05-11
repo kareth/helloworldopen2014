@@ -239,8 +239,8 @@ double CarTracker::DistanceBetween(const Position& position1, const Position& po
   if (is_perfect != nullptr) *is_perfect = true;
   double distance = 0.0;
   Position position = position1;
-  // We could add while(true) but for safety 100 pieces should be enough
-  for (int i = 0; i < 500; ++i) {
+  // We could add while(true) but for safety we use const number of iterations.
+  for (int i = 0; i < kDistanceBetweenIter; ++i) {
     if (position.piece() == position2.piece() &&
         position.piece_distance() <= position2.piece_distance() &&
         position.start_lane() == position2.start_lane()) {

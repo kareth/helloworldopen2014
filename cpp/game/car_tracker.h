@@ -98,12 +98,11 @@ class CarTracker : public CarPredictor {
   // off. The reason for incorrect distance are switches (we didn't come up with
   // the perfect model for them so we need to drive through them first).
   //
-  // Note: We only use 500 pieces to compute the distance, so if we need to travel
-  // more to get to position2, the returned distance can bee too small. But because
-  // we use it mainly to compute small distances (someone just ahead of use or
-  // someone just behind us), it shouldn't matter.
-  //
-  // SAFE
+  // Note: We only iterate over const number of  pieces to compute the
+  // distance, so if we need to travel more to get to position2, the returned
+  // distance can bee too small. But because we use it mainly to compute small
+  // distances (someone just ahead of use or someone just behind us), it
+  // shouldn't matter.
   double DistanceBetween(const Position& position1, const Position& position2,
                          bool* is_perfect=nullptr);
 
@@ -134,6 +133,7 @@ class CarTracker : public CarPredictor {
   bool HasSomeoneMaybeBumpedMe(const map<string, Position>& positions, const std::string& color);
 
  private:
+  const int kDistanceBetweenIter = 500;
   bool just_started_ = true;
   bool last_record_had_bump = false;
 
