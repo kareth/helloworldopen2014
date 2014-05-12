@@ -41,7 +41,7 @@ void RaceTracker::DetectBumps(const std::map<std::string, Position>& positions) 
         continue;
 
       double distance = car_tracker_.DistanceBetween(a.second, b.second);
-      // We need to change start lane and endlane, as for switches,
+      // We need to compare start_lane and end_lane, as for switches,
       // bump only occurs if those 2 params are equal for both cars
       if (distance <= kCarLength + 1e-9 &&
           a.second.start_lane() == b.second.start_lane() &&
