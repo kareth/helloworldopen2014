@@ -31,6 +31,7 @@ double RadiusModel::Radius(const Position& position) {
 
 void RadiusModel::Record(const Position& position, double radius) {
   if (radius < 1) return;
+  if (std::isnan(radius)) return;
   if (position.start_lane() == position.end_lane()) return;
 
   auto& model = *GetModel(position.piece(), position.start_lane());
@@ -47,7 +48,15 @@ void RadiusModel::Record(const Position& position, double radius) {
 
   model.Record(position.piece_distance(), radius);
 
-  file_ << std::setprecision(20) << position.piece() << "," << position.start_lane() << "," << position.end_lane() << "," << position.piece_distance() << "," << radius << std::endl;
+  // Log all data.
+  double previous_radius = track_->LaneRadius((position.piece() + track_->pieces().size() - 1) % track_->pieces().size(), position.start_lane());
+  double start_radius = track_->LaneRadius(position.piece(), position.start_lane());
+  double angle = track_->pieces()[position.piece()].angle();
+  double end_radius = track_->LaneRadius(position.piece(), position.end_lane());
+  double next_radius = track_->LaneRadius((position.piece() + 1) % track_->pieces().size(), position.end_lane());
+  file_ << std::setprecision(20) << previous_radius << "," << start_radius
+        << "," << angle << "," << end_radius << "," << next_radius << ","
+        << position.piece_distance() << "," << radius << std::endl;
 }
 
 double SwitchRadiusModel::Radius(double piece_distance) const {

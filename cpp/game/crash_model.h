@@ -16,7 +16,7 @@ namespace game {
 class CrashModel {
  public:
   CrashModel() {
-    guess_safe_angle_ = fmin(55.0, FLAGS_safe_angle - 5.0);
+    guess_safe_angle_ = fmin(50.0, FLAGS_safe_angle - 5.0);
   }
 
   ~CrashModel() {

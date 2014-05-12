@@ -14,7 +14,7 @@ namespace game {
 class LaneLengthModel {
  public:
   // Track has to outlive this model.
-  LaneLengthModel(const Track* track) : track_(track) {}
+  LaneLengthModel(const Track* track);
   ~LaneLengthModel();
 
   // perfect - return if the returned length is on 100% correct
@@ -27,6 +27,8 @@ class LaneLengthModel {
 
   std::map<std::pair<double, double>, double> switch_on_straight_length_;
   std::map<std::pair<double, double>, double> switch_on_turn_length_;
+
+  std::ofstream file_;
 };
 
 }  // namespace game

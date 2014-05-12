@@ -1,6 +1,10 @@
 #include "schedulers/bulk_scheduler.h"
+#include "schedulers/always_switch_scheduler.h"
+
+#include "gflags/gflags.h"
 
 DECLARE_bool(check_if_safe_ahead);
+DEFINE_bool(always_switch, false, "");
 
 namespace schedulers {
 
@@ -13,8 +17,12 @@ BulkScheduler::BulkScheduler(const game::Race& race,
       new BinaryThrottleScheduler(race_, car_tracker_, time_limit));
   turbo_scheduler_.reset(
       new GreedyTurboScheduler(race_, car_tracker_));
-  switch_scheduler_.reset(
-      new ShortestPathSwitchScheduler(race_, race_tracker_, car_tracker_));
+  if (FLAGS_always_switch) {
+    switch_scheduler_.reset(new AlwaysSwitchScheduler(&race_.track()));
+  } else {
+    switch_scheduler_.reset(
+        new ShortestPathSwitchScheduler(race_, race_tracker_, car_tracker_));
+  }
   bump_scheduler_.reset(
       new BumpScheduler(race_, race_tracker_, car_tracker_));
 }
