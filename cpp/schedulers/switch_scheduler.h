@@ -13,6 +13,7 @@ class SwitchScheduler {
    // e.g max if its last moment to switch etc
    virtual bool ShouldSwitch() = 0;
    virtual game::Switch SwitchDirection() = 0;
+   virtual game::Switch ExpectedSwitch() = 0;
 
    // Prepares for overtake
    virtual void Overtake(const string& color) = 0;

@@ -155,6 +155,12 @@ bool ShortestPathSwitchScheduler::ShouldSwitch() {
   return false;
 }
 
+game::Switch ShortestPathSwitchScheduler::ExpectedSwitch() {
+  if (should_switch_now_ && !waiting_for_switch_)
+    return scheduled_switch_;
+  return game::Switch::kStay;
+}
+
 game::Switch ShortestPathSwitchScheduler::SwitchDirection() {
   return scheduled_switch_;
 }

@@ -87,6 +87,7 @@ class CarState {
 
   // Are we planing to switch the lane?
   Switch switch_state() const { return switch_; }
+  void set_switch_state(Switch s) { switch_ = s; }
 
   // If someone performs other command than throttle, we need to use throttle
   // from last tick, so we need to store it in the car state.
