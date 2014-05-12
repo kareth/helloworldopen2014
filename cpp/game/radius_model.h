@@ -14,6 +14,9 @@
 #include "game/position.h"
 #include "game/race.h"
 #include "game/simplex.h"
+#include "gflags/gflags.h"
+
+DECLARE_string(race_id);
 
 namespace game {
 
@@ -68,8 +71,8 @@ class RadiusModel {
  public:
   RadiusModel(const Track* track) : track_(track) {
     // file_.open("bin/switch.csv", std::ios::out | std::ios::app);
-    file_.open("bin/switch.csv");
-    file_ << "piece,start_lane,end_lane,piece_distance,radius" << std::endl;
+    file_.open("bin/" + FLAGS_race_id + "/switch-radius.csv");
+    file_ << "previous_radius,start_radius,angle,end_radius,next_radius,piece_distance,radius" << std::endl;
   }
 
   void Record(const Position& position, double radius);

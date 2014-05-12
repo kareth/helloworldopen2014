@@ -1,6 +1,14 @@
 #include "game/lane_length_model.h"
+#include "gflags/gflags.h"
+
+DECLARE_string(race_id);
 
 namespace game {
+
+LaneLengthModel::LaneLengthModel(const Track* track) : track_(track) {
+  // file_.open("bin/" + FLAGS_race_id + "/switch-length.csv");
+  // file_ << "previous_radius,start_radius,angle,end_radius,next_radius,piece_distance,radius" << std::endl;
+}
 
 LaneLengthModel::~LaneLengthModel() {
   std::cout << "==== Lane Length Model ====" << std::endl;

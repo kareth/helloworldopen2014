@@ -25,7 +25,6 @@ class SwitchScheduler {
    virtual void Schedule(const game::CarState& state) = 0;
 
    virtual void Switched() = 0;
-
 };
 
 }  // namespace schedulers
