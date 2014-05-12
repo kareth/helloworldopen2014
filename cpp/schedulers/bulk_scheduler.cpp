@@ -30,6 +30,11 @@ void BulkScheduler::Schedule(const game::CarState& state) {
 
   throttle_scheduler_->Schedule(state);
   switch_scheduler_->Schedule(state);
+
+  // If we want to switch, schedule throttle for target lane bent
+  auto state_with_switch = state;
+  state_with_switch.set_switch_state(switch_scheduler_->ExpectedSwitch());
+
   turbo_scheduler_->Schedule(state);
 
   if (turbo_scheduler_->ShouldFireTurbo()) {

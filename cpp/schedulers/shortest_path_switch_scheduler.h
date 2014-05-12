@@ -18,6 +18,7 @@ class ShortestPathSwitchScheduler : public SwitchScheduler {
    // e.g max if its last moment to switch etc
    bool ShouldSwitch();
    game::Switch SwitchDirection();
+   game::Switch ExpectedSwitch();
 
    // Prepares for overtake
    void Overtake(const string& color);
