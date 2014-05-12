@@ -45,7 +45,7 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
   // - if we decide to switch to left lane
   // - if we decide to switch to right lane
   Position end_position;
-  end_position.set_piece(from);
+  end_position.set_piece(to);
   double current = DistanceBetween(position, end_position, position.end_lane());
   double left = DistanceBetween(position, end_position, position.end_lane() - 1);
   double right = DistanceBetween(position, end_position, position.end_lane() + 1);

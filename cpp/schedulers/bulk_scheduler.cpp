@@ -28,14 +28,13 @@ void BulkScheduler::Schedule(const game::CarState& state) {
   }
   // Bumper has priority over anything else.
 
-  throttle_scheduler_->Schedule(state);
+  turbo_scheduler_->Schedule(state);
   switch_scheduler_->Schedule(state);
 
   // If we want to switch, schedule throttle for target lane bent
   auto state_with_switch = state;
   state_with_switch.set_switch_state(switch_scheduler_->ExpectedSwitch());
-
-  turbo_scheduler_->Schedule(state);
+  throttle_scheduler_->Schedule(state_with_switch);
 
   if (turbo_scheduler_->ShouldFireTurbo()) {
     command_ = game::Command(game::TurboToggle::kToggleOn);
