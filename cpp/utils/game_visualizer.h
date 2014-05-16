@@ -86,20 +86,23 @@ class GameVisualizer {
     std::cout << "|";
 
     for (int lap = 0; lap < position.lap(); lap++)
-      PrintLap(color, lap, pieces_);
+      PrintFullLap(color, lap, pieces_);
 
-    PrintLap(color, position.lap(), position.piece() + 1);
+    PrintPartialLap(color, position.lap(), position.piece() + 1);
   }
 
-  void PrintLap(const std::string& color, int lap, int pieces) {
+  void PrintPartialLap(const std::string& color, int lap, int pieces) {
     for (int i = 0; i < pieces; i++) {
       if (IsCrash(color, lap, i))
         std::cout << "\x1B[31mX\x1B[0m";
       else
         std::cout << "_";
     }
-    if (pieces == pieces_)
-      std::cout << "|";
+  }
+
+  // 9 characters inside
+  void PrintFullLap(const std::string& color, int lap, int pieces) {
+    std::cout << "________|";
   }
 
   void PrintLapTimes(const std::string& color) {
@@ -108,11 +111,8 @@ class GameVisualizer {
     if (lap_times_.find(color) == lap_times_.end())
       return;
 
-    for (int i = 0; i < lap_times_[color].size(); i++) {
-      std::cout << std::right << std::setw(pieces_ / 2 + 3) <<
-         double(lap_times_[color][i]) / 1000.0;
-      std::cout << std::left << std::setw(pieces_ - pieces_ / 2 - 3) << "s" << "|";
-    }
+    for (int i = 0; i < lap_times_[color].size(); i++)
+      std::cout << std::right << std::setw(6) << double(lap_times_[color][i]) / 1000.0 << "s |";
   }
 
   bool IsCrash(const std::string& color, int lap, int piece) {
