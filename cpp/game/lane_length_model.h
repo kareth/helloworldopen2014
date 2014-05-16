@@ -28,7 +28,8 @@ class LaneLengthModel {
   std::map<std::pair<double, double>, double> switch_on_straight_length_;
   std::map<std::pair<double, double>, double> switch_on_turn_length_;
 
-  std::ofstream file_;
+  std::ofstream file_straight_;
+  std::ofstream file_turn_;
 };
 
 }  // namespace game

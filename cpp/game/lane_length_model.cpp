@@ -6,8 +6,11 @@ DECLARE_string(race_id);
 namespace game {
 
 LaneLengthModel::LaneLengthModel(const Track* track) : track_(track) {
-  // file_.open("bin/" + FLAGS_race_id + "/switch-length.csv");
-  // file_ << "previous_radius,start_radius,angle,end_radius,next_radius,piece_distance,radius" << std::endl;
+  file_turn_.open("bin/" + FLAGS_race_id + "/switch-turn-length.csv");
+  file_turn_ << "start_radius,angle,end_radius,length" << std::endl;
+
+  file_straight_.open("bin/" + FLAGS_race_id + "/switch-straight-length.csv");
+  file_straight_ << "width,length,switch_length" << std::endl;
 }
 
 LaneLengthModel::~LaneLengthModel() {
@@ -79,13 +82,14 @@ void LaneLengthModel::Record(const Position& previous, const Position& current, 
   if (piece.type() == PieceType::kStraight) {
     const double width = fabs(track_->lanes()[previous.start_lane()].distance_from_center() - track_->lanes()[previous.end_lane()].distance_from_center());
     switch_on_straight_length_[{piece.length(), width}] = length;
-    std::cout << "Length of switch: " << length << std::endl;
+    file_straight_ << std::setprecision(20) << width << "," << piece.length() << "," << length << std::endl;
     return;
   }
 
   double radius1 = track_->LaneRadius(previous.piece(), previous.start_lane());
   double radius2 = track_->LaneRadius(previous.piece(), previous.end_lane());
   switch_on_turn_length_[{radius1, radius2}] = length;
+  file_turn_ << std::setprecision(20) << radius1 << "," << piece.angle() << "," << radius2 << "," << length << std::endl;
 }
 
 }  // namespace game
