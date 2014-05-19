@@ -48,6 +48,26 @@ target_link_libraries(bot
   bots_stepping
   bots_constant
   bots_kamikaze
+  bots_wojtek
+  common_flags
+  game
+  physics
+  utils
+  gflags
+  schedulers
+)
+add_executable(throttle_tester throttle_tester.cpp)
+target_link_libraries(throttle_tester
+  ${Boost_LIBRARIES}
+  bots
+  bots_basic
+  bots_tomek
+  bots_piotr
+  bots_greedy
+  bots_stepping
+  bots_constant
+  bots_kamikaze
+  bots_wojtek
   common_flags
   game
   physics

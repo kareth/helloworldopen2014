@@ -68,7 +68,7 @@ game::Command Bot::ComputeMove(const Position& position, int game_tick) {
   if (crash_) {
     return Command(0.65);
   }
-  return Command(0.7);
+  return Command(0.5);
 }
 
 game::Command Bot::GetMove(

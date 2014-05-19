@@ -18,7 +18,7 @@ namespace game {
 class VelocityModel {
  public:
   VelocityModel() : error_tracker_("velocity") {
-    x_ = {0.2, 0.98};
+    x_ = {0.98, 0.2};
   }
   ~VelocityModel() {
     std::cout << "==== Velocity Model ====" << std::endl;
