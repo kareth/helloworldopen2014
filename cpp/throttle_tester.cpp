@@ -37,10 +37,13 @@ int main(int argc, char** argv) {
   }
   boost::filesystem::create_directories("bin/" + FLAGS_race_id);
 
-  std::unique_ptr<bots::RawBot> bot(new bots::RawBot(new bots::wojtek::Bot()));
-  std::unique_ptr<game::Simulator> simulator(new game::Simulator());
+  game::Simulator::Result result;
+  {
+    std::unique_ptr<bots::RawBot> bot(new bots::RawBot(new bots::wojtek::Bot()));
+    std::unique_ptr<game::Simulator> simulator(new game::Simulator());
 
-  auto result = simulator->Run(bot.get());
+    result = simulator->Run(bot.get());
+  }
 
   std::cout << "BEST LAP: " << result.best_lap_time_in_ticks << std::endl;
   if (result.crashed) {
