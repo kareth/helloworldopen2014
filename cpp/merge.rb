@@ -41,6 +41,7 @@ def merge(base_name)
       array =  csv.to_a
       header = array[0].join(",")
       array[1..-1].each do |row|
+        next if row.size == 0
         switch_turn_length[row[0..-2]] = row[-1]
       end
     end
@@ -68,6 +69,7 @@ end
 switch_radius = {}
 csv = CSV.new(File.read("bin/switch-radius.csv"))
 csv.to_a[1..-1].each do |row|
+  next if row.size != 7
   switch_length = switch_turn_length[[row[1], row[2].sub('-', ''), row[3]]]
   percent = (row[5].to_f / switch_length * 100.0).to_i
   if switch_radius[[row[1], row[2].sub('-', ''), row[3], percent]].nil?
@@ -77,6 +79,7 @@ csv.to_a[1..-1].each do |row|
       puts "ERROR"
       puts switch_radius[[row[1], row[2].sub('-', ''), row[3], percent]].to_f
       puts row[6].to_f
+      puts "#{row[1]} - #{row[3]}"
     end
   end
 end
