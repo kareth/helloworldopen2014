@@ -8,13 +8,165 @@ namespace schedulers {
 
 using game::CarState;
 
+const int WojtekThrottleScheduler::HORIZON = 12;
+const vector<double> WojtekThrottleScheduler::values{0.0, 1.0};
+
 WojtekThrottleScheduler::WojtekThrottleScheduler(const game::Race* race,
-    const game::CarTracker* car_tracker)
-  : race_(race), car_tracker_(car_tracker) {
+    game::CarTracker* car_tracker)
+  : race_(race), car_tracker_(car_tracker), best_schedule_(HORIZON) {
 }
 
 void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
-  throttle_ = 0.6;
+  if (!Optimize(state)) {
+    VNS(state, best_schedule_);
+  }
+  throttle_ = best_schedule_.throttles[0];
+  printf("\n");
+  for (int i=0; i<HORIZON; ++i)
+    printf("%.1f ", best_schedule_.throttles[i]);
+  printf("\n");
+}
+
+CarState WojtekThrottleScheduler::Predict(const game::CarState& state, const Sched& schedule) {
+  CarState next = state;
+  for (int i = 0; i<schedule.size(); ++i) {
+    next = car_tracker_->Predict(next, game::Command(schedule.throttles[i]));
+  }
+  return next;
+}
+
+double WojtekThrottleScheduler::Distance(const game::CarState& state, const class Sched& schedule) {
+  CarState last = Predict(state, schedule);
+  return car_tracker_->DistanceBetween(state.position(), last.position());
+}
+
+// Whether schedule is safe
+bool WojtekThrottleScheduler::IsSafe(const game::CarState& state, const Sched& schedule) {
+
+  //TODO: Improve performance by adding "from"
+  
+  CarState next = state;
+  // Are all scheduled states safe?
+  for (int i = 0; i<schedule.size(); ++i) {
+    double throttle = schedule.throttles[i];
+    next = car_tracker_->Predict(next, game::Command(throttle));
+    if (!car_tracker_->crash_model().IsSafe(next.position().angle()))
+      return false;
+  }
+  // Is the last state safe?
+  return car_tracker_->IsSafe(next);
+}
+
+bool WojtekThrottleScheduler::Optimize(const game::CarState& state) {
+  Sched schedule(best_schedule_);
+  best_schedule_.distance = -1;
+
+  //TODO: Initialize best_schedule to 0
+
+  // Makes the simulation quicker
+  for (int i = 0; i < schedule.size(); ++i) {
+    schedule.throttles[i] = 1.0;
+  }
+  schedule.distance = Distance(state, schedule);
+  if (IsSafe(state, schedule)) {
+    best_schedule_ = schedule;
+    return true;
+  }
+
+  schedule.distance = 0;
+  Check(state, 0, schedule);
+
+  return false;
+}
+
+bool WojtekThrottleScheduler::VNS(const game::CarState& state, Sched& schedule) {
+
+  const int STEPS = 100;
+  const double STEP = 0.1;
+
+  bool improved = false;
+  for (int i = 0; i < STEPS; ++i) {
+    int idx = rand() % 3;
+    if (schedule.throttles[idx] == 0.0)
+      continue;
+
+    Sched tmp(schedule);
+
+    tmp.throttles[idx] = 0.0;
+
+    for (int j = 0; j < tmp.size(); ++j) if (j != idx)
+      ImproveOne(state, tmp, j, STEP);
+    ImproveOne(state, tmp, idx, STEP);
+    tmp.distance = Distance(state, tmp);
+    if (tmp.distance > schedule.distance) {
+      schedule = tmp;
+      improved = true;
+      printf("IMPROVED");
+    }
+  }
+  return improved;
+}
+
+bool WojtekThrottleScheduler::ImproveOne(const game::CarState& state, Sched& schedule, int idx, double step) {
+  bool improved = false;
+  while (schedule.throttles[idx] + step <= 1.0) {
+    schedule.throttles[idx] += step;
+    if (!IsSafe(state, schedule)) {
+      schedule.throttles[idx] -= step;
+      break;
+    }
+    // If throttle was increased there has to be distance improvement
+    improved = true;
+  }
+  return improved;
+}
+
+bool WojtekThrottleScheduler::Improve(const game::CarState& state, Sched& schedule, int step) {
+  bool improved = false;
+  for (int i=0; i<schedule.size(); ++i) {
+    improved = ImproveOne(state, schedule, i, step);
+  }
+  return improved;
+}
+
+bool WojtekThrottleScheduler::Check(const game::CarState& state, int from, Sched& schedule) {
+  if (from >= HORIZON) {
+    bool better = (schedule.distance > best_schedule_.distance);
+
+    if (better) {
+      if (car_tracker_->IsSafe(state)) {
+        best_schedule_ = schedule;
+        bool optimal = true;
+        for (int i=0;i<schedule.throttles.size(); ++i) {
+          if (schedule.throttles[i] != 1.0) {
+            optimal = false;
+          }
+        }
+        if (optimal) return true;
+      }
+    }
+    return false;
+  }
+
+  for (int i = 0; i < values.size(); ++i) {
+    double throttle = values[i];
+    CarState next = car_tracker_->Predict(state, game::Command(throttle));
+
+    // Cut fast
+    if (!car_tracker_->crash_model().IsSafe(next.position().angle())) {
+        continue;
+    }
+
+    double this_dist = car_tracker_->DistanceBetween(state.position(), 
+        next.position());
+    //TODO: Jesli nie odcinam po dystansie, moglbym tego tutaj nie liczyc tylko na koncu
+
+    schedule.throttles[from] = throttle;
+    schedule.distance += this_dist;
+    Check(next, from + 1, schedule);
+    schedule.distance -= this_dist;
+  }
+  return false;
 }
 
 }  // namespace schedulers
