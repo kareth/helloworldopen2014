@@ -39,13 +39,15 @@ int main(int argc, char** argv) {
 
   game::Simulator::Result result;
   {
-    std::unique_ptr<bots::RawBot> bot(new bots::RawBot(new bots::wojtek::Bot()));
+    //std::unique_ptr<bots::RawBot> bot(new bots::RawBot(new bots::wojtek::Bot()));
+    std::unique_ptr<bots::RawBot> bot(new bots::RawBot(new bots::stepping::Bot()));
     std::unique_ptr<game::Simulator> simulator(new game::Simulator());
 
     result = simulator->Run(bot.get());
   }
 
   std::cout << "BEST LAP: " << result.best_lap_time_in_ticks << std::endl;
+  std::cout << "TOTAL DISTANCE: " << result.total_distance << std::endl;
   if (result.crashed) {
     std::cout << "CRASHED !!!!!!!!!!!!!" << std::endl;
   }

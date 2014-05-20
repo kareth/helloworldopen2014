@@ -19,6 +19,7 @@ class Simulator {
   struct Result {
     int best_lap_time_in_ticks = 100000;
     bool crashed = false;
+    double total_distance = 0; // total distance drived
   };
 
   Result Run(bots::RawBot* raw_bot) {
@@ -46,7 +47,9 @@ class Simulator {
       current_lap_ticks++;
       auto response = raw_bot->React(CarPositionsFromState(state, i));
       Command command = CommandFromJson(response);
-      state = car_tracker.Predict(state, command);
+      CarState next_state = car_tracker.Predict(state, command);
+      result.total_distance += car_tracker.DistanceBetween(state.position(), next_state.position());
+      state = next_state;
 
       if (state.position().angle() > 60.0) {
         result.crashed = true;
