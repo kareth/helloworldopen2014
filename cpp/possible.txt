@@ -17,7 +17,7 @@ h=24+VNC (only 3 first things 0), very very slow
 BEST LAP: 440
 TOTAL DISTANCE: 7693.87
 
-still a bit too slow, but very nice result
+still a bit too slow, but very nice result (07b25dc)
 BEST LAP: 440
 TOTAL DISTANCE: 7697.21
 c093:~/projects/hwo/cpp$ 

@@ -28,7 +28,7 @@ void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
   best_schedule_.distance = best_schedule_.Distance(state);
 
 
-  VNS(state, best_schedule_);
+  //VNS(state, best_schedule_);
 
   /*if (!Optimize(state)) {
     VNS(state, best_schedule_);
