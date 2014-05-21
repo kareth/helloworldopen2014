@@ -7,11 +7,18 @@ namespace schedulers {
 
 using game::CarState;
 
-const vector<double> BranchAndBound::values{0.0, 1.0};
 const double BranchAndBound::EGAP = 0.0;
 
-BranchAndBound::BranchAndBound(game::CarTracker* car_tracker, int horizon, const vector<int>& groups) 
-  : horizon_(horizon), car_tracker_(car_tracker), best_(car_tracker, horizon), groups_(groups)
+/* IDEAS_TODO:
+ *  - store all nodes at the same time to decide which one to expand (the one with the highest lower bound). 
+ *  - devise a better UpperBound than all 1.0. How?
+ *  - if next tick will lead me to a piece with a different radius, apart from 0 and 1 consider a throttle that could finish before this new type of radius (if possible).
+ *  - store all visited states (lane, position, v, alpha, omega) with their current best throttles and upper bounds. If can make a move to such already visited state (or better than) than we have a very good upper bound right away. Need to rethink this.
+ *  - improve local improvement using some kind of gradients.
+ */
+
+BranchAndBound::BranchAndBound(game::CarTracker* car_tracker, int horizon, const vector<int>& groups, const vector<double>& values) 
+  : horizon_(horizon), car_tracker_(car_tracker), best_(car_tracker, horizon), groups_(groups), values_(values)
 { }
 
 void BranchAndBound::Improve(const game::CarState& state, Sched& schedule) {
@@ -67,8 +74,8 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
     return false;
   }
 
-  for (int i = 0; i < values.size(); ++i) {
-    double throttle = values[i];
+  for (int i = 0; i < values_.size(); ++i) {
+    double throttle = values_[i];
     CarState next = state;
     bool fail = false;
     for (int i=0; i<groups_[from_group]; ++i) {

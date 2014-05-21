@@ -11,10 +11,9 @@ namespace schedulers {
 
 class BranchAndBound {
  public:
-  static const vector<double> values; // possible throttle values to check
   static const double EGAP;
 
-  BranchAndBound(game::CarTracker* car_tracker, int horizon, const vector<int>& groups);
+  BranchAndBound(game::CarTracker* car_tracker, int horizon, const vector<int>& groups, const vector<double>& values);
 
   void Improve(const game::CarState& state, Sched& schedule);
   double LowerBound(const Sched& schedule);
@@ -32,6 +31,7 @@ class BranchAndBound {
   int nodes_prunned_;
 
   vector<int> groups_;
+  vector<double> values_; // possible throttle values to check
 };
 
 }

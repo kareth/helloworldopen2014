@@ -36,3 +36,7 @@ TOTAL DISTANCE: 7692.96
 
 BEST LAP: 439 (too slow. the above + VNS)
 TOTAL DISTANCE: 7700.43
+
+Possible with more values than 0 and 1. Too slow
+BEST LAP: 440
+TOTAL DISTANCE: 7701.32
