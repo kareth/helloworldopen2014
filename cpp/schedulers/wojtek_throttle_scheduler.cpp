@@ -8,7 +8,7 @@ namespace schedulers {
 
 using game::CarState;
 
-vector<int> groups {1,1,2,2,4,4,4,4,4,4,4};
+vector<int> groups {1,1,2,2,4,4,4,4,4,4,4,2,1};
 const int WojtekThrottleScheduler::HORIZON = std::accumulate(groups.begin(),groups.end(),0);
 const vector<double> WojtekThrottleScheduler::values{0.0, 1.0};
 
