@@ -21,6 +21,7 @@ class Position {
   int end_lane() const { return end_lane_; }
 
   int lap() const { return lap_; }
+  int last_tick() const { return last_tick_; }
 
   // Returns color of the car
   std::string ParseFromJson(const jsoncons::json& data);
@@ -52,6 +53,7 @@ class Position {
   int end_lane_ = 0;
 
   int lap_ = 0;
+  int last_tick_ = 0;
 };
 
 }  // namespace game

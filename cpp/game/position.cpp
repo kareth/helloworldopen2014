@@ -9,6 +9,7 @@ Position::Position() {}
 std::string Position::ParseFromJson(const jsoncons::json& data) {
   const auto& color = data["id"]["color"].as_string();
   angle_ = data.get("angle").as_double();
+  last_tick_ = data.get("prevCommandTick", jsoncons::json(-1)).as_int();
 
   const auto& piece = data.get("piecePosition");
 
