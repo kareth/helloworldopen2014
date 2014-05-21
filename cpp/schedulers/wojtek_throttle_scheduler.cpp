@@ -8,7 +8,7 @@ namespace schedulers {
 
 using game::CarState;
 
-const int WojtekThrottleScheduler::HORIZON = 12;
+const int WojtekThrottleScheduler::HORIZON = 15;
 const vector<double> WojtekThrottleScheduler::values{0.0, 1.0};
 
 WojtekThrottleScheduler::WojtekThrottleScheduler(const game::Race* race,
@@ -20,7 +20,17 @@ void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
   best_schedule_.Shift(state);
   if (!best_schedule_.IsSafe(state))
     best_schedule_.Reset(state);
-  bb_.Improve(best_schedule_);
+
+  best_schedule_.throttles[HORIZON-1]=1.0;
+  if (best_schedule_.IsSafe(state)) {
+    best_schedule_.distance = best_schedule_.Distance(state);
+  } else {
+    best_schedule_.throttles[HORIZON-1]=0.0;
+  }
+
+  bb_.Improve(state, best_schedule_);
+
+  VNS(state, best_schedule_);
 
   /*if (!Optimize(state)) {
     VNS(state, best_schedule_);

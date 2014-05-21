@@ -29,11 +29,14 @@ bool schedulers::Sched::IsSafe(const game::CarState& state) {
   
   game::CarState next = state;
   // Are all scheduled states safe?
+  //printf("check: ");
   for (int i = 0; i<size(); ++i) {
     next = car_tracker_->Predict(next, game::Command(throttles[i]));
+   // printf("%.1f ", next.position().angle());
     if (!car_tracker_->crash_model().IsSafe(next.position().angle()))
       return false;
   }
+  //printf("\n");
   // Is the last state safe?
   return car_tracker_->IsSafe(next);
 }
@@ -43,6 +46,7 @@ void schedulers::Sched::Shift(const game::CarState& state) {
     throttles[i] = throttles[i+1];
   }
   throttles[size()-1] = 0.0;
+  distance = Distance(state);
   //TODO: Should be safe, but I have to check it to be sure!
 }
 
@@ -53,4 +57,11 @@ void schedulers::Sched::Reset(const game::CarState& state) {
   distance = Distance(state);
 }
 
+void schedulers::Sched::Print() {
+  for (int i = 0; i < size(); ++i) {
+    printf("%.1f ", throttles[i]);
+  }
+  printf("\n");
 }
+
+} // namespace

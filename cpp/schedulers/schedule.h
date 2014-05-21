@@ -20,6 +20,7 @@ class Sched {
   bool IsSafe(const game::CarState& state);
   void Shift(const game::CarState& state);
   void Reset(const game::CarState& state);
+  void Print();
  
  private:
   game::CarTracker* car_tracker_;
