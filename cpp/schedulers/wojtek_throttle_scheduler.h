@@ -8,16 +8,9 @@
 #include "game/car_tracker.h"
 #include "schedulers/strategy.h"
 #include "schedulers/throttle_scheduler.h"
+#include "schedulers/schedule.h"
 
 namespace schedulers {
-
-class Sched {
- public:
-  Sched(int horizon) : throttles(horizon) {}
-  vector<double> throttles;
-  double distance = 0;
-  size_t size() const { return throttles.size(); }
-};
 
 class WojtekThrottleScheduler : public ThrottleScheduler {
  public:
@@ -44,12 +37,6 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
 
   // Updates throttles_. Return distance
   bool Optimize(const game::CarState& state);
-
-  bool IsSafe(const game::CarState& state, const class Sched& schedule);
-
-  game::CarState Predict(const game::CarState& state, const class Sched& schedule);
-
-  double Distance(const game::CarState& state, const class Sched& schedule);
 
   bool Check(const game::CarState& state, int from, Sched& schedule);
 

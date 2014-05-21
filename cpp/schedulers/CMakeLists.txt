@@ -6,6 +6,7 @@ set(SCHEDULERS_SOURCES
   bulk_scheduler.cpp
   learning_scheduler.cpp
   bump_scheduler.cpp
+  schedule.cpp
 )
 
 set(SCHEDULERS_HEADERS
@@ -20,6 +21,7 @@ set(SCHEDULERS_HEADERS
   bulk_scheduler.h
   learning_scheduler.h
   bump_scheduler.h
+  schedule.h
 )
 
 add_library(schedulers ${SCHEDULERS_SOURCES})

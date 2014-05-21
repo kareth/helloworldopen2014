@@ -13,7 +13,7 @@ const vector<double> WojtekThrottleScheduler::values{0.0, 1.0};
 
 WojtekThrottleScheduler::WojtekThrottleScheduler(const game::Race* race,
     game::CarTracker* car_tracker)
-  : race_(race), car_tracker_(car_tracker), best_schedule_(HORIZON) {
+  : race_(race), car_tracker_(car_tracker), best_schedule_(car_tracker, HORIZON) {
 }
 
 void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
@@ -27,35 +27,6 @@ void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
   printf("\n");
 }
 
-CarState WojtekThrottleScheduler::Predict(const game::CarState& state, const Sched& schedule) {
-  CarState next = state;
-  for (int i = 0; i<schedule.size(); ++i) {
-    next = car_tracker_->Predict(next, game::Command(schedule.throttles[i]));
-  }
-  return next;
-}
-
-double WojtekThrottleScheduler::Distance(const game::CarState& state, const class Sched& schedule) {
-  CarState last = Predict(state, schedule);
-  return car_tracker_->DistanceBetween(state.position(), last.position());
-}
-
-// Whether schedule is safe
-bool WojtekThrottleScheduler::IsSafe(const game::CarState& state, const Sched& schedule) {
-
-  //TODO: Improve performance by adding "from"
-  
-  CarState next = state;
-  // Are all scheduled states safe?
-  for (int i = 0; i<schedule.size(); ++i) {
-    double throttle = schedule.throttles[i];
-    next = car_tracker_->Predict(next, game::Command(throttle));
-    if (!car_tracker_->crash_model().IsSafe(next.position().angle()))
-      return false;
-  }
-  // Is the last state safe?
-  return car_tracker_->IsSafe(next);
-}
 
 bool WojtekThrottleScheduler::Optimize(const game::CarState& state) {
   Sched schedule(best_schedule_);
@@ -67,8 +38,8 @@ bool WojtekThrottleScheduler::Optimize(const game::CarState& state) {
   for (int i = 0; i < schedule.size(); ++i) {
     schedule.throttles[i] = 1.0;
   }
-  schedule.distance = Distance(state, schedule);
-  if (IsSafe(state, schedule)) {
+  schedule.distance = schedule.Distance(state);
+  if (schedule.IsSafe(state)) {
     best_schedule_ = schedule;
     return true;
   }
@@ -97,7 +68,7 @@ bool WojtekThrottleScheduler::VNS(const game::CarState& state, Sched& schedule) 
     for (int j = 0; j < tmp.size(); ++j) if (j != idx)
       ImproveOne(state, tmp, j, STEP);
     ImproveOne(state, tmp, idx, STEP);
-    tmp.distance = Distance(state, tmp);
+    tmp.distance = tmp.Distance(state);
     if (tmp.distance > schedule.distance) {
       schedule = tmp;
       improved = true;
@@ -111,7 +82,7 @@ bool WojtekThrottleScheduler::ImproveOne(const game::CarState& state, Sched& sch
   bool improved = false;
   while (schedule.throttles[idx] + step <= 1.0) {
     schedule.throttles[idx] += step;
-    if (!IsSafe(state, schedule)) {
+    if (!schedule.IsSafe(state)) {
       schedule.throttles[idx] -= step;
       break;
     }
