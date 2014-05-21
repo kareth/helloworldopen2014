@@ -22,7 +22,7 @@ class Simulator {
   };
 
   Result Run(bots::RawBot* raw_bot) {
-    json game_init_json = json::parse_file("game/data/gameInit.json");
+    json game_init_json = json::parse_file("game/data/gameInitGermany.json");
     const auto& race_json = game_init_json["data"]["race"];
     Race race;
     race.ParseFromJson(race_json);
