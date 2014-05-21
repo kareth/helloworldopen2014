@@ -8,6 +8,8 @@ using game::CarState;
 const vector<double> BranchAndBound::values{0.0, 1.0};
 const double BranchAndBound::EGAP = 0.0;
 
+//vector<int> groups {1,1,1,1,1,2,2,3,3,4,4,5,5};
+
 BranchAndBound::BranchAndBound(game::CarTracker* car_tracker, int horizon) 
   : horizon_(horizon), car_tracker_(car_tracker), best_(car_tracker, horizon)
 { }
@@ -18,14 +20,14 @@ void BranchAndBound::Improve(const game::CarState& state, Sched& schedule) {
   lower_bound_ = LowerBound(best_);
   upper_bound_ = UpperBound(state, 0, best_, 0); 
 
-  printf("Init: (d=%.1f): ", best_.distance); best_.Print();
+  //printf("Init: (d=%.1f): ", best_.distance); best_.Print();
   schedule.Reset(state);
 
   nodes_visited_ = 0;
   nodes_prunned_ = 0;
   Branch(state, schedule, 0, 0);
 
-  printf("vis=%d, prun=%d", nodes_visited_, nodes_prunned_);
+  //printf("vis=%d, prun=%d", nodes_visited_, nodes_prunned_);
 
   schedule = best_;
 }
@@ -54,7 +56,7 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
 
     if (better) {
       if (car_tracker_->IsSafe(state)) {
-        printf("Found better (d=%.1f):", curr_dist); schedule.Print();
+        //printf("Found better (d=%.1f):", curr_dist); schedule.Print();
         best_ = schedule;
         best_.distance = curr_dist;
         lower_bound_ = best_.distance;

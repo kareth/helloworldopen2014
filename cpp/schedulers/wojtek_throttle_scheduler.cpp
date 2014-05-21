@@ -8,7 +8,7 @@ namespace schedulers {
 
 using game::CarState;
 
-const int WojtekThrottleScheduler::HORIZON = 15;
+const int WojtekThrottleScheduler::HORIZON = 18;
 const vector<double> WojtekThrottleScheduler::values{0.0, 1.0};
 
 WojtekThrottleScheduler::WojtekThrottleScheduler(const game::Race* race,
@@ -17,16 +17,9 @@ WojtekThrottleScheduler::WojtekThrottleScheduler(const game::Race* race,
 }
 
 void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
-  best_schedule_.Shift(state);
+  best_schedule_.ShiftLeftFillSafe(state);
   if (!best_schedule_.IsSafe(state))
     best_schedule_.Reset(state);
-
-  best_schedule_.throttles[HORIZON-1]=1.0;
-  if (best_schedule_.IsSafe(state)) {
-    best_schedule_.distance = best_schedule_.Distance(state);
-  } else {
-    best_schedule_.throttles[HORIZON-1]=0.0;
-  }
 
   bb_.Improve(state, best_schedule_);
 
@@ -35,10 +28,11 @@ void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
   /*if (!Optimize(state)) {
     VNS(state, best_schedule_);
   }*/
+
   throttle_ = best_schedule_.throttles[0];
   printf("\n");
   for (int i=0; i<HORIZON; ++i)
-    printf("%.1f ", best_schedule_.throttles[i]);
+    printf("%.2f ", best_schedule_.throttles[i]);
   printf("\n");
 }
 

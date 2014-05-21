@@ -18,9 +18,13 @@ class Sched {
   game::CarState Predict(const game::CarState& state);
   double Distance(const game::CarState& state);
   bool IsSafe(const game::CarState& state);
-  void Shift(const game::CarState& state);
+  void ShiftLeft(const game::CarState& state);
+  void ShiftLeftFillSafe(const game::CarState& state);
+  void ShiftRight(const game::CarState& state, double throttle0);
   void Reset(const game::CarState& state);
   void Print();
+  void Widen(const game::CarState& state, int num_values);
+  void Shorten(const game::CarState& state, int num_values);
  
  private:
   game::CarTracker* car_tracker_;

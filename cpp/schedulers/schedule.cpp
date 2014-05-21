@@ -41,13 +41,31 @@ bool schedulers::Sched::IsSafe(const game::CarState& state) {
   return car_tracker_->IsSafe(next);
 }
 
-void schedulers::Sched::Shift(const game::CarState& state) {
+void schedulers::Sched::ShiftLeft(const game::CarState& state) {
   for (int i =0; i<size()-1; ++i) {
     throttles[i] = throttles[i+1];
   }
   throttles[size()-1] = 0.0;
   distance = Distance(state);
   //TODO: Should be safe, but I have to check it to be sure!
+}
+
+void schedulers::Sched::ShiftRight(const game::CarState& state, double throttle0) {
+  for (int i =size()-1; i>=1; --i) {
+    throttles[i] = throttles[i-1];
+  }
+  throttles[0] = throttle0;
+  distance = Distance(state);
+}
+
+void schedulers::Sched::ShiftLeftFillSafe(const game::CarState& state) {
+  ShiftLeft(state);
+  throttles[size() - 1] = 1.0;
+  if (IsSafe(state)) {
+    distance = Distance(state);
+  } else {
+    throttles[size() - 1] = 0.0;
+  }
 }
 
 void schedulers::Sched::Reset(const game::CarState& state) {
@@ -62,6 +80,18 @@ void schedulers::Sched::Print() {
     printf("%.1f ", throttles[i]);
   }
   printf("\n");
+}
+
+void schedulers::Sched::Widen(const game::CarState& state, int num_values) {
+  for (int i =0;i<num_values; ++i)
+    throttles.push_back(0.0);
+  distance = Distance(state);
+}
+
+void schedulers::Sched::Shorten(const game::CarState& state, int num_values) {
+  for (int i =0;i<num_values; ++i)
+    throttles.pop_back();
+  distance = Distance(state);
 }
 
 } // namespace
