@@ -1,0 +1,3 @@
+#!/bin/bash
+
+ssh hwo@54.76.32.213 "./refresh"

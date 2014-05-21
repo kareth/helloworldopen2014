@@ -4,9 +4,13 @@ namespace utils {
 
 Connection::Connection(const std::string& host, const std::string& port)
   : socket(io_service) {
+
   tcp::resolver resolver(io_service);
   tcp::resolver::query query(host, port);
   boost::asio::connect(socket, resolver.resolve(query));
+
+  socket.set_option(tcp::no_delay(true));
+
   response_buf.prepare(8192);
 }
 
