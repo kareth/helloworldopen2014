@@ -1,6 +1,8 @@
 #include <cstdlib>
 #include "schedulers/bb.h"
 
+#include <numeric>
+
 namespace schedulers {
 
 using game::CarState;
@@ -8,10 +10,8 @@ using game::CarState;
 const vector<double> BranchAndBound::values{0.0, 1.0};
 const double BranchAndBound::EGAP = 0.0;
 
-//vector<int> groups {1,1,1,1,1,2,2,3,3,4,4,5,5};
-
-BranchAndBound::BranchAndBound(game::CarTracker* car_tracker, int horizon) 
-  : horizon_(horizon), car_tracker_(car_tracker), best_(car_tracker, horizon)
+BranchAndBound::BranchAndBound(game::CarTracker* car_tracker, int horizon, const vector<int>& groups) 
+  : horizon_(horizon), car_tracker_(car_tracker), best_(car_tracker, horizon), groups_(groups)
 { }
 
 void BranchAndBound::Improve(const game::CarState& state, Sched& schedule) {
@@ -25,7 +25,7 @@ void BranchAndBound::Improve(const game::CarState& state, Sched& schedule) {
 
   nodes_visited_ = 0;
   nodes_prunned_ = 0;
-  Branch(state, schedule, 0, 0);
+  Branch(state, schedule, 0, 0, 0);
 
   //printf("vis=%d, prun=%d", nodes_visited_, nodes_prunned_);
 
@@ -46,7 +46,7 @@ double BranchAndBound::UpperBound(const game::CarState& from_state, double from_
         next.position());
 }
 
-bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double curr_dist, int from) {
+bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double curr_dist, int from, int from_group) {
 
   nodes_visited_ += 1;
 
@@ -69,27 +69,31 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
 
   for (int i = 0; i < values.size(); ++i) {
     double throttle = values[i];
-    CarState next = car_tracker_->Predict(state, game::Command(throttle));
+    CarState next = state;
+    bool fail = false;
+    for (int i=0; i<groups_[from_group]; ++i) {
+      next = car_tracker_->Predict(next, game::Command(throttle));
 
-    // Cut fast
-    if (!car_tracker_->crash_model().IsSafe(next.position().angle())) {
-      nodes_prunned_ += 1;
-      continue;
+      // Cut fast
+      if (!car_tracker_->crash_model().IsSafe(next.position().angle())) {
+        nodes_prunned_ += 1;
+        fail = true;
+        break;
+      }
+      schedule.throttles[from+i] = throttle;
     }
-
+    if (fail) continue;
     double this_dist = car_tracker_->DistanceBetween(state.position(), next.position());
-    schedule.throttles[from] = throttle;
 
-    double ub = UpperBound(next, curr_dist + this_dist, schedule, from + 1);
+    double ub = UpperBound(next, curr_dist + this_dist, schedule, from + groups_[from_group]);
 
     // Prune
     if (ub - EGAP <= lower_bound_) {
-      schedule.throttles[from] = -100000;
       nodes_prunned_ += 1;
       continue;
     }
 
-    if (Branch(next, schedule, curr_dist + this_dist, from + 1)) {
+    if (Branch(next, schedule, curr_dist + this_dist, from + groups_[from_group], from_group + 1)) {
       return true;
     }
   }

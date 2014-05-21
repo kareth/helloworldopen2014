@@ -8,12 +8,13 @@ namespace schedulers {
 
 using game::CarState;
 
-const int WojtekThrottleScheduler::HORIZON = 18;
+vector<int> groups {1,1,1,1,1,1,1,1,2,3,4,5,6};
+const int WojtekThrottleScheduler::HORIZON = std::accumulate(groups.begin(),groups.end(),0);
 const vector<double> WojtekThrottleScheduler::values{0.0, 1.0};
 
 WojtekThrottleScheduler::WojtekThrottleScheduler(const game::Race* race,
     game::CarTracker* car_tracker)
-  : race_(race), car_tracker_(car_tracker), best_schedule_(car_tracker, HORIZON), bb_(car_tracker, HORIZON) {
+  : race_(race), car_tracker_(car_tracker), best_schedule_(car_tracker, HORIZON), bb_(car_tracker, HORIZON, groups) {
 }
 
 void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
@@ -22,6 +23,10 @@ void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
     best_schedule_.Reset(state);
 
   bb_.Improve(state, best_schedule_);
+
+  Improve(state, best_schedule_, 0.1);
+  best_schedule_.distance = best_schedule_.Distance(state);
+
 
   VNS(state, best_schedule_);
 
@@ -101,7 +106,7 @@ bool WojtekThrottleScheduler::ImproveOne(const game::CarState& state, Sched& sch
   return improved;
 }
 
-bool WojtekThrottleScheduler::Improve(const game::CarState& state, Sched& schedule, int step) {
+bool WojtekThrottleScheduler::Improve(const game::CarState& state, Sched& schedule, double step) {
   bool improved = false;
   for (int i=0; i<schedule.size(); ++i) {
     improved = ImproveOne(state, schedule, i, step);

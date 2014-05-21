@@ -14,12 +14,12 @@ class BranchAndBound {
   static const vector<double> values; // possible throttle values to check
   static const double EGAP;
 
-  BranchAndBound(game::CarTracker* car_tracker, int horizon);
+  BranchAndBound(game::CarTracker* car_tracker, int horizon, const vector<int>& groups);
 
   void Improve(const game::CarState& state, Sched& schedule);
   double LowerBound(const Sched& schedule);
   double UpperBound(const game::CarState& from_state, double from_dist, const Sched& schedule, int from);
-  bool Branch(const game::CarState& state, Sched& schedule, double curr_dist, int from);
+  bool Branch(const game::CarState& state, Sched& schedule, double curr_dist, int from, int from_group);
 
  private:
   double upper_bound_;
@@ -30,6 +30,8 @@ class BranchAndBound {
 
   int nodes_visited_;
   int nodes_prunned_;
+
+  vector<int> groups_;
 };
 
 }

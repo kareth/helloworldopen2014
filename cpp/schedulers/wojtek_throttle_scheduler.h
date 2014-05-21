@@ -43,7 +43,7 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
 
   bool VNS(const game::CarState& state, Sched& schedule);
 
-  bool Improve(const game::CarState& state, Sched& schedule, int step);
+  bool Improve(const game::CarState& state, Sched& schedule, double step);
 
   bool ImproveOne(const game::CarState& state, Sched& schedule, int idx, double step);
 
