@@ -9,6 +9,7 @@
 #include "schedulers/strategy.h"
 #include "schedulers/throttle_scheduler.h"
 #include "schedulers/schedule.h"
+#include "schedulers/bb.h"
 
 namespace schedulers {
 
@@ -51,6 +52,7 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   const game::Race* race_;
   double throttle_ = 1.0;
   Sched best_schedule_;
+  BranchAndBound bb_;
 };
 
 }  // namespace schedulers

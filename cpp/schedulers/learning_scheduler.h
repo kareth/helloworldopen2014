@@ -8,6 +8,7 @@
 #include "schedulers/scheduler.h"
 
 #include "schedulers/binary_throttle_scheduler.h"
+#include "schedulers/wojtek_throttle_scheduler.h"
 
 namespace schedulers {
 

@@ -7,7 +7,8 @@ LearningScheduler::LearningScheduler(const game::Race& race,
                int time_limit)
  : race_(race), car_tracker_(car_tracker){
   throttle_scheduler_.reset(
-      new BinaryThrottleScheduler(race_, car_tracker_, time_limit));
+     // new BinaryThrottleScheduler(race_, car_tracker_, time_limit));
+      new WojtekThrottleScheduler(&race_, &car_tracker_));
 }
 
 void LearningScheduler::Schedule(const game::CarState& state) {

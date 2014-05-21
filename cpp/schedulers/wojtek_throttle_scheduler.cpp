@@ -13,13 +13,18 @@ const vector<double> WojtekThrottleScheduler::values{0.0, 1.0};
 
 WojtekThrottleScheduler::WojtekThrottleScheduler(const game::Race* race,
     game::CarTracker* car_tracker)
-  : race_(race), car_tracker_(car_tracker), best_schedule_(car_tracker, HORIZON) {
+  : race_(race), car_tracker_(car_tracker), best_schedule_(car_tracker, HORIZON), bb_(car_tracker, HORIZON) {
 }
 
 void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
-  if (!Optimize(state)) {
+  best_schedule_.Shift(state);
+  if (!best_schedule_.IsSafe(state))
+    best_schedule_.Reset(state);
+  bb_.Improve(best_schedule_);
+
+  /*if (!Optimize(state)) {
     VNS(state, best_schedule_);
-  }
+  }*/
   throttle_ = best_schedule_.throttles[0];
   printf("\n");
   for (int i=0; i<HORIZON; ++i)

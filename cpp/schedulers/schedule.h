@@ -18,6 +18,8 @@ class Sched {
   game::CarState Predict(const game::CarState& state);
   double Distance(const game::CarState& state);
   bool IsSafe(const game::CarState& state);
+  void Shift(const game::CarState& state);
+  void Reset(const game::CarState& state);
  
  private:
   game::CarTracker* car_tracker_;

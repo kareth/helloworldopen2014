@@ -39,8 +39,8 @@ int main(int argc, char** argv) {
 
   game::Simulator::Result result;
   {
-    //std::unique_ptr<bots::RawBot> bot(new bots::RawBot(new bots::wojtek::Bot()));
-    std::unique_ptr<bots::RawBot> bot(new bots::RawBot(new bots::stepping::Bot()));
+    std::unique_ptr<bots::RawBot> bot(new bots::RawBot(new bots::wojtek::Bot()));
+    //std::unique_ptr<bots::RawBot> bot(new bots::RawBot(new bots::stepping::Bot()));
     std::unique_ptr<game::Simulator> simulator(new game::Simulator());
 
     result = simulator->Run(bot.get());
