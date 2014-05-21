@@ -16,7 +16,7 @@ class Sched {
   size_t size() const { return throttles.size(); }
 
   game::CarState Predict(const game::CarState& state);
-  double Distance(const game::CarState& state);
+  void UpdateDistance(const game::CarState& state);
   bool IsSafe(const game::CarState& state);
   void ShiftLeft(const game::CarState& state);
   void ShiftLeftFillSafe(const game::CarState& state);
