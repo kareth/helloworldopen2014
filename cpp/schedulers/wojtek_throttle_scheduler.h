@@ -36,7 +36,7 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
 
   const std::vector<double>& full_schedule() const override { return best_schedule_.throttles; }
 
-  bool VNS(const game::CarState& state, Sched& schedule);
+  bool VNS(const game::CarState& state, Sched& schedule, double step);
 
   bool Improve(const game::CarState& state, Sched& schedule, double step);
 

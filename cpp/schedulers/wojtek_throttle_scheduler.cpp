@@ -26,7 +26,7 @@ void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
 
   Improve(state, best_schedule_, 0.1);
 
-  //VNS(state, best_schedule_);
+  //VNS(state, best_schedule_, 0.1);
 
   /*if (!Optimize(state)) {
     VNS(state, best_schedule_);
@@ -39,14 +39,13 @@ void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
   printf("\n");
 }
 
-bool WojtekThrottleScheduler::VNS(const game::CarState& state, Sched& schedule) {
+bool WojtekThrottleScheduler::VNS(const game::CarState& state, Sched& schedule, double step) {
 
-  const int STEPS = 100;
-  const double STEP = 0.1;
+  const int STEPS = 100; //TODO: Fix this. Make it a proper local search
 
   bool improved = false;
   for (int i = 0; i < STEPS; ++i) {
-    int idx = rand() % 3;
+    int idx = rand() % 3; //TODO: make deterministic random
     if (schedule.throttles[idx] == 0.0)
       continue;
 
@@ -54,9 +53,10 @@ bool WojtekThrottleScheduler::VNS(const game::CarState& state, Sched& schedule) 
 
     tmp.throttles[idx] = 0.0;
 
+    // TODO: This order could be randomized
     for (int j = 0; j < tmp.size(); ++j) if (j != idx)
-      ImproveOne(state, tmp, j, STEP);
-    ImproveOne(state, tmp, idx, STEP);
+      ImproveOne(state, tmp, j, step);
+    ImproveOne(state, tmp, idx, step);
     tmp.UpdateDistance(state);
     if (tmp.distance > schedule.distance) {
       schedule = tmp;
