@@ -57,6 +57,7 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
 
   nodes_visited_ += 1;
 
+
   if (from >= horizon_) {
     bool better = (curr_dist > best_.distance);
     //printf ("found dist = %.1f\n", curr_dist);
@@ -90,6 +91,7 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
       schedule.throttles[from+i] = throttle;
     }
     if (fail) continue;
+
     double this_dist = car_tracker_->DistanceBetween(state.position(), next.position());
 
     double ub = UpperBound(next, curr_dist + this_dist, schedule, from + groups_[from_group]);

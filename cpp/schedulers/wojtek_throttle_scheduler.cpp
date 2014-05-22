@@ -10,7 +10,7 @@ using game::CarState;
 
 vector<int> groups {1,1,2,2,4,4,4,4,4,4,4,2,1};
 const int WojtekThrottleScheduler::HORIZON = std::accumulate(groups.begin(),groups.end(),0);
-const vector<double> WojtekThrottleScheduler::values{1.0, 0.0};
+const vector<double> WojtekThrottleScheduler::values{0.0, 1.0};
 
 WojtekThrottleScheduler::WojtekThrottleScheduler(const game::Race* race,
     game::CarTracker* car_tracker)
@@ -24,7 +24,7 @@ void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
 
   bb_.Improve(state, best_schedule_);
 
-  Improve(state, best_schedule_, 0.01);
+  Improve(state, best_schedule_, 0.1);
 
   //VNS(state, best_schedule_, 0.1);
 
