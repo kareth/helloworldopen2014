@@ -1,3 +1,5 @@
 #!/bin/bash
 
-ssh hwo@54.76.32.213 "./refresh"
+source ./config
+
+ssh hwo@$SERVER_ADDRESS "./refresh"

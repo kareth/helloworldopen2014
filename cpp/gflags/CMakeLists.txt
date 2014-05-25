@@ -5,3 +5,7 @@ set(GFLAGS_SOURCES
 )
 
 add_library(gflags ${GFLAGS_SOURCES})
+
+target_link_libraries(gflags
+  ${CMAKE_THREAD_LIBS_INIT}
+)
