@@ -22,9 +22,19 @@ class Simulator {
   };
 
   struct Options {
-    string track_name = "germany";
+    // The track name used that simulation will take place on.
+    //
+    // Possible values are files inside game/data/maps/*.json:
+    // - elaeintarha
+    // - england
+    // - france
+    // - germany
+    // - imola
+    // - keimola
+    // - suzuka
+    // - usa
+    string track_name = "keimola";
 
-    // TODO(tomek) make it number of laps
     int max_ticks_to_simulate = 10000;
     int max_laps_to_simulate = 3;
   };
@@ -32,7 +42,7 @@ class Simulator {
   const string kCarColor = "red";
 
   Result Run(bots::RawBot* raw_bot, const Options& options) {
-    json game_init_json = CreateGameInit(options);
+    json game_init_json = GameInitMessage(options);
     const auto& race_json = game_init_json["data"]["race"];
     Race race;
     race.ParseFromJson(race_json);
@@ -57,7 +67,6 @@ class Simulator {
         result.crashed = true;
 
         raw_bot->React(CrashMessage());
-        // TODO(tomek) Is it correct position after crash?
         Position position = state.position();
         position.set_angle(0);
         state = CarState(position);
@@ -65,13 +74,13 @@ class Simulator {
       }
 
       if (state.position().lap() != current_lap) {
+        raw_bot->React(LapFinishedMessage(current_lap, current_lap_ticks));
+
         current_lap = state.position().lap();
         result.best_lap_time_in_ticks = min(result.best_lap_time_in_ticks, current_lap_ticks);
         current_lap_ticks = 0;
 
         if (current_lap == options.max_laps_to_simulate) break;
-
-        // TODO(tomek) send lapFinished message.
       }
     }
 
@@ -95,8 +104,54 @@ class Simulator {
     return data;
   }
 
-  jsoncons::json CreateGameInit(const Options& options) {
-    return json::parse_file("game/data/gameInitGermany.json");
+  jsoncons::json LapFinishedMessage(int lap, int lap_ticks) {
+    jsoncons::json data;
+    data["msgType"] = "lapFinished";
+    data["data"] = jsoncons::json();
+    data["data"]["car"] = jsoncons::json();
+    data["data"]["car"]["color"] = kCarColor;
+
+    // TODO(tomek) This is not perfect (we use ticks instead of millis
+    //             and raceTime and ranking are incorrect).
+    data["data"]["lapTime"] = jsoncons::json();
+    data["data"]["lapTime"]["lap"] = lap;
+    data["data"]["lapTime"]["millis"] = lap_ticks;
+
+    data["data"]["raceTime"] = jsoncons::json();
+    data["data"]["raceTime"]["laps"] = lap;
+    data["data"]["raceTime"]["millis"] = lap_ticks;
+
+    data["data"]["ranking"] = jsoncons::json();
+    data["data"]["ranking"]["fastestLap"] = lap;
+    data["data"]["ranking"]["overall"] = 1;
+    return data;
+  }
+
+  jsoncons::json GameInitMessage(const Options& options) {
+    auto track = json::parse_file("../game/data/maps/" + options.track_name + ".json");
+    jsoncons::json data;
+    data["gameId"] = "83abef1f-e601-438b-ad80-7f6e2f7acdd7";
+    data["msgType"] = "gameInit";
+    data["data"] = jsoncons::json();
+    data["data"]["race"] = jsoncons::json();
+
+    data["data"]["race"]["cars"] = jsoncons::json(json::an_array);
+    data["data"]["race"]["cars"].add(jsoncons::json());
+    data["data"]["race"]["cars"][0]["dimensions"] = jsoncons::json();
+    data["data"]["race"]["cars"][0]["dimensions"]["guideFlagPosition"] = 10.0;
+    data["data"]["race"]["cars"][0]["dimensions"]["length"] = 40.0;
+    data["data"]["race"]["cars"][0]["dimensions"]["width"] = 20.0;
+    data["data"]["race"]["cars"][0]["id"] = jsoncons::json();
+    data["data"]["race"]["cars"][0]["id"]["color"] = kCarColor;
+    data["data"]["race"]["cars"][0]["id"]["name"] = "Need for C";
+
+    data["data"]["race"]["raceSession"] = jsoncons::json();
+    data["data"]["race"]["raceSession"]["laps"] = options.max_laps_to_simulate;
+    data["data"]["race"]["raceSession"]["maxLapTimeMs"] = 60000;
+    data["data"]["race"]["raceSession"]["quickRace"] = true;
+
+    data["data"]["race"]["track"] = track;
+    return data;
   }
 
   jsoncons::json CarPositionsFromState(const CarState& state, int game_tick) {
