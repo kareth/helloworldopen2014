@@ -34,7 +34,7 @@ vector<double> InternalApproximation(int n, vector<vector<long double> >& tab){
 }
 }  // anonymous namespace
 
-void Approximation(const vector< vector<double> >& a, const vector<double>& b, vector<double>& x) {
+double Approximation(const vector< vector<double> >& a, const vector<double>& b, vector<double>& x) {
   int k = a[0].size();
   int n = a.size();
 
@@ -49,6 +49,16 @@ void Approximation(const vector< vector<double> >& a, const vector<double>& b, v
   }
 
   x = InternalApproximation(k, tab);
+
+  long double max_error = 0.0;
+
+  for (int i = 0; i < a.size(); ++i) {
+    long double predicted = 0.0;
+    for (int j = 0; j < a[i].size(); ++j) predicted += a[i][j] * x[j];
+    max_error = fmax(max_error, fabs(b[i] - predicted));
+  }
+
+  return max_error;
 }
 
 }  // namespace game

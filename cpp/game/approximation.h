@@ -21,7 +21,9 @@ namespace game {
 // x[0] * a[2][0] + x[1] * a[2][1] = b[1]
 //
 // Note: input vectors will be destroyed.
-int Approximation(const vector<vector<double>>& a, const vector<double>& b, vector<double>& x);
+//
+// Returns the maximum accuracy error.
+double Approximation(const vector<vector<double>>& a, const vector<double>& b, vector<double>& x);
 
 }  // namespace game
 

@@ -22,6 +22,7 @@
 
 DECLARE_string(race_id);
 
+
 std::string random_race_id() {
   char buffer[80];
   sprintf (buffer, "%d", rand());
@@ -43,7 +44,8 @@ int main(int argc, char** argv) {
     //std::unique_ptr<bots::RawBot> bot(new bots::RawBot(new bots::stepping::Bot()));
     std::unique_ptr<game::Simulator> simulator(new game::Simulator());
 
-    result = simulator->Run(bot.get());
+    game::Simulator::Options options;
+    result = simulator->Run(bot.get(), options);
   }
 
   std::cout << "BEST LAP: " << result.best_lap_time_in_ticks << std::endl;
@@ -51,6 +53,7 @@ int main(int argc, char** argv) {
   if (result.crashed) {
     std::cout << "CRASHED !!!!!!!!!!!!!" << std::endl;
   }
+  std::cout << "MAX TICK TIME: " << result.max_tick_time_ms << " ms" << std::endl;
 
   return 0;
 }

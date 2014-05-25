@@ -14,6 +14,7 @@ SET(gtest_SOURCE_DIR "${BASEPATH}/gtest")
 
 # FIND_PACKAGE(Threads REQUIRED)
 FIND_PACKAGE(Boost 1.54.0 COMPONENTS system filesystem REQUIRED)
+find_package (Threads)
 
 enable_testing()
 

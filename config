@@ -1,3 +1,5 @@
 export PL="cpp"
 export BOTKEY="rzWZlJyRc7UxAg"
 export BOTNAME="Need for C"
+
+export SERVER_ADDRESS=54.76.43.54
