@@ -44,6 +44,17 @@ class Position {
     return ss.str();
   }
 
+  std::string ShortDebugString() const {
+    std::stringstream ss;
+    ss << "piece: " << piece_index_;
+    ss << " in_piece_distance: " << piece_distance_;
+    ss << " angle: " << angle_;
+    ss << " start_lane: " << start_lane_;
+    ss << " end_lane: " << end_lane_;
+    ss << " lap: " << lap_;
+    return ss.str();
+  }
+
  private:
   double angle_ = 0;
   int piece_index_ = 0;

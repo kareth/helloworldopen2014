@@ -21,8 +21,18 @@ class Simulator {
     bool crashed = false;
   };
 
-  Result Run(bots::RawBot* raw_bot) {
-    json game_init_json = json::parse_file("game/data/gameInitGermany.json");
+  struct Options {
+    string track_name = "germany";
+
+    // TODO(tomek) make it number of laps
+    int max_ticks_to_simulate = 10000;
+    int max_laps_to_simulate = 3;
+  };
+
+  const string kCarColor = "red";
+
+  Result Run(bots::RawBot* raw_bot, const Options& options) {
+    json game_init_json = CreateGameInit(options);
     const auto& race_json = game_init_json["data"]["race"];
     Race race;
     race.ParseFromJson(race_json);
@@ -30,45 +40,72 @@ class Simulator {
     CarTracker car_tracker(&race);
     CarState state = car_tracker.current_state();
 
-    // Join
-    // Game Init
-    // OnCarPositions
-    // Game Start
-    // OnCarPositions*
     raw_bot->React(game_init_json);
-    raw_bot->React(YourCar("red"));
+    raw_bot->React(YourCar(kCarColor));
 
     Result result;
     int current_lap = 0;
     int current_lap_ticks = 0;
 
-    for (int i = 0; i < 1000; ++i) {
+    for (int i = 0; i < options.max_ticks_to_simulate; ++i) {
       current_lap_ticks++;
       auto response = raw_bot->React(CarPositionsFromState(state, i));
       Command command = CommandFromJson(response);
       state = car_tracker.Predict(state, command);
 
-      if (state.position().angle() > 60.0) {
+      if (fabs(state.position().angle()) > 60.0) {
         result.crashed = true;
+
+        raw_bot->React(CrashMessage());
+        // TODO(tomek) Is it correct position after crash?
+        Position position = state.position();
+        position.set_angle(0);
+        state = CarState(position);
+        raw_bot->React(SpawnMessage());
       }
 
       if (state.position().lap() != current_lap) {
         current_lap = state.position().lap();
         result.best_lap_time_in_ticks = min(result.best_lap_time_in_ticks, current_lap_ticks);
         current_lap_ticks = 0;
+
+        if (current_lap == options.max_laps_to_simulate) break;
+
+        // TODO(tomek) send lapFinished message.
       }
     }
 
     return result;
   }
+
  private:
+  jsoncons::json CrashMessage() {
+    jsoncons::json data;
+    data["msgType"] = "crash";
+    data["data"] = jsoncons::json();
+    data["data"]["color"] = kCarColor;
+    return data;
+  }
+
+  jsoncons::json SpawnMessage() {
+    jsoncons::json data;
+    data["msgType"] = "spawn";
+    data["data"] = jsoncons::json();
+    data["data"]["color"] = kCarColor;
+    return data;
+  }
+
+  jsoncons::json CreateGameInit(const Options& options) {
+    return json::parse_file("game/data/gameInitGermany.json");
+  }
+
   jsoncons::json CarPositionsFromState(const CarState& state, int game_tick) {
     jsoncons::json data;
     data["msgType"] = "carPositions";
     data["data"] = jsoncons::json(json::an_array);
     data["data"].add(jsoncons::json());
     data["data"][0]["id"] = jsoncons::json();
-    data["data"][0]["id"]["color"] = "red";
+    data["data"][0]["id"]["color"] = kCarColor;
     data["data"][0]["id"]["name"] = "Shumacher";
     data["data"][0]["angle"] = state.position().angle();
     data["data"][0]["piecePosition"] = jsoncons::json();
