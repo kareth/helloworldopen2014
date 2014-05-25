@@ -17,7 +17,13 @@ namespace game {
 class Simulator {
  public:
   struct Result {
+    // The best lap measured in ticks.
     int best_lap_time_in_ticks = 100000;
+
+    // The maximum time in ms it took to compute the next command.
+    double max_tick_time_ms = 0;
+
+    // True if car crashed during simulation.
     bool crashed = false;
   };
 
@@ -57,9 +63,16 @@ class Simulator {
     int current_lap = 0;
     int current_lap_ticks = 0;
 
+    double max_tick_time_ms = 0;
+
     for (int i = 0; i < options.max_ticks_to_simulate; ++i) {
       current_lap_ticks++;
+
+      const clock_t begin_time = clock();
       auto response = raw_bot->React(CarPositionsFromState(state, i));
+      const double current_tick_time_ms = double(clock() - begin_time) /  CLOCKS_PER_SEC * 1000;
+      max_tick_time_ms = fmax(max_tick_time_ms, current_tick_time_ms);
+
       Command command = CommandFromJson(response);
       state = car_tracker.Predict(state, command);
 
@@ -83,6 +96,8 @@ class Simulator {
         if (current_lap == options.max_laps_to_simulate) break;
       }
     }
+
+    result.max_tick_time_ms = max_tick_time_ms;
 
     return result;
   }

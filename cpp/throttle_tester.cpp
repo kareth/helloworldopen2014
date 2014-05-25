@@ -51,6 +51,7 @@ int main(int argc, char** argv) {
   if (result.crashed) {
     std::cout << "CRASHED !!!!!!!!!!!!!" << std::endl;
   }
+  std::cout << "MAX TICK TIME: " << result.max_tick_time_ms << " ms" << std::endl;
 
   return 0;
 }
