@@ -9,6 +9,7 @@ namespace schedulers {
 using game::CarState;
 
 vector<int> groups {1,1,2,2,4,4,4,4,4,4,4,2,1};
+//vector<int> groups {1,1,1,1,1,1,1,1,1,1,1,1,1};
 const int WojtekThrottleScheduler::HORIZON = std::accumulate(groups.begin(),groups.end(),0);
 const vector<double> WojtekThrottleScheduler::values{0.0, 1.0};
 
@@ -19,6 +20,7 @@ WojtekThrottleScheduler::WojtekThrottleScheduler(const game::Race* race,
 
 void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
   best_schedule_.ShiftLeftFillSafe(state);
+  best_schedule_.UpdateDistance(state);      // Must do it, because throttle could have changed!
   if (!best_schedule_.IsSafe(state))
     best_schedule_.Reset(state);
 
@@ -33,10 +35,8 @@ void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
   }*/
 
   throttle_ = best_schedule_.throttles[0];
-  printf("\n");
-  for (int i=0; i<HORIZON; ++i)
-    printf("%.2f ", best_schedule_.throttles[i]);
-  printf("\n");
+
+  Log(state);
 }
 
 bool WojtekThrottleScheduler::VNS(const game::CarState& state, Sched& schedule, double step) {
@@ -89,6 +89,16 @@ bool WojtekThrottleScheduler::Improve(const game::CarState& state, Sched& schedu
   if (improved)
     schedule.UpdateDistance(state);
   return improved;
+}
+
+void WojtekThrottleScheduler::Log(const game::CarState& state) {
+  for (int i=0; i<HORIZON; ++i)
+    printf("%.1f ", best_schedule_.throttles[i]);
+  printf("\n");
+
+  std::cout << "(" << state.position().piece() << ")" << " angle: " <<
+    state.position().angle() << " velocity: " << state.velocity() <<
+    std::endl;
 }
 
 }  // namespace schedulers

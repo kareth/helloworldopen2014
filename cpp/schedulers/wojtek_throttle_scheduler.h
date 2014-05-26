@@ -48,6 +48,8 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   double throttle_ = 1.0;
   Sched best_schedule_;
   BranchAndBound bb_;
+
+  void Log(const game::CarState& state);
 };
 
 }  // namespace schedulers

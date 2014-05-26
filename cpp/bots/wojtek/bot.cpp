@@ -1,5 +1,6 @@
 #include "bots/wojtek/bot.h"
 #include "schedulers/wojtek_throttle_scheduler.h"
+#include "schedulers/binary_throttle_scheduler.h"
 
 DECLARE_int32(handicap);
 DECLARE_bool(check_if_safe_ahead);
@@ -37,6 +38,7 @@ void Bot::NewRace(const Race& race) {
   }
 
   throttle_scheduler_.reset(new schedulers::WojtekThrottleScheduler(&race_, car_tracker_.get()));
+//  throttle_scheduler_.reset(new schedulers::BinaryThrottleScheduler(race_, *(car_tracker_.get()), 10));
 }
 
 game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick)  {
