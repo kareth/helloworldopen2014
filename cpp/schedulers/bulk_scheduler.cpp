@@ -1,10 +1,16 @@
 #include "schedulers/bulk_scheduler.h"
 #include "schedulers/always_switch_scheduler.h"
+#include "schedulers/never_switch_scheduler.h"
+#include "schedulers/binary_throttle_scheduler.h"
+#include "schedulers/wojtek_throttle_scheduler.h"
 
 #include "gflags/gflags.h"
 
 DECLARE_bool(check_if_safe_ahead);
 DEFINE_bool(always_switch, false, "");
+
+DECLARE_string(throttle_scheduler);
+DECLARE_string(switch_scheduler);
 
 namespace schedulers {
 
@@ -12,17 +18,11 @@ BulkScheduler::BulkScheduler(const game::Race& race,
                game::RaceTracker& race_tracker,
                game::CarTracker& car_tracker,
                int time_limit)
- : race_(race), car_tracker_(car_tracker), race_tracker_(race_tracker) {
-  throttle_scheduler_.reset(
-      new BinaryThrottleScheduler(race_, car_tracker_, time_limit));
-  turbo_scheduler_.reset(
-      new GreedyTurboScheduler(race_, car_tracker_));
-  if (FLAGS_always_switch) {
-    switch_scheduler_.reset(new AlwaysSwitchScheduler(&race_.track()));
-  } else {
-    switch_scheduler_.reset(
-        new ShortestPathSwitchScheduler(race_, race_tracker_, car_tracker_));
-  }
+    : race_(race), car_tracker_(car_tracker), race_tracker_(race_tracker), time_limit_(time_limit) {
+  turbo_scheduler_.reset(new GreedyTurboScheduler(race_, car_tracker_));
+  throttle_scheduler_.reset(CreateThrottleScheduler());
+  switch_scheduler_.reset(CreateSwitchScheduler());
+
   bump_scheduler_.reset(
       new BumpScheduler(race_, race_tracker_, car_tracker_));
 }
@@ -44,9 +44,9 @@ void BulkScheduler::Schedule(const game::CarState& state) {
   state_with_switch.set_switch_state(switch_scheduler_->ExpectedSwitch());
   throttle_scheduler_->Schedule(state_with_switch);
 
-  if (turbo_scheduler_->ShouldFireTurbo()) {
+  if (car_tracker_.IsReady() && turbo_scheduler_->ShouldFireTurbo()) {
     command_ = game::Command(game::TurboToggle::kToggleOn);
-  } else if (switch_scheduler_->ShouldSwitch()) {
+  } else if (car_tracker_.IsReady() && switch_scheduler_->ShouldSwitch()) {
     command_ = game::Command(switch_scheduler_->SwitchDirection());
   } else {
     command_ = game::Command(throttle_scheduler_->throttle());
@@ -78,6 +78,35 @@ void BulkScheduler::IssuedCommand(const game::Command& command) {
     printf("YABADABADUUUU\n");
     turbo_scheduler_->TurboUsed();
   }
+}
+
+ThrottleScheduler* BulkScheduler::CreateThrottleScheduler() {
+  if (FLAGS_throttle_scheduler == "BinaryThrottleScheduler") {
+    std::cout << "Using BinaryThrottleScheduler" << std::endl;
+    return new BinaryThrottleScheduler(race_, car_tracker_, time_limit_);
+  } else if (FLAGS_throttle_scheduler == "WojtekThrottleScheduler") {
+    std::cout << "Using WojtekThrottleScheduler" << std::endl;
+    return new WojtekThrottleScheduler(&race_, &car_tracker_);
+  }
+
+  std::cerr << "UNKNOWN throttle scheduler: " << FLAGS_throttle_scheduler << std::endl;
+  return new BinaryThrottleScheduler(race_, car_tracker_, time_limit_);
+}
+
+SwitchScheduler* BulkScheduler::CreateSwitchScheduler() {
+  if (FLAGS_switch_scheduler == "ShortestPathSwitchScheduler") {
+    std::cout << "Using ShortestPathSwitchScheduler" << std::endl;
+    return new ShortestPathSwitchScheduler(race_, race_tracker_, car_tracker_);
+  } else if (FLAGS_switch_scheduler == "AlwaysSwitchScheduler") {
+    std::cout << "Using AlwaysSwitchScheduler" << std::endl;
+    return new AlwaysSwitchScheduler(&race_.track());
+  } else if (FLAGS_switch_scheduler == "NeverSwitchScheduler") {
+    std::cout << "Using NeverSwitchScheduler" << std::endl;
+    return new NeverSwitchScheduler();
+  }
+
+  std::cerr << "UNKNOWN switch scheduler: " << FLAGS_switch_scheduler << std::endl;
+  return new ShortestPathSwitchScheduler(race_, race_tracker_, car_tracker_);
 }
 
 }  // namespace schedulers

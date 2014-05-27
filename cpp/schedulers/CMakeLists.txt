@@ -4,7 +4,6 @@ set(SCHEDULERS_SOURCES
   greedy_turbo_scheduler.cpp
   shortest_path_switch_scheduler.cpp
   bulk_scheduler.cpp
-  learning_scheduler.cpp
   bump_scheduler.cpp
 )
 
@@ -18,7 +17,6 @@ set(SCHEDULERS_HEADERS
   shortest_path_switch_scheduler.h
   scheduler.h
   bulk_scheduler.h
-  learning_scheduler.h
   bump_scheduler.h
 )
 

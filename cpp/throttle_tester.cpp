@@ -17,11 +17,11 @@
 #include "bots/stepping/bot.h"
 #include "bots/constant/bot.h"
 #include "bots/kamikaze/bot.h"
-#include "bots/wojtek/bot.h"
 #include "game/simulator.h"
 
 DECLARE_string(race_id);
-
+DECLARE_string(throttle_scheduler);
+DECLARE_string(switch_scheduler);
 
 std::string random_race_id() {
   char buffer[80];
@@ -38,12 +38,16 @@ int main(int argc, char** argv) {
   }
   boost::filesystem::create_directories("bin/" + FLAGS_race_id);
 
+  FLAGS_throttle_scheduler = "WojtekThrottleScheduler";
+  FLAGS_switch_scheduler = "NeverSwitchScheduler";
+
   game::Simulator::Result result;
   {
-    std::unique_ptr<bots::RawBot> bot(new bots::RawBot(new bots::wojtek::Bot()));
+    std::unique_ptr<bots::RawBot> bot(new bots::RawBot(new bots::stepping::Bot()));
     std::unique_ptr<game::Simulator> simulator(new game::Simulator());
 
     game::Simulator::Options options;
+    options.track_name = "germany";
     result = simulator->Run(bot.get(), options);
   }
 
