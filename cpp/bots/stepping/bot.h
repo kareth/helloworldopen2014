@@ -17,7 +17,6 @@
 #include "gflags/gflags.h"
 
 #include "schedulers/bulk_scheduler.h"
-#include "schedulers/learning_scheduler.h"
 #include "game/race_tracker.h"
 #include "game/bump_tracker.h"
 

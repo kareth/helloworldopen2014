@@ -57,8 +57,8 @@ class Simulator {
     CarTracker car_tracker(&race);
     CarState state = car_tracker.current_state();
 
-    raw_bot->React(game_init_json);
     raw_bot->React(YourCar(kCarColor));
+    raw_bot->React(game_init_json);
 
     Result result;
     int current_lap = 0;

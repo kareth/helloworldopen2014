@@ -41,10 +41,6 @@ void Bot::NewRace(const Race& race) {
   scheduler_.reset(
       new schedulers::BulkScheduler(
         race_, *race_tracker_.get(), *car_tracker_.get(), FLAGS_answer_time));
-
-  learning_scheduler_.reset(
-      new schedulers::LearningScheduler(
-        race_, *car_tracker_.get(), FLAGS_answer_time));
 }
 
 std::map<string, CarState> tmp_states;
@@ -66,30 +62,23 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
     return Command(0);
 
   Command command;
-  if (car_tracker_->IsReady()) {
-    SetStrategy(state);
-    scheduler_->Schedule(state);
-    command = scheduler_->command();
+  SetStrategy(state);
+  scheduler_->Schedule(state);
+  command = scheduler_->command();
 
-    if (FLAGS_defend_turbo_bump) {
+  if (FLAGS_defend_turbo_bump) {
+    Command safe_command;
+    if (!race_tracker_->IsSafeBehind(command, &safe_command)) {
+      command = safe_command;
+
       Command safe_command;
-      if (!race_tracker_->IsSafeBehind(command, &safe_command)) {
+      if (FLAGS_check_if_safe_ahead && !race_tracker_->IsSafeInFront(command, &safe_command)) {
         command = safe_command;
-
-        Command safe_command;
-        if (FLAGS_check_if_safe_ahead && !race_tracker_->IsSafeInFront(command, &safe_command)) {
-          command = safe_command;
-        }
       }
     }
-
-    scheduler_->IssuedCommand(command);
-  } else {
-    learning_scheduler_->Schedule(state);
-    command = learning_scheduler_->command();
-    learning_scheduler_->IssuedCommand(command);
   }
 
+  scheduler_->IssuedCommand(command);
   car_tracker_->RecordCommand(command);
   return command;
 }
