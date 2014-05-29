@@ -7,12 +7,12 @@ namespace game {
 
 RaceTracker::RaceTracker(game::CarTracker& car_tracker,
           const game::Race& race, const std::string& color)
-  : car_tracker_(car_tracker), race_(race), color_(color) {
+  : car_tracker_(car_tracker), race_(race), color_(color),
+    bump_detector_(car_tracker, race) {
 }
 
 void RaceTracker::Record(const std::map<std::string, Position>& positions) {
-  // TODO bump_tracker?
-  DetectBumps(positions);
+  bump_detector_.Record(enemies_, positions);
 
   for (auto& p : positions) {
     if (indexes_.find(p.first) == indexes_.end()) {
@@ -24,40 +24,8 @@ void RaceTracker::Record(const std::map<std::string, Position>& positions) {
   }
 }
 
-void RaceTracker::DetectBumps(const std::map<std::string, Position>& positions) {
-  bumps_.clear();
-
-  const double kCarLength = race_.cars()[0].length();
-  for (auto& a : positions) {
-    if (indexes_.find(a.first) == indexes_.end()) continue;
-    for (auto& b : positions) {
-      if (indexes_.find(b.first) == indexes_.end()) continue;
-
-      if (a.first == b.first) continue;
-      if (enemy(a.first).is_dead() ||
-          enemy(b.first).is_dead())
-        continue;
-
-      double distance = car_tracker_.DistanceBetween(a.second, b.second);
-      // We need to compare start_lane and end_lane, as for switches,
-      // bump only occurs if those 2 params are equal for both cars
-      if (distance <= kCarLength + 1e-9 &&
-          a.second.start_lane() == b.second.start_lane() &&
-          a.second.end_lane() == b.second.end_lane()) {
-        bumps_.push_back({ a.first, b.first });
-        printf("Bump detected! %s %s\n", a.first.c_str(), b.first.c_str());
-      }
-    }
-  }
-}
-
 bool RaceTracker::BumpOccured(const std::string& color, const std::string& color2) {
-  for (auto& b : bumps_) {
-    if ((b.first == color && b.second == color2) ||
-        (b.second == color && b.first == color2))
-      return true;
-  }
-  return false;
+  return bump_detector_.BumpOccured(color, color2);
 }
 
 void RaceTracker::RecordLapTime(const std::string& color, int time) {

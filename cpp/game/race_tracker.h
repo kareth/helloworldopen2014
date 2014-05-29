@@ -5,6 +5,7 @@
 #include "game/enemy_tracker.h"
 #include "game/position.h"
 #include "game/car_tracker.h"
+#include "game/bump_detector.h"
 
 namespace game {
 
@@ -78,9 +79,7 @@ class RaceTracker {
   CarTracker& car_tracker_;
   std::string color_;
 
-  // Move tu bump_tracker?
-  vector<std::pair<std::string, std::string>> bumps_;
-
+  BumpDetector bump_detector_;
 };
 
 }  // namespace game
