@@ -132,6 +132,11 @@ class CarTracker : public CarPredictor {
   // Returns true, if there is high probability that there was a bump.
   bool HasSomeoneMaybeBumpedMe(const map<string, Position>& positions, const std::string& color);
 
+  // Returns false if there is no way to keep the radius.
+  // If true, then throttle contains maximum throttle that will keep
+  // car on piece with the same radius.
+  bool BoundaryThrottle(const CarState& car_state, double* throttle);
+
  private:
   const int kDistanceBetweenIter = 500;
   bool just_started_ = true;

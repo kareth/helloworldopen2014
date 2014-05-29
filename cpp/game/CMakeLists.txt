@@ -54,6 +54,7 @@ set(GAME_TESTS
   radius_model_test.cpp
   simplex_test.cpp
   track_test.cpp
+  velocity_model_test.cpp
 )
 
 add_library(game ${GAME_SOURCES})

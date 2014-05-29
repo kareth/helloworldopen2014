@@ -342,4 +342,26 @@ bool CarTracker::HasSomeoneMaybeBumpedMe(const map<string, Position>& positions,
   return false;
 }
 
+bool CarTracker::BoundaryThrottle(const CarState& car_state, double* throttle) {
+  // Switches have different radiuses anyway.
+  if (car_state.position().start_lane() != car_state.position().end_lane()) {
+    return false;
+  }
+
+  const auto& piece = race_->track().PieceFor(car_state.position());
+  const auto& next_piece = race_->track().PieceFor(car_state.position(), 1);
+
+  // TODO(tomek): We assume pieces are long enough we cant skip them
+  if (piece.type() == next_piece.type() &&
+      piece.length() == next_piece.length() &&
+      piece.angle() == next_piece.angle() &&
+      piece.radius() == next_piece.radius()) {
+    *throttle = 1;
+    return true;
+  }
+
+  double distance = lane_length_model_.Length(car_state.position()) - car_state.position().piece_distance();
+  return velocity_model_.BoundaryThrottle(car_state.velocity(), distance, throttle);
+}
+
 }  // namespace game

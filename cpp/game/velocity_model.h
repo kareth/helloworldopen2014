@@ -57,6 +57,25 @@ class VelocityModel {
     return (velocity_to_maintain - velocity_to_maintain * x_[0]) / x_[1];
   }
 
+  // Returns maximum throttle that will travel given distance (or smaller)
+  // given that car drives with given velocity.
+  //
+  // If such throttle does not exist (we will always travel bigger distance,
+  // false is returned.
+  bool BoundaryThrottle(double velocity, double distance, double* throttle) {
+    if (Predict(velocity, 1) <= distance) {
+      *throttle = 1.0;
+      return true;
+    }
+
+    if (Predict(velocity, 0) > distance) {
+      return false;
+    }
+
+    *throttle = (distance - x_[0] * velocity) / x_[1];
+    return true;
+  }
+
   bool IsReady() const {
     return ready_;
   }
