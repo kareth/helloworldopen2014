@@ -352,16 +352,51 @@ bool CarTracker::BoundaryThrottle(const CarState& car_state, double* throttle) {
   const auto& next_piece = race_->track().PieceFor(car_state.position(), 1);
 
   // TODO(tomek): We assume pieces are long enough we cant skip them
-  if (piece.type() == next_piece.type() &&
-      piece.length() == next_piece.length() &&
-      piece.angle() == next_piece.angle() &&
-      piece.radius() == next_piece.radius()) {
+  // TODO(tomek): Add == for piece
+  if (piece == next_piece) {
     *throttle = 1;
     return true;
   }
 
   double distance = lane_length_model_.Length(car_state.position()) - car_state.position().piece_distance();
   return velocity_model_.BoundaryThrottle(car_state.velocity(), distance, throttle);
+}
+
+// TODO(tomek): make it working for switches
+vector<CarTracker::Curve> CarTracker::GetCurves(const CarState& car_state, double distance) {
+  double d = 0.0;
+
+  vector<Curve> curves;
+
+  Piece previous_piece = race_->track().PieceFor(car_state.position(), 0);
+  {
+    curves.push_back(Curve(previous_piece, 0));
+    d += lane_length_model_.Length(car_state.position());
+  }
+
+  // Consider maximum of 100 pieces.
+  for (int i = 1; i < 100; ++i) {
+    if (d > distance) {
+      break;
+    }
+
+    Piece piece = race_->track().PieceFor(car_state.position(), i);
+
+    Position position = car_state.position();
+    position.set_piece((position.piece() + i) % race_->track().pieces().size());
+
+    if (piece == previous_piece) {
+      d += lane_length_model_.Length(position);
+      previous_piece = piece;
+      continue;
+    }
+
+    curves.push_back(Curve(piece, d));
+
+    d += lane_length_model_.Length(position);
+  }
+
+  return curves;
 }
 
 }  // namespace game

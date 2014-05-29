@@ -32,6 +32,11 @@ class Piece {
   const double angle() const { return angle_; }
   const double radius() const { return radius_; }
 
+  bool operator==(const Piece& p) const {
+    return type_ == p.type_ && length_ == p.length_ &&
+           radius_ == p.radius_ && angle_ == p.angle_;
+  }
+
  private:
   Piece(double length, bool has_switch)
     : type_(PieceType::kStraight), length_(length), has_switch_(has_switch) {

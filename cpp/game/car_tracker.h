@@ -137,6 +137,28 @@ class CarTracker : public CarPredictor {
   // car on piece with the same radius.
   bool BoundaryThrottle(const CarState& car_state, double* throttle);
 
+  struct Curve {
+    int direction = 0;
+    // TODO add const
+    double radius = 2000000000;
+    double distance = 0.0;
+    Curve() {}
+    Curve(int direction, double radius, double distance) :
+      direction(direction), radius(radius), distance(distance) {}
+    Curve(const Piece& piece, double d) {
+      if (piece.type() == PieceType::kStraight) {
+        direction = 0;
+        radius = 2000000000;
+      } else {
+        direction = piece.angle() < 0 ? -1 : 1;
+        radius = piece.radius();
+      }
+      distance = d;
+    }
+  };
+
+  vector<Curve> GetCurves(const CarState& car_state, double distance);
+
  private:
   const int kDistanceBetweenIter = 500;
   bool just_started_ = true;
