@@ -142,13 +142,14 @@ RawBot::msg_vector RawBot::ProcessOnCarPositions(const jsoncons::json& msg) {
   for (auto it = data.begin_elements(); it != data.end_elements(); ++it) {
     game::Position position;
     auto color = position.ParseFromJson(*it);
+
     // TODO temporary
-    if (position.last_tick() != -1 && position.last_tick() != last_game_tick_ - 1) {
+    /*if (position.last_tick() != -1 && position.last_tick() != last_game_tick_ - 1) {
       std::cout << "Player " << color << " lost tick no. " <<
         last_game_tick_ - 1 << "! (timeout)" << std::endl;
       // Send safety command
       return CommandToMsg(game::Command(0), game_tick);
-    }
+    }*/
     //
     positions[color] = position;
   }
