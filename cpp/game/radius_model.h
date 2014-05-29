@@ -17,6 +17,7 @@
 #include "gflags/gflags.h"
 
 DECLARE_string(race_id);
+DECLARE_bool(print_models);
 
 namespace game {
 
@@ -26,20 +27,22 @@ class SwitchRadiusModel {
     : piece_(piece), start_lane_(start_lane) {}
 
   ~SwitchRadiusModel() {
-    std::cout << "==== Switch Radius Model ====" << std::endl;
-    std::cout << "piece: " << piece_ << " start_lane: " << start_lane_ << std::endl;
-    if (IsReady()) {
-      for (int i = 0; i < x_.size(); i++)
-        std::cout << std::setprecision(20) << "x" << i <<": " << x_[i] << " ";
-      std::cout << std::endl;
-
-      std::cout << "Model trained using: " << std::endl;
-      for (int i = 0; i < model_.size(); ++i) {
-        for (int j = 0; j < model_[i].size(); ++j) std::cout << std::setprecision(20) << model_[i][j] << " ";
+    if (FLAGS_print_models) {
+      std::cout << "==== Switch Radius Model ====" << std::endl;
+      std::cout << "piece: " << piece_ << " start_lane: " << start_lane_ << std::endl;
+      if (IsReady()) {
+        for (int i = 0; i < x_.size(); i++)
+          std::cout << std::setprecision(20) << "x" << i <<": " << x_[i] << " ";
         std::cout << std::endl;
+
+        std::cout << "Model trained using: " << std::endl;
+        for (int i = 0; i < model_.size(); ++i) {
+          for (int j = 0; j < model_[i].size(); ++j) std::cout << std::setprecision(20) << model_[i][j] << " ";
+          std::cout << std::endl;
+        }
       }
+      std::cout << std::endl;
     }
-    std::cout << std::endl;
   }
 
   // Returns 0 for straight line.

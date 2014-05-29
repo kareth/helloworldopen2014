@@ -10,6 +10,7 @@
 #include "gflags/gflags.h"
 
 DECLARE_double(safe_angle);
+DECLARE_bool(print_models);
 
 namespace game {
 
@@ -20,11 +21,13 @@ class CrashModel {
   }
 
   ~CrashModel() {
-    std::cout << "==== Crash Model ====" << std::endl;
-    std::cout << "safe_angle: " << safe_angle_ << std::endl;
-    std::cout << "unsafe_angle: " << unsafe_angle_ << std::endl;
-    std::cout << (ready_ ? "with crash" : "without crash") << std::endl;
-    std::cout << std::endl << std::endl;
+    if (FLAGS_print_models) {
+      std::cout << "==== Crash Model ====" << std::endl;
+      std::cout << "safe_angle: " << safe_angle_ << std::endl;
+      std::cout << "unsafe_angle: " << unsafe_angle_ << std::endl;
+      std::cout << (ready_ ? "with crash" : "without crash") << std::endl;
+      std::cout << std::endl << std::endl;
+    }
   }
 
   void RecordCarCrash(double unsafe_angle) {

@@ -16,6 +16,7 @@
 #include "gflags/gflags.h"
 
 DECLARE_string(race_id);
+DECLARE_bool(print_models);
 
 namespace game {
 
@@ -142,16 +143,16 @@ DriftModel::DriftModel() : error_tracker_("drift") {
 }
 
 DriftModel::~DriftModel() {
-  std::cout << "==== Drift Model ====" << std::endl;
-  if (IsReady()) {
-    for (int i = 0; i < x_.size(); i++)
-      std::cout << "x" << i <<": " << x_[i] << " ";
+  if (FLAGS_print_models) {
+    std::cout << "==== Drift Model ====" << std::endl;
+    if (IsReady()) {
+      for (int i = 0; i < x_.size(); i++)
+        std::cout << "x" << i <<": " << x_[i] << " ";
+      std::cout << std::endl;
+    }
+    error_tracker_.Print();
     std::cout << std::endl;
   }
-  error_tracker_.Print();
-  std::cout << std::endl;
-
-  file_.close();
 }
 
 }  // namespace game
