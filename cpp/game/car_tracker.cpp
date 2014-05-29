@@ -352,7 +352,6 @@ bool CarTracker::BoundaryThrottle(const CarState& car_state, double* throttle) {
   const auto& next_piece = race_->track().PieceFor(car_state.position(), 1);
 
   // TODO(tomek): We assume pieces are long enough we cant skip them
-  // TODO(tomek): Add == for piece
   if (piece == next_piece) {
     *throttle = 1;
     return true;

@@ -45,7 +45,7 @@ class Track {
 
   // Returns current piece for car position.
   // offset returns current_index + offset
-  const game::Piece& PieceFor(const game::Position& position, int offset = 0) const;
+  const Piece& PieceFor(const Position& position, int offset = 0) const;
   bool IsFirstInFront(const Position& front, const Position& back) const;
   bool IsBetween(const Position& front, int piece1, int piece2) const;
 

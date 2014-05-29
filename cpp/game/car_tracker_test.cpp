@@ -296,4 +296,41 @@ TEST_F(CarTrackerTest, BoundaryThrottle1) {
   EXPECT_NEAR(1, throttle, 1e-9);
 }
 
+TEST_F(CarTrackerTest, BoundaryThrottle2) {
+  double throttle;
+  Position position;
+  position.set_piece(3);
+  position.set_piece_distance(95);
+  double velocity = 5.0;
+  CarState state(position, velocity, 0, Switch::kStay, 0, TurboState());
+
+  EXPECT_TRUE(car_tracker_->BoundaryThrottle(state, &throttle));
+  EXPECT_NEAR(0.5, throttle, 1e-9);
+}
+
+TEST_F(CarTrackerTest, BoundaryThrottleTheSamePiece) {
+  double throttle;
+  Position position;
+  position.set_piece(2);
+  position.set_piece_distance(95);
+  double velocity = 5.0;
+  CarState state(position, velocity, 0, Switch::kStay, 0, TurboState());
+
+  EXPECT_TRUE(car_tracker_->BoundaryThrottle(state, &throttle));
+  EXPECT_NEAR(1, throttle, 1e-9);
+}
+
+TEST_F(CarTrackerTest, BoundaryThrottleOnSwitch) {
+  double throttle;
+  Position position;
+  position.set_piece(3);
+  position.set_start_lane(0);
+  position.set_end_lane(1);
+  position.set_piece_distance(95);
+  double velocity = 5.0;
+  CarState state(position, velocity, 0, Switch::kStay, 0, TurboState());
+
+  EXPECT_FALSE(car_tracker_->BoundaryThrottle(state, &throttle));
+}
+
 }  // namespace game
