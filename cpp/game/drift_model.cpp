@@ -64,8 +64,6 @@ void DriftModel::Record(double next_angle, double angle, double previous_angle, 
     predicted = Predict(angle, previous_angle, velocity, radius, direction);
     error_tracker_.Add(predicted, next_angle);
   }
-
-  file_ << std::setprecision(20) << angle << "," << previous_angle << "," << velocity << "," << radius << "," << direction << "," << next_angle << "," << predicted - next_angle << std::endl;
 }
 
 void DriftModel::Train() {
@@ -139,64 +137,8 @@ double DriftModel::ComputeMaxError() {
   return max_error;
 }
 
-void DriftModel::TrainOnlyOneVariable() {
-  // We will solve A * x = b
-  vector<vector<double> > A;
-  vector<double> b;
-  vector<double> x;
-
-  for (int i = (int) raw_points_.size() - 1; i >= 0; --i) {
-    double angle = raw_points_[i][0];
-    double previous_angle = raw_points_[i][1];
-    double velocity = raw_points_[i][2];
-    double radius = raw_points_[i][3];
-    double direction = raw_points_[i][4];
-    double next_angle = raw_points_[i][5];
-
-    // Ignore points if velocity is too small or we are on straigh piece (the
-    // first x0, x1, x2 are enough to compute next_angle). We need points were
-    // we can assume that we can drop the "max" factor in the model.
-    if (fabs(next_angle - (x_[0] * angle + x_[1] * previous_angle + x_[2] * angle * velocity)) < 1e-9) {
-      continue;
-    }
-
-    A.push_back({-direction * velocity * velocity * sqrt(InvRadius(radius))});
-    b.push_back(next_angle - (x_[0] * angle +
-                              x_[1] * previous_angle +
-                              x_[2] * angle * velocity +
-                              direction * x_[4] * velocity));
-
-    // 20 points should be enough.
-    if (b.size() >= 20) break;
-  }
-
-  if (b.size() >= 1) {
-    Approximation(A, b, x);
-
-    x_[3] = x[0];
-
-    double error = ComputeMaxError();
-
-    if (error > 1e-9) {
-      std::cerr << "ERROR: The drift model has big error = " << error << std::endl;
-    }
-
-    if (!ready_ && b.size() >= 4 && error < 1e-9) {
-      std::cout << "Drift model ready!" << std::endl;
-      ready_ = true;
-    }
-    if (b.size() >= 20 && error < 1e-11) {
-      std::cout << "Drift model very ready!" << std::endl;
-      very_ready_ = true;
-    }
-  }
-}
-
 DriftModel::DriftModel() : error_tracker_("drift") {
   x_ = {1.9, -0.9, -0.00125, 0.00125 * sqrt(180000), 0.3};
-
-  file_.open("bin/" + FLAGS_race_id + "/drift.csv");
-  file_ << "angle,p_angle,velocity,radius,direction,next_angle,error" << std::endl;
 }
 
 DriftModel::~DriftModel() {
