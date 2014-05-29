@@ -16,6 +16,7 @@ set(GAME_SOURCES
   enemy_tracker.cpp
   race_tracker.cpp
   bump_tracker.cpp
+  spawn_model.cpp
 )
 
 set(GAME_HEADERS
@@ -41,6 +42,7 @@ set(GAME_HEADERS
   enemy_tracker.h
   race_tracker.h
   bump_tracker.h
+  spawn_model.h
 )
 
 set(GAME_TESTS

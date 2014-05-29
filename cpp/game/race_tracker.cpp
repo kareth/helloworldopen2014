@@ -7,15 +7,13 @@ namespace game {
 
 RaceTracker::RaceTracker(game::CarTracker& car_tracker,
           const game::Race& race, const std::string& color)
-  : car_tracker_(car_tracker), race_(race), color_(color),
-    crash_time_(-1), crash_recorded_(false) {
+  : car_tracker_(car_tracker), race_(race), color_(color) {
 }
 
 void RaceTracker::Record(const std::map<std::string, Position>& positions) {
-  if (!crash_recorded_ && crash_time_ != -1)
-    crash_time_++;
-
+  // TODO bump_tracker?
   DetectBumps(positions);
+
   for (auto& p : positions) {
     if (indexes_.find(p.first) == indexes_.end()) {
       indexes_[p.first] = enemies_.size();
@@ -63,12 +61,8 @@ bool RaceTracker::BumpOccured(const std::string& color, const std::string& color
 }
 
 void RaceTracker::RecordLapTime(const std::string& color, int time) {
-  if (indexes_.find(color) == indexes_.end())
-    return;
-
-  enemies_[indexes_[color]].RecordLapTime(time);
+  enemy(color).RecordLapTime(time);
 }
-
 
 // TODO test
 std::vector<std::string> RaceTracker::CarsBetween(int from, int to, int lane) {
@@ -302,23 +296,7 @@ bool RaceTracker::IsSafeBehind(const Command& command, Command* safe_command) {
   return true;
 }
 
-void RaceTracker::FinishedRace(const std::string& color) {
-  if (indexes_.find(color) == indexes_.end())
-    return;
-  enemies_[indexes_[color]].FinishedRace();
-}
-
-void RaceTracker::DNF(const std::string& color) {
-  if (indexes_.find(color) == indexes_.end())
-    return;
-  enemies_[indexes_[color]].DNF();
-}
-
-void RaceTracker::ResurrectCars() {
-  for (auto& enemy : enemies_)
-    enemy.Resurrect();
-}
-
+// TODO move
 bool RaceTracker::ShouldTryToOvertake(const std::string& color, int from, int to) {
  if (enemy(color).is_dead()) {
     if (race_.track().IsFirstInFront(
@@ -336,37 +314,7 @@ bool RaceTracker::ShouldTryToOvertake(const std::string& color, int from, int to
   return enemy(color_).CanOvertake(enemy(color), from, to);
 }
 
-void RaceTracker::TurboForEveryone(const game::Turbo& turbo) {
-  for (auto& enemy : enemies_)
-    enemy.NewTurbo(turbo);
-}
-
-void RaceTracker::CarSpawned(const std::string& color) {
-  enemy(color).Spawned();
-  if (crash_recorded_ == false) {
-    for (auto& e : enemies_) {
-      e.set_crash_length(crash_time_);
-    }
-    printf("Calculated Crash Length: %d\n", crash_time_);
-  }
-
-  crash_recorded_ = true;
-}
-
-void RaceTracker::RecordCrash(const std::string& color) {
-  if (indexes_.find(color) == indexes_.end())
-    return;
-
-  enemies_[indexes_[color]].RecordCrash();
-
-  if (crash_time_ == -1)
-    crash_time_ = 0;
-}
-
-void RaceTracker::TurboStarted(const std::string& color) {
-  enemy(color).TurboStarted();
-}
-
+// TODO move
 bool RaceTracker::WorthBumping(const std::string& color) {
   if (enemy(color).is_dead())
     return false;
@@ -382,20 +330,37 @@ bool RaceTracker::WorthBumping(const std::string& color) {
   return result;
 }
 
-/* Position RaceTracker::BumpPosition(const std::string& color) {
-  int index = indexes_[color];
+// Record methods
 
-  // TODO optimize:D
-  for (int i = 0; i < 100; i++) {
-    auto me = enemies_[indexes_[color_]].PositionAfterTime(i);
-    auto he = enemies_[indexes_[color]].PositionAfterTime(i);
+void RaceTracker::TurboForEveryone(const game::Turbo& turbo) {
+  for (auto& enemy : enemies_)
+    enemy.NewTurbo(turbo);
+}
 
-    if ((me.piece() == he.piece() && me.piece_distance() > he.piece_distance())
-        || (me.piece() + 1) % race_.track().pieces().size() == he.piece())
-      return me;
-  }
-  // This shouldnt reach here
-  return enemies_[indexes_[color_]].state().position();
-} */
+void RaceTracker::CarSpawned(const std::string& color) {
+  enemy(color).Spawned();
+}
+
+void RaceTracker::RecordCrash(const std::string& color) {
+  enemy(color).RecordCrash();
+}
+
+void RaceTracker::TurboStarted(const std::string& color) {
+  enemy(color).TurboStarted();
+}
+
+void RaceTracker::FinishedRace(const std::string& color) {
+  enemy(color).FinishedRace();
+}
+
+void RaceTracker::DNF(const std::string& color) {
+  enemy(color).DNF();
+}
+
+void RaceTracker::ResurrectCars() {
+  for (auto& enemy : enemies_)
+    enemy.Resurrect();
+}
+
 
 }  // namespace game

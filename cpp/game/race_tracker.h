@@ -19,7 +19,6 @@ class RaceTracker {
   std::vector<std::string> CarsBetween(int piece1, int piece2, int lane);
   std::vector<EnemyTracker*> PredictedCarsBetween(int from, int to, int lane);
 
-
   // Detects if issuing the given command is safe based on cars
   // in front of us. If false, also returns command that is safe in safe_command.
   //
@@ -56,8 +55,8 @@ class RaceTracker {
 
   // Getters
   const std::vector<EnemyTracker>& enemies() const { return enemies_; }
-  EnemyTracker& enemy(const std::string& color) { return enemies_[indexes_[color]]; }
   const std::string& my_color() const { return color_; }
+  EnemyTracker& enemy(const std::string& color) { return enemies_[indexes_[color]]; }
 
   // Returns true if there was bump between those two cars in last tick
   bool BumpOccured(const std::string& color, const std::string& color2);
@@ -70,8 +69,9 @@ class RaceTracker {
   // void RecordEnemy(int index, const game::Position& position);
   // void UpdateSpeedStats(int index, const game::Position& position);
 
+  // TODO what about just one map?
   std::vector<EnemyTracker> enemies_;
-
+  // Maps color to index
   std::map<std::string, int> indexes_;
 
   const Race& race_;
@@ -81,9 +81,6 @@ class RaceTracker {
   // Move tu bump_tracker?
   vector<std::pair<std::string, std::string>> bumps_;
 
-  // Move to spawn model
-  int crash_time_;
-  bool crash_recorded_;
 };
 
 }  // namespace game

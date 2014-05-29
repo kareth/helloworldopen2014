@@ -11,47 +11,46 @@ namespace game {
 class EnemyTracker {
  public:
   EnemyTracker(game::CarTracker& car_tracker, const game::Race& race,
-      const std::string& color, const game::Position& position);
+      const std::string& color, const Position& position);
 
+  // Record methods
   // lap time is measured in game ticks
   void RecordLapTime(int time);
   void RecordPosition(const game::Position& position);
   void RecordCrash();
+  void DNF();
+  void FinishedRace();
+  void Resurrect();
+  void Spawned();
+  void TurboStarted();
+  void NewTurbo(const Turbo& turbo);
 
   // time = game_ticks
   Position PositionAfterTime(int time);
   int TimeToPosition(const Position& p);
 
-  /*
-  int expected_bump_time() const { return expected_bump_time_; }
-  std::pair<int, double> expected_bump_position() const { return expected_bump_position_; }
-  */
-
+  // Approximation-wise
   bool CanOvertake(const EnemyTracker& noobek, int from, int to);
 
-  const CarState& state() const { return state_; }
-  bool is_dead() const { return dead_; }
-  int time_to_spawn() const { return time_to_spawn_; }
+  // TODO Add worth overtaking, predicted speed score, whatever
 
-  const std::string& color() const { return color_; }
-  void DNF();
-  void FinishedRace();
-  void Resurrect();
+  bool is_dead() const { return dead_; }
+
+  // TODO add higher level method to assess that
+  int time_to_spawn() const {
+    return car_tracker_.spawn_model().duration() - time_since_crash_; }
 
   int best_lap() const { return best_lap_; }
-
-  void TurboStarted();
-  void Spawned();
-  void NewTurbo(const Turbo& turbo);
-
-  void set_crash_length(int length) { kRespawnTime = length; }
+  const CarState& state() const { return state_; }
+  const std::string& color() const { return color_; }
 
  private:
-  double Velocity(int piece);
+  bool ShouldRecord() const;
+  double Velocity(int piece) const;
+  void RecordTick(const game::Position& position);
 
-  // double speed_factor_;
   std::vector<int> lap_times_;
-  int best_lap_;
+  int best_lap_ = -1;
 
   std::vector<double> piece_speed_;
   std::vector<int> piece_data_points_;
@@ -59,20 +58,30 @@ class EnemyTracker {
   double average_speed_;
   int average_data_points_;
 
+  // Enemy state and color
   CarState state_;
+  std::string color_;
 
   const Race& race_;
   CarTracker& car_tracker_;
-  std::string color_;
 
-  int skip_;
-  bool dead_;
-  bool dnf_;
-
-  int time_to_spawn_;
-
-  int kRespawnTime = 300;
+  // Car is just accelerating. Skip some slow ticks
   static const int kSkipTime = 20;
+  int skip_time_ = kSkipTime;
+
+  // Car has crashed or started recently. Skip some slow ticks
+  bool accelerating_ = true;
+
+  // Car crashed, wait until it spawns
+  bool dead_ = false;
+
+  // Car finished race. Can return in next race
+  bool finished_ = false;
+
+  // Car was disqualified, wont ever return
+  bool disabled_ = false;
+
+  int time_since_crash_ = 0;
 };
 }  // namespace game
 

@@ -44,6 +44,7 @@ void Bot::NewRace(const Race& race) {
 }
 
 game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick)  {
+  game_tick_ = game_tick;
   const Position& position = positions.at(color_);
   car_tracker_->Record(position, car_tracker_->HasSomeoneMaybeBumpedMe(positions, color_));
   auto& state = car_tracker_->current_state();
@@ -138,6 +139,7 @@ void Bot::TournamentEnd() {
 
 void Bot::CarCrashed(const string& color)  {
   race_tracker_->RecordCrash(color);
+  car_tracker_->spawn_model().RecordCrash(game_tick_);
 
   if (color == color_) {
     auto& state = car_tracker_->current_state();
@@ -153,6 +155,7 @@ void Bot::CarCrashed(const string& color)  {
 
 void Bot::CarSpawned(const string& color)  {
   race_tracker_->CarSpawned(color);
+  car_tracker_->spawn_model().RecordSpawn(game_tick_);
   if (color == color_) {
     crashed_ = false;
     car_tracker_->Reset();
