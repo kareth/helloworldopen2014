@@ -333,4 +333,33 @@ TEST_F(CarTrackerTest, BoundaryThrottleOnSwitch) {
   EXPECT_FALSE(car_tracker_->BoundaryThrottle(state, &throttle));
 }
 
+class GetCurvesTest : public CarTrackerTest {
+};
+
+TEST_F(GetCurvesTest, Basic) {
+  Position position;
+  position.set_piece(3);
+  position.set_piece_distance(95);
+  CarState state(position, 0, 0, Switch::kStay, 0, TurboState());
+
+  vector<CarTracker::Curve> curves = car_tracker_->GetCurves(state, 500);
+  ASSERT_EQ(4, curves.size());
+
+  EXPECT_EQ(0, curves[0].direction);
+  EXPECT_NEAR(0, curves[0].radius, 1e-9);
+  EXPECT_NEAR(0, curves[0].distance, 1e-9);
+
+  EXPECT_EQ(-1, curves[1].direction);
+  EXPECT_NEAR(110, curves[1].radius, 1e-9);
+  EXPECT_NEAR(5, curves[1].distance, 1e-9);
+
+  EXPECT_EQ(-1, curves[2].direction);
+  EXPECT_NEAR(210, curves[2].radius, 1e-9);
+  EXPECT_NEAR(350.57519189487726, curves[2].distance, 1e-9);
+
+  EXPECT_EQ(0, curves[3].direction);
+  EXPECT_NEAR(0, curves[3].radius, 1e-9);
+  EXPECT_NEAR(433.04199905160931, curves[3].distance, 1e-9);
+}
+
 }  // namespace game

@@ -366,11 +366,16 @@ vector<CarTracker::Curve> CarTracker::GetCurves(const CarState& car_state, doubl
   double d = 0.0;
 
   vector<Curve> curves;
+  if (car_state.position().start_lane() != car_state.position().end_lane()) {
+    return curves;
+  }
+
+  Position position = car_state.position();
 
   Piece previous_piece = race_->track().PieceFor(car_state.position(), 0);
   {
-    curves.push_back(Curve(previous_piece, 0));
-    d += lane_length_model_.Length(car_state.position());
+    curves.push_back(Curve(-sgn(previous_piece.angle()), radius_model_.Radius(position), 0));
+    d += lane_length_model_.Length(car_state.position()) - car_state.position().piece_distance();
   }
 
   // Consider maximum of 100 pieces.
@@ -381,8 +386,7 @@ vector<CarTracker::Curve> CarTracker::GetCurves(const CarState& car_state, doubl
 
     Piece piece = race_->track().PieceFor(car_state.position(), i);
 
-    Position position = car_state.position();
-    position.set_piece((position.piece() + i) % race_->track().pieces().size());
+    position.set_piece((position.piece() + 1) % race_->track().pieces().size());
 
     if (piece == previous_piece) {
       d += lane_length_model_.Length(position);
@@ -390,9 +394,10 @@ vector<CarTracker::Curve> CarTracker::GetCurves(const CarState& car_state, doubl
       continue;
     }
 
-    curves.push_back(Curve(piece, d));
+    curves.push_back(Curve(-sgn(piece.angle()), radius_model_.Radius(position), d));
 
     d += lane_length_model_.Length(position);
+    previous_piece = piece;
   }
 
   return curves;

@@ -139,24 +139,15 @@ class CarTracker : public CarPredictor {
 
   struct Curve {
     int direction = 0;
-    // TODO add const
-    double radius = 2000000000;
+    // For straight pieces, it will be 0.
+    double radius = 0;
     double distance = 0.0;
     Curve() {}
     Curve(int direction, double radius, double distance) :
       direction(direction), radius(radius), distance(distance) {}
-    Curve(const Piece& piece, double d) {
-      if (piece.type() == PieceType::kStraight) {
-        direction = 0;
-        radius = 2000000000;
-      } else {
-        direction = piece.angle() < 0 ? -1 : 1;
-        radius = piece.radius();
-      }
-      distance = d;
-    }
   };
 
+  // Returns empty vector if car is on the switch.
   vector<Curve> GetCurves(const CarState& car_state, double distance);
 
  private:
