@@ -13,6 +13,7 @@ class RaceTracker {
   RaceTracker(game::CarTracker& car_tracker,
               const game::Race& race, const std::string& color);
 
+  // Saves enemies data
   void Record(const std::map<std::string, game::Position>& positions);
 
   void RecordLapTime(const std::string& color, int time);
