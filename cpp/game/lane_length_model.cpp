@@ -130,7 +130,7 @@ void LaneLengthModel::LoadSwitchLengths() {
   jsoncons::json straight_lengths = LoadCSV("data/switch-straight-lengths.csv");
   for (auto it = straight_lengths.begin_elements(); it != straight_lengths.end_elements(); ++it) {
     const auto& data = *it;
-    switch_on_straight_length_[std::make_tuple(ToDouble(data["length"]), ToDouble(data["width"]))] = ToDouble(data["switch_length"]);
+    switch_on_straight_length_[{ToDouble(data["length"]), ToDouble(data["width"])}] = ToDouble(data["switch_length"]);
   }
 
   jsoncons::json turn_lengths = LoadCSV("data/switch-turn-lengths.csv");
