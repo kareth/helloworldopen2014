@@ -30,6 +30,9 @@ std::string random_race_id() {
 }
 
 int main(int argc, char** argv) {
+  FLAGS_throttle_scheduler = "WojtekThrottleScheduler";
+  FLAGS_switch_scheduler = "NeverSwitchScheduler";
+
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   srand (time(NULL));
 
@@ -37,9 +40,6 @@ int main(int argc, char** argv) {
     FLAGS_race_id = random_race_id();
   }
   boost::filesystem::create_directories("bin/" + FLAGS_race_id);
-
-  FLAGS_throttle_scheduler = "WojtekThrottleScheduler";
-  FLAGS_switch_scheduler = "NeverSwitchScheduler";
 
   game::Simulator::Result result;
   {
