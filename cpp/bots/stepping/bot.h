@@ -55,6 +55,7 @@ class Bot : public bots::BotInterface {
   std::string color_;
   bool started_ = false;
   bool crashed_ = false;
+  int game_tick_;
 
   std::unique_ptr<game::CarTracker> car_tracker_;
 

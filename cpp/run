@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./bin/bot --host="$1" --port="$2" --bot="$3" --key="$4"
+./bin/bot --host="$1" --port="$2" --bot="$3" --key="$4" --print_models

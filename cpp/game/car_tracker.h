@@ -19,6 +19,7 @@
 #include "game/race.h"
 #include "game/simplex.h"
 #include "game/velocity_model.h"
+#include "game/spawn_model.h"
 
 #define SQR(X) ((X)*(X))
 
@@ -80,6 +81,7 @@ class CarTracker : public CarPredictor {
 
   const CrashModel& crash_model() const { return crash_model_; }
   const VelocityModel& velocity_model() const { return velocity_model_; }
+  SpawnModel& spawn_model() { return spawn_model_; }
 
   // The following things are working differently:
   // - switch is always set to kStay
@@ -132,6 +134,24 @@ class CarTracker : public CarPredictor {
   // Returns true, if there is high probability that there was a bump.
   bool HasSomeoneMaybeBumpedMe(const map<string, Position>& positions, const std::string& color);
 
+  // Returns false if there is no way to keep the radius.
+  // If true, then throttle contains maximum throttle that will keep
+  // car on piece with the same radius.
+  bool BoundaryThrottle(const CarState& car_state, double* throttle);
+
+  struct Curve {
+    int direction = 0;
+    // For straight pieces, it will be 0.
+    double radius = 0;
+    double distance = 0.0;
+    Curve() {}
+    Curve(int direction, double radius, double distance) :
+      direction(direction), radius(radius), distance(distance) {}
+  };
+
+  // Returns empty vector if car is on the switch.
+  vector<Curve> GetCurves(const CarState& car_state, double distance);
+
  private:
   const int kDistanceBetweenIter = 500;
   bool just_started_ = true;
@@ -153,6 +173,7 @@ class CarTracker : public CarPredictor {
   DriftModel drift_model_;
   LaneLengthModel lane_length_model_;
   RadiusModel radius_model_;
+  SpawnModel spawn_model_;
 };
 
 }  // namespace game

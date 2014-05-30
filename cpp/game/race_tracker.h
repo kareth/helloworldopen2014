@@ -5,6 +5,7 @@
 #include "game/enemy_tracker.h"
 #include "game/position.h"
 #include "game/car_tracker.h"
+#include "game/bump_detector.h"
 
 namespace game {
 
@@ -13,28 +14,13 @@ class RaceTracker {
   RaceTracker(game::CarTracker& car_tracker,
               const game::Race& race, const std::string& color);
 
-  void Record(const std::map<std::string, game::Position>& positions);
-
-  void RecordLapTime(const std::string& color, int time);
-
-  void RecordCrash(const std::string& color);
-
-  // Resets positions, keeps speed stats.
-  // TODO is it necessary?
-  // void Reset() {}
-
-  // const EnemyTracker& enemy(const std::string& color) const { return enemies_.at(indexes_.at(color)); }
-
-  /* int TimeToReach(int piece, double position);
-
-  Position BumpPosition(const std::string& color);*/
-
+  // TODO change those functions to return some specific data on each car
   // from to inclusive
+  // TODO private?
   std::vector<std::string> CarsBetween(int piece1, int piece2, int lane);
-
   std::vector<EnemyTracker*> PredictedCarsBetween(int from, int to, int lane);
 
-  // Detects if issueing the given command is safe based on cars
+  // Detects if issuing the given command is safe based on cars
   // in front of us. If false, also returns command that is safe in safe_command.
   //
   // It only checks cars that are ahead of us (200 units), and makes sure that
@@ -50,25 +36,30 @@ class RaceTracker {
 
   bool IsSafeBehind(const Command& command, Command* safe_command);
 
+
+  // Recording methods
+
+  void Record(const std::map<std::string, game::Position>& positions);
+  void RecordCrash(const std::string& color);
+  void RecordLapTime(const std::string& color, int time);
   void FinishedRace(const std::string& color);
-  void DNF(const std::string& color);
-
-  void ResurrectCars();
-
-  bool ShouldTryToOvertake(const std::string& color, int from, int to);
-
-  EnemyTracker& enemy(const std::string& color) { return enemies_[indexes_[color]]; }
-
   void TurboForEveryone(const game::Turbo& turbo);
   void CarSpawned(const std::string& color);
   void TurboStarted(const std::string& color);
+  void DNF(const std::string& color);
+  void ResurrectCars();
 
-  const std::vector<EnemyTracker>& enemies() const { return enemies_; }
 
+  // Move to enemy?
   bool WorthBumping(const std::string& color);
+  bool ShouldTryToOvertake(const std::string& color, int from, int to);
 
+  // Getters
+  const std::vector<EnemyTracker>& enemies() const { return enemies_; }
   const std::string& my_color() const { return color_; }
+  EnemyTracker& enemy(const std::string& color) { return enemies_[indexes_[color]]; }
 
+  // Returns true if there was bump between those two cars in last tick
   bool BumpOccured(const std::string& color, const std::string& color2);
 
  private:
@@ -79,18 +70,16 @@ class RaceTracker {
   // void RecordEnemy(int index, const game::Position& position);
   // void UpdateSpeedStats(int index, const game::Position& position);
 
+  // TODO what about just one map?
   std::vector<EnemyTracker> enemies_;
-
+  // Maps color to index
   std::map<std::string, int> indexes_;
 
   const Race& race_;
   CarTracker& car_tracker_;
   std::string color_;
 
-  vector<std::pair<std::string, std::string>> bumps_;
-
-  int crash_time_;
-  bool crash_recorded_;
+  BumpDetector bump_detector_;
 };
 
 }  // namespace game

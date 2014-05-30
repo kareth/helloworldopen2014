@@ -9,51 +9,49 @@ EnemyTracker::EnemyTracker(game::CarTracker& car_tracker,
     const game::Race& race,
     const std::string& color,
     const Position& position)
-  : car_tracker_(car_tracker), race_(race), color_(color), skip_(kSkipTime),
-    dead_(false), time_to_spawn_(0), dnf_(false), best_lap_(-1) {
+  : car_tracker_(car_tracker), race_(race), color_(color) {
   state_ = CarState(position);
   piece_speed_.resize(race_.track().pieces().size(), 0);
   piece_data_points_.resize(race_.track().pieces().size(), 0);
 }
 
-void EnemyTracker::RecordLapTime(int time) {
-  // TODO what about that?:D
-  lap_times_.push_back(time);
-  if (best_lap_ == -1 || best_lap_ > time)
-    best_lap_ = time;
+void EnemyTracker::RecordTick(const game::Position& position) {
+  if (skip_time_ >= 0) skip_time_--;
+  if (skip_time_ == 0) state_ = CarState(position);
+  if (skip_time_ < 0) accelerating_ = false;
+
+  if (dead_) time_since_crash_++;
 }
 
-void EnemyTracker::RecordCrash() {
-  skip_ = 1000000;
-  time_to_spawn_ = kRespawnTime;
-  dead_ = true;
+bool EnemyTracker::ShouldRecord() const {
+  if (accelerating_ || dead_ || finished_ || disabled_) return false;
+  return true;
 }
 
 void EnemyTracker::RecordPosition(const game::Position& position) {
-  time_to_spawn_--;
-  if (skip_ == 0) state_ = CarState(position);
-  skip_--;
-  if (skip_ >= 0) return;
-
+  RecordTick(position);
   state_ = car_tracker_.CreateCarState(state_, position);
 
-  int piece = state_.position().piece();
+  if (ShouldRecord()) {
+    int piece = state_.position().piece();
 
-  piece_speed_[piece] =
-    double(piece_speed_[piece] * piece_data_points_[piece] + state_.velocity()) /
-    double(piece_data_points_[piece] + 1);
+    piece_speed_[piece] =
+      double(piece_speed_[piece] * piece_data_points_[piece] + state_.velocity()) /
+      double(piece_data_points_[piece] + 1);
 
-  piece_data_points_[piece]++;
+    piece_data_points_[piece]++;
 
-  average_speed_ =
-    double(average_speed_ * average_data_points_ + state_.velocity()) /
-    double(average_data_points_ + 1);
+    average_speed_ =
+      double(average_speed_ * average_data_points_ + state_.velocity()) /
+      double(average_data_points_ + 1);
 
-  average_data_points_++;
+    average_data_points_++;
+  }
 }
 
 Position EnemyTracker::PositionAfterTime(int time) {
   auto state = state_;
+  // TODO dead?
   for (int i = 0; i < min(time, 1000); i++) {
     double throttle = car_tracker_.velocity_model().PredictThrottle(
         Velocity(state.position().piece()));
@@ -62,18 +60,12 @@ Position EnemyTracker::PositionAfterTime(int time) {
   return state.position();
 }
 
-double EnemyTracker::Velocity(int piece) {
-  double velocity = piece_speed_[state_.position().piece()];
-  if (velocity < 1e-9) // Not yet calculated
-    velocity = average_speed_;
-  return velocity;
-}
-
 int EnemyTracker::TimeToPosition(const Position& target) {
   auto state = state_;
 
   int time = 0;
-  if (dead_) time = time_to_spawn_;
+  // TODO dead?
+  // if (dead_) time = time_to_spawn_;
   for (int limit = 0; limit < 300; limit++, time++) {
     double throttle = car_tracker_.velocity_model().PredictThrottle(
         Velocity(state.position().piece()));
@@ -83,25 +75,6 @@ int EnemyTracker::TimeToPosition(const Position& target) {
       return time;
   }
   return 100000;
-}
-
-void EnemyTracker::DNF() {
-  dnf_ = true;
-  FinishedRace();
-}
-
-void EnemyTracker::FinishedRace() {
-  skip_ = 10000000;
-  time_to_spawn_ = 10000000;
-  dead_ = true;
-}
-
-void EnemyTracker::Resurrect() {
-  if (!dnf_) {
-    skip_ = kSkipTime;
-    dead_ = false;
-    time_to_spawn_ = 0;
-  }
 }
 
 // Checks if time difference on that part of track is enough to overtake him
@@ -134,15 +107,52 @@ bool EnemyTracker::CanOvertake(const EnemyTracker& noobek, int from, int to) {
   return false;
 }
 
-void EnemyTracker::TurboStarted() {
-  state_.EnableTurbo();
+double EnemyTracker::Velocity(int piece) const {
+  double velocity = piece_speed_[state_.position().piece()];
+  if (velocity < 1e-9) // Not yet calculated
+    velocity = average_speed_;
+  return velocity;
+}
+
+// Record methods
+
+void EnemyTracker::RecordLapTime(int time) {
+  lap_times_.push_back(time);
+  if (best_lap_ == -1 || best_lap_ > time)
+    best_lap_ = time;
+}
+
+void EnemyTracker::RecordCrash() {
+  time_since_crash_ = 0;
+  dead_ = true;
+}
+
+void EnemyTracker::DNF() {
+  disabled_ = true;
+}
+
+void EnemyTracker::FinishedRace() {
+  finished_ = true;
+}
+
+void EnemyTracker::Resurrect() {
+  if (!disabled_) {
+    skip_time_ = kSkipTime;
+    accelerating_ = true;
+    finished_ = false;
+    dead_ = false;
+  }
 }
 
 void EnemyTracker::Spawned() {
   state_.ResetTurbo();
   dead_ = false;
-  time_to_spawn_ = 0;
-  skip_ = kSkipTime;
+  accelerating_ = true;
+  skip_time_ = kSkipTime;
+}
+
+void EnemyTracker::TurboStarted() {
+  state_.EnableTurbo();
 }
 
 void EnemyTracker::NewTurbo(const Turbo& turbo) {

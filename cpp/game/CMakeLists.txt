@@ -16,6 +16,8 @@ set(GAME_SOURCES
   enemy_tracker.cpp
   race_tracker.cpp
   bump_tracker.cpp
+  spawn_model.cpp
+  bump_detector.cpp
 )
 
 set(GAME_HEADERS
@@ -41,6 +43,8 @@ set(GAME_HEADERS
   enemy_tracker.h
   race_tracker.h
   bump_tracker.h
+  spawn_model.h
+  bump_detector.h
 )
 
 set(GAME_TESTS
@@ -54,6 +58,7 @@ set(GAME_TESTS
   radius_model_test.cpp
   simplex_test.cpp
   track_test.cpp
+  velocity_model_test.cpp
 )
 
 add_library(game ${GAME_SOURCES})

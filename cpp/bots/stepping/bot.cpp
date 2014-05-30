@@ -43,9 +43,8 @@ void Bot::NewRace(const Race& race) {
         race_, *race_tracker_.get(), *car_tracker_.get(), FLAGS_answer_time));
 }
 
-std::map<string, CarState> tmp_states;
-
 game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick)  {
+  game_tick_ = game_tick;
   const Position& position = positions.at(color_);
   car_tracker_->Record(position, car_tracker_->HasSomeoneMaybeBumpedMe(positions, color_));
   auto& state = car_tracker_->current_state();
@@ -54,7 +53,6 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
     return Command(0);
   }
 
-  //race_tracker_->Record(positions);
   race_tracker_->Record(positions);
 
   // TODO
@@ -84,30 +82,33 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 }
 
 void Bot::SetStrategy(const game::CarState& state) {
+  // Race
   if (race_.laps() != -1) {
     scheduler_->set_strategy(Strategy::kOptimizeRace);
     return;
+  // Qualification round, optimize every second lap
+  } else {
+    int lap = state.position().lap();
+
+    if (lap % 2 == 1)
+      scheduler_->set_strategy(Strategy::kOptimizeNextLap);
+    else if (lap % 2 == 0 && lap != 0)
+      scheduler_->set_strategy(Strategy::kOptimizeCurrentLap);
+    else
+      scheduler_->set_strategy(Strategy::kOptimizeRace);
   }
-
-  int lap = state.position().lap();
-
-  if (lap % 2 == 1)
-    scheduler_->set_strategy(Strategy::kOptimizeNextLap);
-  else if (lap % 2 == 0 && lap != 0)
-    scheduler_->set_strategy(Strategy::kOptimizeCurrentLap);
-  else
-    scheduler_->set_strategy(Strategy::kOptimizeRace);
 }
 
 void Bot::ScheduleOvertakes() {
 }
 
 void Bot::OnTurbo(const game::Turbo& turbo) {
+  race_tracker_->TurboForEveryone(turbo);
+
   if (!crashed_) {
     car_tracker_->RecordTurboAvailable(turbo);
     printf("Turbo Available\n");
   }
-  race_tracker_->TurboForEveryone(turbo);
 }
 
 void Bot::YourCar(const string& color) {
@@ -117,6 +118,7 @@ void Bot::YourCar(const string& color) {
 void Bot::GameStarted() {
   started_ = true;
   car_tracker_->Reset();
+  crashed_ = false;
 }
 
 void Bot::CarFinishedLap(const string& color, const game::Result& result)  {
@@ -132,27 +134,32 @@ void Bot::CarFinishedRace(const string& color)  {
 void Bot::GameEnd(/* results */)  {
 }
 
-void Bot::TournamentEnd()  {
+void Bot::TournamentEnd() {
 }
 
 void Bot::CarCrashed(const string& color)  {
-  auto& state = car_tracker_->current_state();
-  auto next = car_tracker_->Predict(state, Command(car_tracker_->throttle()));
-  printf("Crash! %lf %lf %lf %s\n", next.position().angle(), state.position().angle(), state.previous_angle(), color.c_str());
+  race_tracker_->RecordCrash(color);
+  car_tracker_->spawn_model().RecordCrash(game_tick_);
 
   if (color == color_) {
+    auto& state = car_tracker_->current_state();
+    auto next = car_tracker_->Predict(state, Command(car_tracker_->throttle()));
+    printf("My crash! %lf %lf %lf\n", next.position().angle(), state.position().angle(), state.previous_angle());
+
     crashed_ = true;
     car_tracker_->RecordCarCrash();
+  } else {
+    printf("%s crashed!\n", color.c_str());
   }
-  race_tracker_->RecordCrash(color);
 }
 
 void Bot::CarSpawned(const string& color)  {
+  race_tracker_->CarSpawned(color);
+  car_tracker_->spawn_model().RecordSpawn(game_tick_);
   if (color == color_) {
     crashed_ = false;
     car_tracker_->Reset();
   }
-  race_tracker_->CarSpawned(color);
 }
 
 void Bot::CarDNF(const std::string& color) {

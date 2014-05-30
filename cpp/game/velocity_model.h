@@ -9,6 +9,9 @@
 
 #include "game/approximation.h"
 #include "game/error_tracker.h"
+#include "gflags/gflags.h"
+
+DECLARE_bool(print_models);
 
 namespace game {
 
@@ -21,12 +24,14 @@ class VelocityModel {
     x_ = {0.98, 0.2};
   }
   ~VelocityModel() {
-    std::cout << "==== Velocity Model ====" << std::endl;
-    for (int i = 0; i < x_.size(); ++i)
-      std::cout << "x" << i <<": " << x_[i] << " ";
-    std::cout << std::endl;
-    error_tracker_.Print();
-    std::cout << std::endl;
+    if (FLAGS_print_models) {
+      std::cout << "==== Velocity Model ====" << std::endl;
+      for (int i = 0; i < x_.size(); ++i)
+        std::cout << "x" << i <<": " << x_[i] << " ";
+      std::cout << std::endl;
+      error_tracker_.Print();
+      std::cout << std::endl;
+    }
   }
 
   // velocity = x * previous_velocity + y * previous_throttle
@@ -55,6 +60,25 @@ class VelocityModel {
 
   double PredictThrottle(double velocity_to_maintain) const {
     return (velocity_to_maintain - velocity_to_maintain * x_[0]) / x_[1];
+  }
+
+  // Returns maximum throttle that will travel given distance (or smaller)
+  // given that car drives with given velocity.
+  //
+  // If such throttle does not exist (we will always travel bigger distance,
+  // false is returned.
+  bool BoundaryThrottle(double velocity, double distance, double* throttle) {
+    if (Predict(velocity, 1) <= distance) {
+      *throttle = 1.0;
+      return true;
+    }
+
+    if (Predict(velocity, 0) > distance) {
+      return false;
+    }
+
+    *throttle = (distance - x_[0] * velocity) / x_[1];
+    return true;
   }
 
   bool IsReady() const {

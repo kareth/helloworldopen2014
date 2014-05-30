@@ -2,6 +2,7 @@
 #include "gflags/gflags.h"
 
 DECLARE_string(race_id);
+DECLARE_bool(print_models);
 
 namespace game {
 
@@ -14,14 +15,16 @@ LaneLengthModel::LaneLengthModel(const Track* track) : track_(track) {
 }
 
 LaneLengthModel::~LaneLengthModel() {
-  std::cout << "==== Lane Length Model ====" << std::endl;
-  std::cout << "Straight:" << std::endl;
-  for (const auto& p : switch_on_straight_length_) {
-    std::cout << "(" << p.first.first << "," << p.first.second << ") => " << p.second << std::endl;
-  }
-  std::cout << "Turn:" << std::endl;
-  for (const auto& p : switch_on_turn_length_) {
-    std::cout << "(" << p.first.first << "," << p.first.second << ") => " << p.second << std::endl;
+  if (FLAGS_print_models) {
+    std::cout << "==== Lane Length Model ====" << std::endl;
+    std::cout << "Straight:" << std::endl;
+    for (const auto& p : switch_on_straight_length_) {
+      std::cout << "(" << p.first.first << "," << p.first.second << ") => " << p.second << std::endl;
+    }
+    std::cout << "Turn:" << std::endl;
+    for (const auto& p : switch_on_turn_length_) {
+      std::cout << "(" << p.first.first << "," << p.first.second << ") => " << p.second << std::endl;
+    }
   }
 }
 

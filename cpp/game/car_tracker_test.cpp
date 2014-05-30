@@ -290,44 +290,76 @@ TEST_F(CarTrackerTest, SwitchRun2) {
   }
 }
 
-class VelocityModelTest : public testing::Test {
- protected:
-  VelocityModel velocity_model_;
-};
-
-TEST_F(VelocityModelTest, FinlandTrack) {
-  EXPECT_FALSE(velocity_model_.IsReady());
-
-  // Ignore when standing
-  velocity_model_.Record(0.0, 0, 0.5);
-  velocity_model_.Record(0.0, 0, 0.5);
-  velocity_model_.Record(0.0, 0, 0.5);
-  velocity_model_.Record(0.0, 0, 0.5);
-
-  EXPECT_FALSE(velocity_model_.IsReady());
-
-  velocity_model_.Record(0.1, 0, 0.5);
-
-  EXPECT_FALSE(velocity_model_.IsReady());
-
-  velocity_model_.Record(0.198, 0.1, 0.5);
-
-  EXPECT_TRUE(velocity_model_.IsReady());
-  EXPECT_DOUBLE_EQ(0.1, velocity_model_.Predict(0.0, 0.5));
-  EXPECT_DOUBLE_EQ(0.198, velocity_model_.Predict(0.1, 0.5));
-  EXPECT_DOUBLE_EQ(0.29404, velocity_model_.Predict(0.198, 0.5));
+TEST_F(CarTrackerTest, BoundaryThrottle1) {
+  double throttle;
+  EXPECT_TRUE(car_tracker_->BoundaryThrottle(car_tracker_->current_state(), &throttle));
+  EXPECT_NEAR(1, throttle, 1e-9);
 }
 
-TEST_F(VelocityModelTest, PredictThrottle) {
-  velocity_model_.Record(0.1, 0, 0.5);
-  velocity_model_.Record(0.198, 0.1, 0.5);
+TEST_F(CarTrackerTest, BoundaryThrottle2) {
+  double throttle;
+  Position position;
+  position.set_piece(3);
+  position.set_piece_distance(95);
+  double velocity = 5.0;
+  CarState state(position, velocity, 0, Switch::kStay, 0, TurboState());
 
-  ASSERT_TRUE(velocity_model_.IsReady());
+  EXPECT_TRUE(car_tracker_->BoundaryThrottle(state, &throttle));
+  EXPECT_NEAR(0.5, throttle, 1e-9);
+}
 
-  double v = 0.5;
-  EXPECT_EQ(v, velocity_model_.Predict(v, velocity_model_.PredictThrottle(v)));
-  v = 0.6;
-  EXPECT_EQ(v, velocity_model_.Predict(v, velocity_model_.PredictThrottle(v)));
+TEST_F(CarTrackerTest, BoundaryThrottleTheSamePiece) {
+  double throttle;
+  Position position;
+  position.set_piece(2);
+  position.set_piece_distance(95);
+  double velocity = 5.0;
+  CarState state(position, velocity, 0, Switch::kStay, 0, TurboState());
+
+  EXPECT_TRUE(car_tracker_->BoundaryThrottle(state, &throttle));
+  EXPECT_NEAR(1, throttle, 1e-9);
+}
+
+TEST_F(CarTrackerTest, BoundaryThrottleOnSwitch) {
+  double throttle;
+  Position position;
+  position.set_piece(3);
+  position.set_start_lane(0);
+  position.set_end_lane(1);
+  position.set_piece_distance(95);
+  double velocity = 5.0;
+  CarState state(position, velocity, 0, Switch::kStay, 0, TurboState());
+
+  EXPECT_FALSE(car_tracker_->BoundaryThrottle(state, &throttle));
+}
+
+class GetCurvesTest : public CarTrackerTest {
+};
+
+TEST_F(GetCurvesTest, Basic) {
+  Position position;
+  position.set_piece(3);
+  position.set_piece_distance(95);
+  CarState state(position, 0, 0, Switch::kStay, 0, TurboState());
+
+  vector<CarTracker::Curve> curves = car_tracker_->GetCurves(state, 500);
+  ASSERT_EQ(4, curves.size());
+
+  EXPECT_EQ(0, curves[0].direction);
+  EXPECT_NEAR(0, curves[0].radius, 1e-9);
+  EXPECT_NEAR(0, curves[0].distance, 1e-9);
+
+  EXPECT_EQ(-1, curves[1].direction);
+  EXPECT_NEAR(110, curves[1].radius, 1e-9);
+  EXPECT_NEAR(5, curves[1].distance, 1e-9);
+
+  EXPECT_EQ(-1, curves[2].direction);
+  EXPECT_NEAR(210, curves[2].radius, 1e-9);
+  EXPECT_NEAR(350.57519189487726, curves[2].distance, 1e-9);
+
+  EXPECT_EQ(0, curves[3].direction);
+  EXPECT_NEAR(0, curves[3].radius, 1e-9);
+  EXPECT_NEAR(433.04199905160931, curves[3].distance, 1e-9);
 }
 
 }  // namespace game

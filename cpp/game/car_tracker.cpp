@@ -342,4 +342,65 @@ bool CarTracker::HasSomeoneMaybeBumpedMe(const map<string, Position>& positions,
   return false;
 }
 
+bool CarTracker::BoundaryThrottle(const CarState& car_state, double* throttle) {
+  // Switches have different radiuses anyway.
+  if (car_state.position().start_lane() != car_state.position().end_lane()) {
+    return false;
+  }
+
+  const auto& piece = race_->track().PieceFor(car_state.position());
+  const auto& next_piece = race_->track().PieceFor(car_state.position(), 1);
+
+  // TODO(tomek): We assume pieces are long enough we cant skip them
+  if (piece == next_piece) {
+    *throttle = 1;
+    return true;
+  }
+
+  double distance = lane_length_model_.Length(car_state.position()) - car_state.position().piece_distance();
+  return velocity_model_.BoundaryThrottle(car_state.velocity(), distance, throttle);
+}
+
+// TODO(tomek): make it working for switches
+vector<CarTracker::Curve> CarTracker::GetCurves(const CarState& car_state, double distance) {
+  double d = 0.0;
+
+  vector<Curve> curves;
+  if (car_state.position().start_lane() != car_state.position().end_lane()) {
+    return curves;
+  }
+
+  Position position = car_state.position();
+
+  Piece previous_piece = race_->track().PieceFor(car_state.position(), 0);
+  {
+    curves.push_back(Curve(-sgn(previous_piece.angle()), radius_model_.Radius(position), 0));
+    d += lane_length_model_.Length(car_state.position()) - car_state.position().piece_distance();
+  }
+
+  // Consider maximum of 100 pieces.
+  for (int i = 1; i < 100; ++i) {
+    if (d > distance) {
+      break;
+    }
+
+    Piece piece = race_->track().PieceFor(car_state.position(), i);
+
+    position.set_piece((position.piece() + 1) % race_->track().pieces().size());
+
+    if (piece == previous_piece) {
+      d += lane_length_model_.Length(position);
+      previous_piece = piece;
+      continue;
+    }
+
+    curves.push_back(Curve(-sgn(piece.angle()), radius_model_.Radius(position), d));
+
+    d += lane_length_model_.Length(position);
+    previous_piece = piece;
+  }
+
+  return curves;
+}
+
 }  // namespace game

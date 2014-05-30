@@ -60,16 +60,6 @@ class DriftModel {
 
   double ComputeMaxError();
 
-  // This method is training the model assuming that only x3 is changing from
-  // defaults. It seems it is true for all tracks so far, and it allows us to
-  // get very good approximate from just one point!
-  //
-  // Even if only one point is enough, we will set ready_ flag only after 4 points
-  // because accuracy from one point is low.
-  void TrainOnlyOneVariable();
-
-  std::ofstream file_;
-
   // If true, we are pretty confident, that the model is ok.
   // But it is still possible to improve it (e.g. get more points
   // to get better accuracy) so we also use very ready below.

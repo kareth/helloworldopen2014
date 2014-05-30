@@ -1,6 +1,8 @@
 #ifndef CPP_GAME_PIECE_H_
 #define CPP_GAME_PIECE_H_
 
+#include <sstream>
+
 namespace game {
 
 enum class PieceType {
@@ -31,6 +33,25 @@ class Piece {
   // Only for PieceType::kBent.
   const double angle() const { return angle_; }
   const double radius() const { return radius_; }
+
+  bool operator==(const Piece& p) const {
+    return type_ == p.type_ && length_ == p.length_ &&
+           radius_ == p.radius_ && angle_ == p.angle_;
+  }
+
+  std::string DebugString() const {
+    std::stringstream ss;
+    if (type_ == PieceType::kStraight) {
+      ss << "type: straight" << std::endl;
+      ss << "length: " << length_ << std::endl;
+    } else {
+      ss << "type: bent" << std::endl;
+      ss << "radius: " << radius_ << std::endl;
+      ss << "angle: " << angle_ << std::endl;
+    }
+    ss << "has_switch: " << has_switch_ << std::endl;
+    return ss.str();
+  }
 
  private:
   Piece(double length, bool has_switch)
