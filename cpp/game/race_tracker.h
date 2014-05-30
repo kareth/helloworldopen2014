@@ -6,6 +6,7 @@
 #include "game/position.h"
 #include "game/car_tracker.h"
 #include "game/bump_detector.h"
+#include "game/lane_scorer.h"
 
 namespace game {
 
@@ -49,10 +50,12 @@ class RaceTracker {
   void DNF(const std::string& color);
   void ResurrectCars();
 
+  // Score lane based on who is there
+  LaneScore ScoreLane(int from, int to, int lane);
 
   // Move to enemy?
   bool WorthBumping(const std::string& color);
-  bool ShouldTryToOvertake(const std::string& color, int from, int to);
+  bool ShouldOvertake(const std::string& color, int from, int to);
 
   // Getters
   const std::vector<EnemyTracker>& enemies() const { return enemies_; }
@@ -80,6 +83,7 @@ class RaceTracker {
   std::string color_;
 
   BumpDetector bump_detector_;
+  LaneScorer lane_scorer_;
 };
 
 }  // namespace game

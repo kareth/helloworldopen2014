@@ -7,13 +7,13 @@ namespace game {
 
 RaceTracker::RaceTracker(game::CarTracker& car_tracker,
           const game::Race& race, const std::string& color)
-  : car_tracker_(car_tracker), race_(race), color_(color),
-    bump_detector_(car_tracker, race) {
+  : car_tracker_(car_tracker), race_(race), color_(color), enemies_(),
+    bump_detector_(car_tracker, race),
+    lane_scorer_(race, car_tracker, *this, enemies_, color) {
 }
 
 void RaceTracker::Record(const std::map<std::string, Position>& positions) {
   bump_detector_.Record(enemies_, positions);
-
   for (auto& p : positions) {
     if (indexes_.find(p.first) == indexes_.end()) {
       indexes_[p.first] = enemies_.size();
@@ -28,60 +28,46 @@ bool RaceTracker::BumpOccured(const std::string& color, const std::string& color
   return bump_detector_.BumpOccured(color, color2);
 }
 
-void RaceTracker::RecordLapTime(const std::string& color, int time) {
-  enemy(color).RecordLapTime(time);
+LaneScore RaceTracker::ScoreLane(int from, int to, int lane) {
+  return lane_scorer_.ScoreLane(from, to, lane);
 }
 
-// TODO test
-std::vector<std::string> RaceTracker::CarsBetween(int from, int to, int lane) {
-  std::vector<std::string> result;
-  for (auto& i : indexes_) {
-    if (i.first == color_) continue;
-    if (race_.track().IsBetween(enemies_[i.second].state().position(), from, to) &&
-        enemies_[i.second].state().position().end_lane() == lane)
-      result.push_back(i.first);
+
+// Is the car slow enough to overtake ?
+bool RaceTracker::ShouldOvertake(const std::string& color, int from, int to) {
+ if (enemy(color).is_dead()) {
+    if (race_.track().IsFirstInFront(
+        enemy(color_).PositionAfterTime(enemy(color).time_to_spawn() - 15),
+        enemy(color).state().position()))
+      return false;
+    else
+      return true;
   }
+
+  // Overtake everyone in the beginning
+  if (car_tracker_.current_state().position().lap() < 1)
+    return true;
+
+  return enemy(color_).CanOvertake(enemy(color), from, to);
+}
+
+// Is it worth bumping?
+bool RaceTracker::WorthBumping(const std::string& color) {
+  if (enemy(color).is_dead())
+    return false;
+
+  int from = race_.track().NextSwitch(car_tracker_.current_state().position().piece());
+  int to = race_.track().NextSwitch(from);
+
+  bool result = !enemy(color_).CanOvertake(enemy(color), from, to);
+
+  if (!result)
+    printf("Could do Turbo bumping, but the guy (%s) is not worth it\n", color.c_str());
+
   return result;
 }
 
-std::vector<EnemyTracker*> RaceTracker::PredictedCarsBetween(int from, int to, int lane) {
-  auto& me = enemies_[indexes_[color_]];
-  Position position;
-  position.set_piece(to);
-  position.set_piece_distance(0);
-  int time = me.TimeToPosition(position);
-
-  std::vector<EnemyTracker*> result;
-  for (auto& i : indexes_) {
-    if (i.first == color_) continue;
-    auto& enemy = enemies_[i.second];
-
-    if (enemy.is_dead() && enemy.time_to_spawn() > 10000)
-      continue;
-
-    // If Im already ahead - ignore
-    if (race_.track().IsFirstInFront(me.state().position(), enemy.state().position()))
-      continue;
-
-    // Check lane
-    if (enemy.state().position().end_lane() == lane) {
-
-      // If dead, check if he respawns after I pass him
-      if (enemy.is_dead()) {
-        if (!race_.track().IsFirstInFront(
-            me.PositionAfterTime(enemy.time_to_spawn() - 15),
-            enemy.state().position())) {
-          result.push_back(&enemies_[i.second]);
-        }
-        continue;
-      }
-
-      if (race_.track().IsBetween(enemy.PositionAfterTime(time), from, to))
-        result.push_back(&enemies_[i.second]);
-    }
-  }
-  return result;
-}
+// TODO move?
 
 // Check if I can die by just going all out
 bool RaceTracker::IsSafeAttack(const Command& command, Command* safe_command) {
@@ -264,41 +250,12 @@ bool RaceTracker::IsSafeBehind(const Command& command, Command* safe_command) {
   return true;
 }
 
-// TODO move
-bool RaceTracker::ShouldTryToOvertake(const std::string& color, int from, int to) {
- if (enemy(color).is_dead()) {
-    if (race_.track().IsFirstInFront(
-        enemy(color_).PositionAfterTime(enemy(color).time_to_spawn() - 15),
-        enemy(color).state().position()))
-      return false;
-    else
-      return true;
-  }
-
-  // Overtake everyone in the beginning
-  if (car_tracker_.current_state().position().lap() < 1)
-    return true;
-
-  return enemy(color_).CanOvertake(enemy(color), from, to);
-}
-
-// TODO move
-bool RaceTracker::WorthBumping(const std::string& color) {
-  if (enemy(color).is_dead())
-    return false;
-
-  int from = race_.track().NextSwitch(car_tracker_.current_state().position().piece());
-  int to = race_.track().NextSwitch(from);
-
-  bool result = !enemy(color_).CanOvertake(enemy(color), from, to);
-
-  if (!result)
-    printf("Could do Turbo bumping, but the guy (%s) is not worth it\n", color.c_str());
-
-  return result;
-}
 
 // Record methods
+
+void RaceTracker::RecordLapTime(const std::string& color, int time) {
+  enemy(color).RecordLapTime(time);
+}
 
 void RaceTracker::TurboForEveryone(const game::Turbo& turbo) {
   for (auto& enemy : enemies_)
