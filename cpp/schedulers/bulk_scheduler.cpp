@@ -3,6 +3,7 @@
 #include "schedulers/never_switch_scheduler.h"
 #include "schedulers/binary_throttle_scheduler.h"
 #include "schedulers/wojtek_throttle_scheduler.h"
+#include "schedulers/magic_throttle_scheduler.h"
 
 #include "gflags/gflags.h"
 
@@ -87,6 +88,9 @@ ThrottleScheduler* BulkScheduler::CreateThrottleScheduler() {
   } else if (FLAGS_throttle_scheduler == "WojtekThrottleScheduler") {
     std::cout << "Using WojtekThrottleScheduler" << std::endl;
     return new WojtekThrottleScheduler(&race_, &car_tracker_);
+  } else if (FLAGS_throttle_scheduler == "MagicThrottleScheduler") {
+    std::cout << "Using " << FLAGS_throttle_scheduler << std::endl;
+    return new MagicThrottleScheduler(race_, car_tracker_, time_limit_);
   }
 
   std::cerr << "UNKNOWN throttle scheduler: " << FLAGS_throttle_scheduler << std::endl;
