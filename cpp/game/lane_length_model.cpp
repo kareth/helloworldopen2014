@@ -73,13 +73,13 @@ double LaneLengthModel::Length(const Position& position, bool* perfect) const {
   double radius1 = track_->LaneRadius(position.piece(), position.start_lane());
   double radius2 = track_->LaneRadius(position.piece(), position.end_lane());
 
-  if (switch_on_turn_length_.count({radius1, radius2, fabs(piece.angle())}) > 0) {
-    return switch_on_turn_length_.at({radius1, radius2, fabs(piece.angle())});
+  if (switch_on_turn_length_.count(std::make_tuple(radius1, radius2, fabs(piece.angle()))) > 0) {
+    return switch_on_turn_length_.at(std::make_tuple(radius1, radius2, fabs(piece.angle())));
   }
   if (perfect) *perfect = false;
   // The opposite switch is much better predictor if available
-  if (switch_on_turn_length_.count({radius2, radius1, fabs(piece.angle())}) > 0) {
-    return switch_on_turn_length_.at({radius2, radius1, fabs(piece.angle())});
+  if (switch_on_turn_length_.count(std::make_tuple(radius2, radius1, fabs(piece.angle()))) > 0) {
+    return switch_on_turn_length_.at(std::make_tuple(radius2, radius1, fabs(piece.angle())));
   }
   return M_PI * radius1 * (fabs(piece.angle()) / 360.0) + M_PI * radius2 * (fabs(piece.angle()) / 360.0);
 }
@@ -102,7 +102,7 @@ void LaneLengthModel::Record(const Position& previous, const Position& current, 
 
   double radius1 = track_->LaneRadius(previous.piece(), previous.start_lane());
   double radius2 = track_->LaneRadius(previous.piece(), previous.end_lane());
-  switch_on_turn_length_[{radius1, radius2, fabs(piece.angle())}] = length;
+  switch_on_turn_length_[std::make_tuple(radius1, radius2, fabs(piece.angle()))] = length;
 }
 
 static jsoncons::json LoadCSV(const string& file_name) {
@@ -130,13 +130,13 @@ void LaneLengthModel::LoadSwitchLengths() {
   jsoncons::json straight_lengths = LoadCSV("data/switch-straight-lengths.csv");
   for (auto it = straight_lengths.begin_elements(); it != straight_lengths.end_elements(); ++it) {
     const auto& data = *it;
-    switch_on_straight_length_[{ToDouble(data["length"]), ToDouble(data["width"])}] = ToDouble(data["switch_length"]);
+    switch_on_straight_length_[std::make_tuple(ToDouble(data["length"]), ToDouble(data["width"]))] = ToDouble(data["switch_length"]);
   }
 
   jsoncons::json turn_lengths = LoadCSV("data/switch-turn-lengths.csv");
   for (auto it = turn_lengths.begin_elements(); it != turn_lengths.end_elements(); ++it) {
     const auto& data = *it;
-    switch_on_turn_length_[{ToDouble(data["start_radius"]), ToDouble(data["end_radius"]), ToDouble(data["angle"])}] = ToDouble(data["switch_length"]);
+    switch_on_turn_length_[std::make_tuple(ToDouble(data["start_radius"]), ToDouble(data["end_radius"]), ToDouble(data["angle"]))] = ToDouble(data["switch_length"]);
   }
 
   // Check if we are missing any data for current track.
@@ -156,11 +156,11 @@ void LaneLengthModel::LoadSwitchLengths() {
       for (int i = 1; i < track_->lanes().size(); ++i) {
         double start_radius = piece.radius() + track_->lanes()[i - 1].distance_from_center();
         double end_radius = piece.radius() + track_->lanes()[i].distance_from_center();
-        if (switch_on_turn_length_.count({start_radius, end_radius, fabs(piece.angle())}) == 0) {
+        if (switch_on_turn_length_.count(std::make_tuple(start_radius, end_radius, fabs(piece.angle()))) == 0) {
           has_all = false;
           std::cout << "WARNING: Missing length for switch on turn start_radius: " << start_radius << " end_radius: " << end_radius << " angle: " << fabs(piece.angle()) << std::endl;
         }
-        if (switch_on_turn_length_.count({end_radius, start_radius, fabs(piece.angle())}) == 0) {
+        if (switch_on_turn_length_.count(std::make_tuple(end_radius, start_radius, fabs(piece.angle()))) == 0) {
           has_all = false;
           std::cout << "WARNING: Missing length for switch on turn start_radius: " << end_radius << " end_radius: " << start_radius << " angle: " << fabs(piece.angle()) << std::endl;
         }
