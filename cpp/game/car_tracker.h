@@ -7,6 +7,7 @@
 #include <limits>
 #include <map>
 #include <string>
+#include <cmath>
 
 #include "game/car_predictor.h"
 #include "game/crash_model.h"
@@ -143,14 +144,29 @@ class CarTracker : public CarPredictor {
     int direction = 0;
     // For straight pieces, it will be 0.
     double radius = 0;
-    double distance = 0.0;
+    double distance = 0.0; // Distance from a given car state to begin of this curve
+    double length = 0.0;   // Distance from the begin (or car position) to the end of the curve
+
+    // Square root ratius and 0 is converted to an arbitrary non-zero number
+    double rradius() const {
+        if (radius == 0.0)
+            return 10;  //TODO
+        return pow(radius, 0.5);
+    }
+
     Curve() {}
-    Curve(int direction, double radius, double distance) :
-      direction(direction), radius(radius), distance(distance) {}
+    Curve(int direction, double radius, double distance, double length) :
+      direction(direction), radius(radius), distance(distance), length(length) {}
   };
 
   // Returns empty vector if car is on the switch.
   vector<Curve> GetCurves(const CarState& car_state, double distance);
+
+  const CrashModel& GetCrashModel() const { return crash_model_; }
+
+  const VelocityModel& GetVelocityModel() const { return velocity_model_; }
+  
+  const DriftModel& GetDriftModel() const { return drift_model_; }
 
  private:
   const int kDistanceBetweenIter = 500;

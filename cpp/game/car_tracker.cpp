@@ -374,8 +374,8 @@ vector<CarTracker::Curve> CarTracker::GetCurves(const CarState& car_state, doubl
 
   Piece previous_piece = race_->track().PieceFor(car_state.position(), 0);
   {
-    curves.push_back(Curve(-sgn(previous_piece.angle()), radius_model_.Radius(position), 0));
     d += lane_length_model_.Length(car_state.position()) - car_state.position().piece_distance();
+    curves.push_back(Curve(-sgn(previous_piece.angle()), radius_model_.Radius(position), 0, d));
   }
 
   // Consider maximum of 100 pieces.
@@ -394,7 +394,7 @@ vector<CarTracker::Curve> CarTracker::GetCurves(const CarState& car_state, doubl
       continue;
     }
 
-    curves.push_back(Curve(-sgn(piece.angle()), radius_model_.Radius(position), d));
+    curves.push_back(Curve(-sgn(piece.angle()), radius_model_.Radius(position), d, d - curves.back().distance));
 
     d += lane_length_model_.Length(position);
     previous_piece = piece;

@@ -85,6 +85,10 @@ class VelocityModel {
     return ready_;
   }
 
+  std::vector<double> GetModel() const {
+      return x_;
+  }
+
  private:
   void Train() {
     Approximation(m_, b_, x_);

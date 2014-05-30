@@ -54,6 +54,10 @@ class DriftModel {
     return ready_;
   }
 
+  std::vector<double> GetModel() const {
+      return x_;
+  }
+
  private:
   // Train the model 'x_' based on 'raw_points_'.
   void Train();

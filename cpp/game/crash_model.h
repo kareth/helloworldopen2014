@@ -56,6 +56,10 @@ class CrashModel {
     return ready_;
   }
 
+  double GetModel() const {
+      return safe_angle_;
+  }
+
  private:
 
   // True if the model is ready (there was at least one crash.
