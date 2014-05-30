@@ -49,7 +49,7 @@ void EnemyTracker::RecordPosition(const game::Position& position) {
   }
 }
 
-Position EnemyTracker::PositionAfterTime(int time) {
+Position EnemyTracker::PositionAfterTime(int time) const {
   auto state = state_;
   // TODO dead?
   for (int i = 0; i < min(time, 1000); i++) {
@@ -60,7 +60,7 @@ Position EnemyTracker::PositionAfterTime(int time) {
   return state.position();
 }
 
-int EnemyTracker::TimeToPosition(const Position& target) {
+int EnemyTracker::TimeToPosition(const Position& target) const {
   auto state = state_;
 
   int time = 0;
