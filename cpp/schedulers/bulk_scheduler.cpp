@@ -18,18 +18,6 @@ BulkScheduler::BulkScheduler(const game::Race& race,
                game::RaceTracker& race_tracker,
                game::CarTracker& car_tracker,
                int time_limit)
- : race_(race), car_tracker_(car_tracker), race_tracker_(race_tracker) {
-  throttle_scheduler_.reset(
-      //new BinaryThrottleScheduler(race_, car_tracker_, time_limit));
-      new WojtekThrottleScheduler(&race_, &car_tracker_));
-  turbo_scheduler_.reset(
-      new GreedyTurboScheduler(race_, car_tracker_));
-  if (FLAGS_always_switch) {
-    switch_scheduler_.reset(new AlwaysSwitchScheduler(&race_.track()));
-  } else {
-    switch_scheduler_.reset(
-        new ShortestPathSwitchScheduler(race_, race_tracker_, car_tracker_));
-  }
     : race_(race), car_tracker_(car_tracker), race_tracker_(race_tracker), time_limit_(time_limit) {
   turbo_scheduler_.reset(new GreedyTurboScheduler(race_, car_tracker_));
   throttle_scheduler_.reset(CreateThrottleScheduler());
