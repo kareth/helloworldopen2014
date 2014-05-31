@@ -14,12 +14,12 @@ namespace schedulers {
 using game::CarState;
 using game::CarTracker;
 
-const int MagicThrottleScheduler::HORIZON = 50;
-const int MagicThrottleScheduler::N = 100;
+const int MagicThrottleScheduler::HORIZON = 40;
+const int MagicThrottleScheduler::N = 60;
 
 MagicThrottleScheduler::MagicThrottleScheduler(const game::Race& race,
     game::CarTracker& car_tracker, int time_limit)
-  : race_(race), car_tracker_(car_tracker), best_schedule_(&car_tracker, HORIZON), time_limit_(time_limit) 
+  : race_(race), car_tracker_(car_tracker), best_schedule_(&car_tracker, HORIZON), time_limit_(time_limit)
 {
 }
 
@@ -29,11 +29,20 @@ void MagicThrottleScheduler::Schedule(const game::CarState& state) {
   //if (!best_schedule_.IsSafe(state))       // TODO: I'm not sure. Maybe we should make it safe?
   //  best_schedule_.Reset(state);
   
-  ImproveByMagic(state, best_schedule_);
+  Sched maxs(&car_tracker_, HORIZON);
+  for (int i=0;i<HORIZON;i++)
+      maxs.throttles[i] = 1.0;
+  if (maxs.IsSafe(state)) {
+    maxs.UpdateDistance(state);
+    best_schedule_ = maxs;
+  } else {
+    ImproveByMagic(state, best_schedule_);
+  }
 
   //TODO: Check if safe, make some local changes to make it safe
 
   Log(state);
+  tick_ += 1;
 }
 
 void WriteDoubleVector(std::ostringstream& os, const vector<double>& v) {
@@ -54,11 +63,12 @@ void WriteCurves(std::ostringstream& os, const vector<CarTracker::Curve>& v) {
   os << "\"";
 }
 
-vector<double> MakeMagic(int n, int horizon, const vector<double>& vm, const vector<double>& dm, double max_drift, double v0, double a_1, double a0, const vector<CarTracker::Curve>& curves, const vector<double>& initial_x) {
+vector<double> MakeMagic(int tick, int n, int horizon, const vector<double>& vm, const vector<double>& dm, double max_drift, double v0, double a_1, double a0, const vector<CarTracker::Curve>& curves, const vector<double>& initial_x) {
 
   std::ostringstream cmd;
    
   cmd << "python magic.py ";
+  cmd << tick << " ";
   cmd << n << " " << horizon << " ";
   WriteDoubleVector(cmd, vm); cmd << " ";
   WriteDoubleVector(cmd, dm); cmd << " ";
@@ -67,6 +77,7 @@ vector<double> MakeMagic(int n, int horizon, const vector<double>& vm, const vec
   WriteDoubleVector(cmd, initial_x);
 
   //TODO: Is this OK? Can I have any unexpected problems with this? NULL?
+  //printf("%s\n", cmd.str().c_str());
   FILE* f = popen(cmd.str().c_str(), "r");
   vector<double> x;
   double v;
@@ -74,7 +85,7 @@ vector<double> MakeMagic(int n, int horizon, const vector<double>& vm, const vec
     x.push_back(v);
   }
   pclose(f);
-  //TODO: Check whether x has size of n. What else?
+  //TODO: Check whether x has size of n. Fill with zeros otherwise.
 
   return x;
 }
@@ -84,17 +95,38 @@ void MagicThrottleScheduler::ImproveByMagic(const game::CarState& state, Sched& 
   vector<double> vm = car_tracker_.GetVelocityModel().GetModel();
   double max_drift = car_tracker_.GetCrashModel().GetModel();
 
-  //TODO: Appropriate distance
-  vector<CarTracker::Curve> curves = car_tracker_.GetCurves(state, 1000); 
+  //TODO: Appropriate distance (N*10 is not OK in case of turbo). Does adding more influence performance?
+  vector<CarTracker::Curve> curves = car_tracker_.GetCurves(state, N*10); 
 
-  schedule.throttles = MakeMagic(N, HORIZON, vm, dm, max_drift, state.velocity(),
+  schedule.throttles = MakeMagic(tick_, N, HORIZON, vm, dm, max_drift, state.velocity(),
           state.previous_angle(), state.position().angle(), curves, schedule.throttles);
   schedule.UpdateDistance(state);
 }
 
 void MagicThrottleScheduler::Log(const game::CarState& state) {
-  for (int i=0; i<HORIZON; ++i)
-    printf("%.1f ", best_schedule_.throttles[i]);
+  for (int i=0; i<20; ++i)
+    printf("%.3f ", best_schedule_.throttles[i]);
+  printf("\n");
+
+  CarState next = state;
+  for (int i=0; i<20; ++i) {
+    next = car_tracker_.Predict(next, game::Command(best_schedule_.throttles[i]));
+    printf("%.2f ", next.position().angle());
+  }
+  printf("\n");
+
+  next = state;
+  for (int i=0; i<20; ++i) {
+    next = car_tracker_.Predict(next, game::Command(best_schedule_.throttles[i]));
+    printf("%.3f ", next.velocity());
+  }
+  printf("\n");
+
+  next = state;
+  for (int i=0; i<20; ++i) {
+    next = car_tracker_.Predict(next, game::Command(best_schedule_.throttles[i]));
+    printf("%d(%.2f) ", next.position().piece(), next.position().piece_distance());
+  }
   printf("\n");
 
   std::cout << "(" << state.position().piece() << ")" << " angle: " <<

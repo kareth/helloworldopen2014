@@ -43,6 +43,8 @@ class MagicThrottleScheduler : public ThrottleScheduler {
   const int time_limit_;
   Sched best_schedule_;
 
+  int tick_ = 0; //TODO: This is bad here. Should be somewhere globally
+
   void Log(const game::CarState& state);
   void ImproveByMagic(const game::CarState& state, Sched& schedule);
 };
