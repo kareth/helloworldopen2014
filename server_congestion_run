@@ -1,0 +1,5 @@
+#!/bin/bash
+
+source ./config
+
+ssh hwo@$SERVER_ADDRESS "./congestion_run"

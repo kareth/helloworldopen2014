@@ -210,6 +210,7 @@ bool RaceTracker::IsSafeBehind(const Command& command, Command* safe_command) {
       continue;
     }
 
+    // TODO ppl can spawn here and it doesnt take it under consideration
     if (enemy.is_dead()) {
       continue;
     }

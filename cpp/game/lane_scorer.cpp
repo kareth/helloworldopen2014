@@ -27,7 +27,7 @@ LaneScore LaneScorer::ScoreLane(int from, int to, int lane) {
   end_position.set_piece_distance(0);
   end_position.set_start_lane(lane);
   end_position.set_end_lane(lane);
-  printf ("(%d,%.2lf,<%d,%d>) CEL\n", 
+  printf ("(%d,%.2lf,<%d,%d>) CEL\n",
     end_position.piece(),
     end_position.piece_distance(),
     end_position.start_lane(),
@@ -96,6 +96,9 @@ int LaneScorer::ScoreDeadEnemy(const EnemyTracker& me, const EnemyTracker& enemy
 }
 
 int LaneScorer::ScoreLivingEnemy(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position) {
+  // TODO disabled calculations
+  return -1;
+
   // If models are ready try to predict if we will actually hit
   if (enemy.IsReady() && me.IsReady()) {
     int my_time = me.TimeToPosition(end_position);
