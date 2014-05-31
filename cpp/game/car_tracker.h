@@ -149,14 +149,14 @@ class CarTracker : public CarPredictor {
 
     // Square root ratius and 0 is converted to an arbitrary non-zero number
     double rradius() const {
-        if (radius == 0.0)
-            return 10;  //TODO
+        if (radius == 0.0) // Straight line
+            return 10;  //TODO(Wojtek): Could be better for smoothness (e.g. last radius)
         return pow(radius, 0.5);
     }
 
     Curve() {}
-    Curve(int direction, double radius, double distance, double length) :
-      direction(direction), radius(radius), distance(distance), length(length) {}
+    Curve(int direction, double radius, double distance) :
+      direction(direction), radius(radius), distance(distance) {}
   };
 
   // Returns empty vector if car is on the switch.
