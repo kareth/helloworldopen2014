@@ -1,0 +1,6 @@
+* rradius = last rradius instead of 10 hardcoded in curves
+* use should not use MagicScheduler before model is ready (i.e. getting future schedule)
+
+* Upgrade model to accepting turbo
+* Improve performance be better handle after-horizon safety
+* What horizon is optimal? (time vs. horizon length) What after horizon is worth trying?
