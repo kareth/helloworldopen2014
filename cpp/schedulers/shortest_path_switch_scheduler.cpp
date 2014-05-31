@@ -67,6 +67,8 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
     if (current_score < 0) current = kInf;
   }
 
+  printf("%lf %lf %lf\n",left, current, right);
+
   if (left < current && left < right) {
     scheduled_switch_ = game::Switch::kSwitchLeft;
     target_switch_ = from;

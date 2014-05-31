@@ -27,21 +27,21 @@ LaneScore LaneScorer::ScoreLane(int from, int to, int lane) {
   end_position.set_piece_distance(0);
   end_position.set_start_lane(lane);
   end_position.set_end_lane(lane);
-  /*printf ("(%d,%.2lf,<%d,%d>) CEL\n", 
+  printf ("(%d,%.2lf,<%d,%d>) CEL\n", 
     end_position.piece(),
     end_position.piece_distance(),
     end_position.start_lane(),
-    end_position.end_lane());*/
+    end_position.end_lane());
 
-  //printf("Score of %s is %d\n",enemy.color().c_str(), score);
 
   int lane_score = 0;
   for (auto& enemy : enemies_) {
     if (enemy.color() == color_) continue; // Me
     int score = ScoreEnemy(me, enemy, end_position);
+    printf("Score of %s is %d\n",enemy.color().c_str(), score);
 
     // If we should overtake someone
-    if (score == 0)
+    if (score < 0)
       lane_score = min(lane_score, score);
 
     // If there is s1 worth bumping
@@ -57,7 +57,7 @@ LaneScore LaneScorer::ScoreLane(int from, int to, int lane) {
 int LaneScorer::ScoreEnemy(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position) {
   // if im closer to the end, then im ahead, so ignore the guy
   // TODO if im on the edge of that difference, I can switch into him.
-  /*printf ("(%d,%.2lf,<%d,%d> =%lf) (%d,%.2lf,<%d,%d> =%lf) ",
+  printf ("(%d,%.2lf,<%d,%d> =%lf) (%d,%.2lf,<%d,%d> =%lf) ",
       me.state().position().piece(),
       me.state().position().piece_distance(),
       me.state().position().start_lane(),
@@ -67,7 +67,7 @@ int LaneScorer::ScoreEnemy(const EnemyTracker& me, const EnemyTracker& enemy, co
       enemy.state().position().piece_distance(),
       enemy.state().position().start_lane(),
       enemy.state().position().end_lane(),
-      car_tracker_.DistanceBetween(enemy.state().position(), end_position));*/
+      car_tracker_.DistanceBetween(enemy.state().position(), end_position));
   if (car_tracker_.DistanceBetween(me.state().position(), end_position) <
       car_tracker_.DistanceBetween(enemy.state().position(), end_position))
     return 0;
