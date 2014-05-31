@@ -58,9 +58,9 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
 
   // Overtaking
   if (FLAGS_overtake) {
-    double left_score = race_tracker_.ScoreLane(from, to, position.end_lane() - 1);
-    double right_score = race_tracker_.ScoreLane(from, to, position.end_lane() + 1);
-    double current_score = race_tracker_.ScoreLane(from, to, position.end_lane());
+    int left_score = race_tracker_.ScoreLane(from, to, position.end_lane() - 1);
+    int right_score = race_tracker_.ScoreLane(from, to, position.end_lane() + 1);
+    int current_score = race_tracker_.ScoreLane(from, to, position.end_lane());
 
     if (left_score < 0) left = kInf;
     if (right_score < 0) right = kInf;

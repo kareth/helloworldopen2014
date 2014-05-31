@@ -37,6 +37,7 @@ class EnemyTracker {
   bool is_dead() const { return dead_; }
   bool is_accelerating() const { return accelerating_; }
   bool has_finished() const { return disabled_ || finished_; }
+  bool IsReady() const { return ready_; }
 
   // TODO add higher level method to assess that
   int time_to_spawn() const {
@@ -84,6 +85,8 @@ class EnemyTracker {
   bool disabled_ = false;
 
   int time_since_crash_ = 0;
+
+  bool ready_ = false;
 };
 }  // namespace game
 
