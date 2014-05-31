@@ -57,6 +57,8 @@ class RaceTracker {
   bool WorthBumping(const std::string& color);
   bool ShouldOvertake(const std::string& color, int from, int to);
 
+  bool IsCompetitive(const std::string& color) { return false; }
+
   // Getters
   const std::vector<EnemyTracker>& enemies() const { return enemies_; }
   const std::string& my_color() const { return color_; }

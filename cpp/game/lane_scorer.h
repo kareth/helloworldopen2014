@@ -38,7 +38,8 @@ class LaneScorer {
   int ScoreEnemy(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position);
   int ScoreDeadEnemy(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position);
   int ScoreLivingEnemy(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position);
-  int EnemyBumpScore(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position);
+  int EnemyBumpScore(const EnemyTracker& enemy, double my_speed, double his_speed);
+  bool BumpPosition(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position, Position* bump_position);
 
   std::vector<EnemyTracker>& enemies_;
   const Race& race_;
@@ -48,8 +49,8 @@ class LaneScorer {
   const string color_;
   const double kCarLength;
 
-  const int kDeadCrash = -100;
-  const int kOvertake = -10;
+  const int kDeadCrash = -10;
+  const int kMustBump = 10;
 };
 
 }  // namespace game

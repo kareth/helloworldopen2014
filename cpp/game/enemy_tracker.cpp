@@ -49,31 +49,67 @@ void EnemyTracker::RecordPosition(const game::Position& position) {
   }
 }
 
-Position EnemyTracker::PositionAfterTime(int time) const {
+Position EnemyTracker::PositionAfterTime(int time, int target_lane) const {
   auto state = state_;
-  // TODO dead?
+
+  if (target_lane != -1) {
+    if (state.position().end_lane() - 1 == target_lane)
+      state.set_switch_state(Switch::kSwitchLeft);
+
+    if (state.position().end_lane() + 1 == target_lane)
+      state.set_switch_state(Switch::kSwitchRight);
+  }
+
+  // Wait until spawn
+  if (dead_ == true)
+    time -= time_to_spawn();
+
+  // Do rest ticks regularly
   for (int i = 0; i < min(time, 1000); i++) {
     double throttle = car_tracker_.velocity_model().PredictThrottle(
         Velocity(state.position().piece()));
+
+    // Acceleration from too low speed
+    if (state.velocity() < 0.9 * Velocity(state.position().piece()))
+      throttle = 1;
+
     state = car_tracker_.Predict(state, Command(throttle));
   }
+
   return state.position();
 }
 
 int EnemyTracker::TimeToPosition(const Position& target) const {
   auto state = state_;
 
+  if (target.end_lane() != state.position().end_lane()) {
+    if (state.position().end_lane() - 1 == target.end_lane())
+      state.set_switch_state(Switch::kSwitchLeft);
+
+    if (state.position().end_lane() + 1 == target.end_lane())
+      state.set_switch_state(Switch::kSwitchRight);
+  }
+
   int time = 0;
-  // TODO dead?
-  // if (dead_) time = time_to_spawn_;
-  for (int limit = 0; limit < 300; limit++, time++) {
+  if (dead_) time = time_to_spawn();
+
+  const int kCarLength = race_.cars()[0].length();
+
+  for (int limit = 0; limit < 1000; limit++, time++) {
     double throttle = car_tracker_.velocity_model().PredictThrottle(
         Velocity(state.position().piece()));
+
+    // Acceleration from too low speed
+    if (state.velocity() < 0.9 * Velocity(state.position().piece()))
+      throttle = 1;
+
     state = car_tracker_.Predict(state, Command(throttle));
 
-    if (race_.track().IsFirstInFront(state.position(), target))
+    if (car_tracker_.DistanceBetween(state.position(), target) >
+        car_tracker_.DistanceBetween(target, state.position()))
       return time;
   }
+
   return 100000;
 }
 
