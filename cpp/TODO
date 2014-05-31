@@ -1,4 +1,5 @@
 * Big throttle scheduler comparison:
+    - at first without turbo
     - all maps/schedulers
     - best lap ticks, sum ticks for 3 laps, max comp. time, avg comp. time 
     - x,a,v,d,dir,rad,turbo table for each map/scheduler.
@@ -16,12 +17,12 @@
     - in each node consider 0, 1. If 1 is too much than consider something less than 1, maximizing future angle (with all other throttles set to 0; binary search for feasibility).
     - time limit, return currently best on time
     - idea: 111111000 is always better than some other combination of 7 1' and 3 0'
+        - could this be used as upper bound?
 
 * Solver:
     - check if on Keimodo there are no errors
 
 * Solver upgrades:
-    - Solver improve only if new is better than the older
     - accept turbo
 
 * Solver performance:

@@ -25,12 +25,13 @@ MagicThrottleScheduler::MagicThrottleScheduler(const game::Race& race,
 
 void MagicThrottleScheduler::Schedule(const game::CarState& state) {
   best_schedule_.ShiftLeftFillSafe(state);
-  best_schedule_.UpdateDistance(state);      // Must do it, because throttle could have changed!
-  //if (!best_schedule_.IsSafe(state))       // TODO: I'm not sure. Maybe we should make it safe?
-  //  best_schedule_.Reset(state);
+  best_schedule_.UpdateDistance(state);      // This is spurious, but just in case...
+
+  if (!best_schedule_.IsSafe(state))         // Just in case  
+    best_schedule_.Reset(state);
   
   Sched maxs(&car_tracker_, HORIZON);
-  for (int i=0;i<HORIZON;i++)
+  for (int i = 0;i < HORIZON; ++i)
       maxs.throttles[i] = 1.0;
   if (maxs.IsSafe(state)) {
     maxs.UpdateDistance(state);
@@ -98,9 +99,14 @@ void MagicThrottleScheduler::ImproveByMagic(const game::CarState& state, Sched& 
   //TODO: Appropriate distance (N*10 is not OK in case of turbo). Does adding more influence performance?
   vector<CarTracker::Curve> curves = car_tracker_.GetCurves(state, N*10); 
 
-  schedule.throttles = MakeMagic(tick_, N, HORIZON, vm, dm, max_drift, state.velocity(),
+  Sched new_schedule(schedule);
+  new_schedule.throttles = MakeMagic(tick_, N, HORIZON, vm, dm, max_drift, state.velocity(),
           state.previous_angle(), state.position().angle(), curves, schedule.throttles);
-  schedule.UpdateDistance(state);
+  new_schedule.UpdateDistance(state);
+
+  // Just in case the magic makes something stupid
+  if (new_schedule.distance > schedule.distance)
+      schedule = new_schedule;
 }
 
 void MagicThrottleScheduler::Log(const game::CarState& state) {
@@ -122,12 +128,12 @@ void MagicThrottleScheduler::Log(const game::CarState& state) {
   }
   printf("\n");
 
-  next = state;
+/*  next = state;
   for (int i=0; i<20; ++i) {
     next = car_tracker_.Predict(next, game::Command(best_schedule_.throttles[i]));
     printf("%d(%.2f) ", next.position().piece(), next.position().piece_distance());
   }
-  printf("\n");
+  printf("\n");*/
 
   std::cout << "(" << state.position().piece() << ")" << " angle: " <<
     state.position().angle() << " velocity: " << state.velocity() <<
