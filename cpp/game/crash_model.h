@@ -57,7 +57,12 @@ class CrashModel {
   }
 
   double GetModel() const {
-      return safe_angle_;
+    if (IsReady()) {
+      // I don't accept safe_angle of zero
+      return fmax(1, safe_angle_);
+    } else {
+      return fmax(1, fmax(guess_safe_angle_, safe_angle_));
+    }
   }
 
  private:
