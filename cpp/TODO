@@ -6,7 +6,7 @@
 
 * Which horizon is enough?
     - check more horizon settings (what about after-horizon?)
-    - perf: 
+    - perf: total ticks
 
 * rradius = last rradius instead of 10 hardcoded in curves
 * use should not use MagicScheduler before model is ready (i.e. getting future schedule)
@@ -26,10 +26,11 @@
     - accept turbo
 
 * Solver performance:
-    - make it do not treat a as variable
     - add initial solution
     - add bounds on the result
-    - add max. time
+    - add max. time 
     - better handle after-horizon safety
     - check whether directly computing d improves performance
     - tuner 
+
+    - DONE: make it do not treat a as variable [Probably could not be done, because it is in constraints. Check it]

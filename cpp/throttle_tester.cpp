@@ -53,11 +53,13 @@ int main(int argc, char** argv) {
   }
 
   std::cout << "BEST LAP: " << result.best_lap_time_in_ticks << std::endl;
+  std::cout << "TOTAL TICKS: " << result.total_ticks << std::endl;
   std::cout << "TOTAL DISTANCE: " << result.total_distance << std::endl;
+  std::cout << "MAX TICK TIME: " << result.max_tick_time_ms << " ms" << std::endl;
+  std::cout << "AVG TICK TIME: " << result.avg_tick_time_ms << " ms" << std::endl;
   if (result.crashed) {
     std::cout << "CRASHED !!!!!!!!!!!!!" << std::endl;
   }
-  std::cout << "MAX TICK TIME: " << result.max_tick_time_ms << " ms" << std::endl;
 
   return 0;
 }
