@@ -96,9 +96,6 @@ int LaneScorer::ScoreDeadEnemy(const EnemyTracker& me, const EnemyTracker& enemy
 }
 
 int LaneScorer::ScoreLivingEnemy(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position) {
-  // TODO disabled calculations
-  return -1;
-
   // If models are ready try to predict if we will actually hit
   if (enemy.IsReady() && me.IsReady()) {
     int my_time = me.TimeToPosition(end_position);
