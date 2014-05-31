@@ -12,6 +12,8 @@ using game::Command;
 using game::Switch;
 
 DEFINE_double(constant_throttle, 0.5, "Throttle to use in constant bot");
+DECLARE_bool(always_switch);
+
 
 namespace bots {
 namespace constant {
@@ -24,6 +26,11 @@ Bot::~Bot() {
 }
 
 game::Command Bot::ComputeMove(const Position& position, int game_tick) {
+  if (FLAGS_always_switch) {
+    int r = rand() % 100;
+    if (r == 0) return Command(game::Switch::kSwitchLeft);
+    if (r == 1) return Command(game::Switch::kSwitchRight);
+  }
   return Command(FLAGS_constant_throttle);
 }
 

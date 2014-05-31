@@ -58,18 +58,16 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
 
   // Overtaking
   if (FLAGS_overtake) {
-    if (!IsLaneSafe(state, from, to, position.end_lane() - 1)) left = kInf;
-    if (!IsLaneSafe(state, from, to, position.end_lane() + 1)) right = kInf;
-    if (!IsLaneSafe(state, from, to, position.end_lane())) current = kInf;
+    int left_score = race_tracker_.ScoreLane(from, to, position.end_lane() - 1);
+    int right_score = race_tracker_.ScoreLane(from, to, position.end_lane() + 1);
+    int current_score = race_tracker_.ScoreLane(from, to, position.end_lane());
+
+    if (left_score < 0) left = kInf;
+    if (right_score < 0) right = kInf;
+    if (current_score < 0) current = kInf;
   }
 
-  // All lanes taken
-  if (left > kInf - 1 && right > kInf - 1 && current > kInf - 1) {
-    // HACK to avoid lanestanders
-    double left = -SlowestCarOnLane(state, from, to, position.end_lane() - 1);
-    double right = -SlowestCarOnLane(state, from, to, position.end_lane() + 1);
-    double current = -SlowestCarOnLane(state, from, to, position.end_lane());
-  }
+  printf("%lf %lf %lf\n",left, current, right);
 
   if (left < current && left < right) {
     scheduled_switch_ = game::Switch::kSwitchLeft;
@@ -83,39 +81,6 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
     should_switch_now_ = false;
     target_switch_ = -1;
   }
-}
-
-bool ShortestPathSwitchScheduler::IsLaneSafe(const game::CarState& state,
-    int from, int to, int lane) {
-  auto cars = race_tracker_.PredictedCarsBetween(from, to, lane);
-
-  std::vector<std::string> cars_to_overtake;
-
-  for (auto c : cars) {
-    if (race_tracker_.ShouldTryToOvertake(c->color(), from, to))
-      cars_to_overtake.push_back(c->color());
-  }
-
-  return (cars_to_overtake.size() == 0);
-}
-
-double ShortestPathSwitchScheduler::SlowestCarOnLane(
-    const game::CarState& state, int from, int to, int lane) {
-
-  auto cars = race_tracker_.PredictedCarsBetween(from, to, lane);
-
-  std::vector<std::string> cars_to_overtake;
-
-  double min_speed = 10000;
-
-  for (auto c : cars) {
-    if (race_tracker_.ShouldTryToOvertake(c->color(), from, to))
-      min_speed = fmin(min_speed, c->state().velocity());
-
-    if (c->is_dead() && c->time_to_spawn() < 500)
-      min_speed = 0;
-  }
-  return min_speed;
 }
 
 double ShortestPathSwitchScheduler::DistanceBetween(const Position& position1, const Position& position2, int lane) {

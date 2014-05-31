@@ -23,13 +23,15 @@ class LaneLengthModel {
   void Record(const Position& previous, const Position& current, double predicted_velocity);
 
  private:
+  void LoadSwitchLengths();
+  void SaveSwitchLengths();
+
   const Track* track_;
 
+  // {length, width} => switch_length
   std::map<std::pair<double, double>, double> switch_on_straight_length_;
-  std::map<std::pair<double, double>, double> switch_on_turn_length_;
-
-  std::ofstream file_straight_;
-  std::ofstream file_turn_;
+  // {start_radius, end_radius, angle} => switch_length
+  std::map<std::tuple<double, double, double>, double> switch_on_turn_length_;
 };
 
 }  // namespace game

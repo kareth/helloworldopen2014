@@ -22,6 +22,7 @@
 DECLARE_string(race_id);
 DECLARE_string(throttle_scheduler);
 DECLARE_string(switch_scheduler);
+DEFINE_string(track, "keimola", "The track to run simulator on.");
 
 std::string random_race_id() {
   char buffer[80];
@@ -47,7 +48,7 @@ int main(int argc, char** argv) {
     std::unique_ptr<game::Simulator> simulator(new game::Simulator());
 
     game::Simulator::Options options;
-    options.track_name = "germany";
+    options.track_name = FLAGS_track;
     result = simulator->Run(bot.get(), options);
   }
 
