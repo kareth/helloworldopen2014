@@ -1,6 +1,7 @@
 #include "schedulers/shortest_path_switch_scheduler.h"
 
 DEFINE_bool(overtake, true, "Should car overtake others?");
+DECLARE_bool(log_overtaking);
 
 // TODO refactor whole code here, its copypaste
 
@@ -75,7 +76,8 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
     }
   }
 
-  printf("Lane scores (l c r): %lf %lf %lf\n",left, current, right);
+  if (FLAGS_log_overtaking)
+    printf("Lane scores (l c r): %lf %lf %lf\n",left, current, right);
 
   if (left < current && left < right) {
     scheduled_switch_ = game::Switch::kSwitchLeft;
