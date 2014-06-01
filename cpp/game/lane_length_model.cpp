@@ -92,17 +92,29 @@ void LaneLengthModel::Record(const Position& previous, const Position& current, 
 
   const auto& piece = track_->pieces()[previous.piece()];
 
-  double length = previous.piece_distance() + predicted_velocity - current.piece_distance();
+  double switch_length = previous.piece_distance() + predicted_velocity - current.piece_distance();
 
   if (piece.type() == PieceType::kStraight) {
     const double width = fabs(track_->lanes()[previous.start_lane()].distance_from_center() - track_->lanes()[previous.end_lane()].distance_from_center());
-    switch_on_straight_length_[{piece.length(), width}] = length;
+    auto it = switch_on_straight_length_.insert({{piece.length(), width}, switch_length});
+    if (fabs(it.first->second - switch_length) > 1e-6) {
+      std::cerr << std::setprecision(8) << "ERROR: Memorized switch length (" << it.first->second
+                << ") is different that calculated one (" << switch_length << ") for straight switch "
+                << piece.length() << " " << width << std::endl;
+    }
     return;
   }
 
   double radius1 = track_->LaneRadius(previous.piece(), previous.start_lane());
   double radius2 = track_->LaneRadius(previous.piece(), previous.end_lane());
-  switch_on_turn_length_[std::make_tuple(radius1, radius2, fabs(piece.angle()))] = length;
+  auto it = switch_on_turn_length_.insert(
+      {std::make_tuple(radius1, radius2, fabs(piece.angle())), switch_length});
+
+  if (fabs(it.first->second - switch_length) > 1e-6) {
+    std::cerr << std::setprecision(8) << "ERROR: Memorized switch length (" << it.first->second
+              << ") is different that calculated one (" << switch_length << ") for turn switch "
+              << radius1 << " " << radius2 << std::endl;
+  }
 }
 
 static jsoncons::json LoadCSV(const string& file_name) {
