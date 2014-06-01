@@ -9,7 +9,8 @@ EnemyTracker::EnemyTracker(game::CarTracker& car_tracker,
     const game::Race& race,
     const std::string& color,
     const Position& position)
-  : car_tracker_(car_tracker), race_(race), color_(color) {
+  : car_tracker_(car_tracker), race_(race), color_(color),
+    velocity_predictor_(car_tracker, race) {
   state_ = CarState(position);
   piece_speed_.resize(race_.track().pieces().size(), 0);
   piece_data_points_.resize(race_.track().pieces().size(), 0);
@@ -47,6 +48,8 @@ void EnemyTracker::RecordPosition(const game::Position& position) {
 
     average_data_points_++;
   }
+
+  velocity_predictor_.Record(state_);
 }
 
 Position EnemyTracker::PositionAfterTime(int time, int target_lane) const {
@@ -67,10 +70,10 @@ Position EnemyTracker::PositionAfterTime(int time, int target_lane) const {
   // Do rest ticks regularly
   for (int i = 0; i < min(time, 1000); i++) {
     double throttle = car_tracker_.velocity_model().PredictThrottle(
-        Velocity(state.position().piece()));
+        Velocity(state.position()));
 
     // Acceleration from too low speed
-    if (state.velocity() < 0.9 * Velocity(state.position().piece()))
+    if (state.velocity() < 0.9 * Velocity(state.position()))
       throttle = 1;
 
     state = car_tracker_.Predict(state, Command(throttle));
@@ -97,10 +100,10 @@ int EnemyTracker::TimeToPosition(const Position& target) const {
 
   for (int limit = 0; limit < 1000; limit++, time++) {
     double throttle = car_tracker_.velocity_model().PredictThrottle(
-        Velocity(state.position().piece()));
+        Velocity(state.position()));
 
     // Acceleration from too low speed
-    if (state.velocity() < 0.9 * Velocity(state.position().piece()))
+    if (state.velocity() < 0.9 * Velocity(state.position()))
       throttle = 1;
 
     state = car_tracker_.Predict(state, Command(throttle));
@@ -143,11 +146,13 @@ bool EnemyTracker::CanOvertake(const EnemyTracker& noobek, int from, int to) {
   return false;
 }
 
-double EnemyTracker::Velocity(int piece) const {
-  double velocity = piece_speed_[state_.position().piece()];
+double EnemyTracker::Velocity(const Position& position) const {
+  return velocity_predictor_.Velocity(position);
+  /*
+  double velocity = piece_speed_[position.piece()];
   if (velocity < 1e-9) // Not yet calculated
     velocity = average_speed_;
-  return velocity;
+  return velocity;*/
 }
 
 // Record methods
