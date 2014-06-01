@@ -153,6 +153,7 @@ double EnemyTracker::Velocity(int piece) const {
 // Record methods
 
 void EnemyTracker::RecordLapTime(int time) {
+  ready_ = true;
   lap_times_.push_back(time);
   if (best_lap_ == -1 || best_lap_ > time)
     best_lap_ = time;
