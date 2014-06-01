@@ -17,6 +17,7 @@
 
 DECLARE_string(race_id);
 DECLARE_bool(print_models);
+DEFINE_bool(log_drift_model, true, "");
 
 namespace game {
 
@@ -54,7 +55,11 @@ void DriftModel::Record(double next_angle, double angle, double previous_angle, 
   // drifting any more. Doesn't make sense to record such entries.
   if (fabs(next_angle) < 1e-5) return;
 
-  raw_points_.push_back({angle, previous_angle, velocity, radius, direction, next_angle});
+  if (direction != 0) {
+    raw_points_turn_.push_back({angle, previous_angle, velocity, radius, direction, next_angle});
+  } else {
+    raw_points_straight_.push_back({angle, previous_angle, velocity, radius, direction, next_angle});
+  }
 
   if (!very_ready_) {
     Train();
@@ -73,21 +78,45 @@ void DriftModel::Train() {
   vector<double> b;
   vector<double> x;
 
-  for (int i = (int) raw_points_.size() - 1; i >= 0; --i) {
-    double angle = raw_points_[i][0];
-    double previous_angle = raw_points_[i][1];
-    double velocity = raw_points_[i][2];
-    double radius = raw_points_[i][3];
-    double direction = raw_points_[i][4];
-    double next_angle = raw_points_[i][5];
+  if (!straight_ready_ && raw_points_straight_.size() >= 2) {
+    for (int i = (int) raw_points_straight_.size() - 1; i >= 0; --i) {
+      double angle = raw_points_straight_[i][0];
+      double previous_angle = raw_points_straight_[i][1];
+      double velocity = raw_points_straight_[i][2];
+      double radius = raw_points_straight_[i][3];
+      double direction = raw_points_straight_[i][4];
+      double next_angle = raw_points_straight_[i][5];
+
+      A.push_back({velocity * angle});
+      b.push_back(next_angle - (x_[0] * angle + x_[1] * previous_angle));
+
+      if (b.size() > 2) break;
+    }
+
+    double error = Approximation(A, b, x);
+    if (error < 1e-9) {
+      x_[2] = x[0];
+      straight_ready_ = true;
+      if (FLAGS_log_drift_model) std::cout << "INFO: Drift model, straight part ready (x[2] = " << x_[2] << ")" << std::endl;
+    }
+
+    A.clear();
+    b.clear();
+    x.clear();
+  }
+
+  for (int i = (int) raw_points_turn_.size() - 1; i >= 0; --i) {
+    double angle = raw_points_turn_[i][0];
+    double previous_angle = raw_points_turn_[i][1];
+    double velocity = raw_points_turn_[i][2];
+    double radius = raw_points_turn_[i][3];
+    double direction = raw_points_turn_[i][4];
+    double next_angle = raw_points_turn_[i][5];
 
     // Ignore points if velocity is too small or we are on straigh piece (the
     // first x0, x1, x2 are enough to compute next_angle). We need points were
     // we can assume that we can drop the "max" factor in the model.
-    if (ready_ && fabs(next_angle - (x_[0] * angle + x_[1] * previous_angle + x_[2] * angle * velocity)) < 1e-9) {
-      continue;
-    }
-    if (direction == 0) {
+    if (straight_ready_ && fabs(next_angle - (x_[0] * angle + x_[1] * previous_angle + x_[2] * angle * velocity)) < 1e-9) {
       continue;
     }
 
@@ -96,6 +125,8 @@ void DriftModel::Train() {
         -direction * velocity * velocity * sqrt(InvRadius(radius)),
         direction * velocity});
     b.push_back(next_angle - (x_[0] * angle + x_[1] * previous_angle));
+
+    if (!ready_ && b.size() == 4) break;
 
     if (b.size() >= 10) break;
   }
@@ -108,34 +139,28 @@ void DriftModel::Train() {
     // If chosen points are incorrect, then do not learn model. Wait for better
     // points.
     if (error < 1e-9) {
+      // Check if we were able to train x_[3] and x_[4]
+      for (int i = 0; i < A.size(); ++i) {
+        if (fabs(A[i][0] * x[0] - b[i]) < 1e-5) {
+          if (FLAGS_log_drift_model) std::cout << "WARNING: We were driving too slow on some turns. Ignore this model and wait for better one." << std::endl;
+          return;
+        }
+      }
+
+      if (!ready_) std::cout << "INFO: Model ready" << std::endl;
       ready_ = true;
+      straight_ready_ = true;
       x_ = {x_[0], x_[1], x[0], x[1], x[2]};
+    } else {
+      if (FLAGS_log_drift_model) std::cout << "WARNING: Learnt drift model has big error. Ignore this model and wait for better one." << std::endl;
+      return;
     }
 
     if (b.size() >= 10) {
+      std::cout << "INFO: Model very ready" << std::endl;
       very_ready_ = true;
     }
   }
-}
-
-double DriftModel::ComputeMaxError() {
-  double max_error = 0.0;
-  for (int i = (int) raw_points_.size() - 1; i >= 0; --i) {
-    double angle = raw_points_[i][0];
-    double previous_angle = raw_points_[i][1];
-    double velocity = raw_points_[i][2];
-    double radius = raw_points_[i][3];
-    double direction = raw_points_[i][4];
-    double next_angle = raw_points_[i][5];
-
-    double predicted = x_[0] * angle +
-                       x_[1] * previous_angle +
-                       x_[2] * velocity * angle +
-                       -direction * fmax(0, x_[3] * velocity * velocity * sqrt(InvRadius(radius)) - x_[4] * velocity);
-
-    max_error = fmax(max_error, fabs(predicted - next_angle));
-  }
-  return max_error;
 }
 
 DriftModel::DriftModel() : error_tracker_("drift") {
