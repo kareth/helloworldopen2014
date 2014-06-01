@@ -19,6 +19,7 @@ set(GAME_SOURCES
   spawn_model.cpp
   bump_detector.cpp
   lane_scorer.cpp
+  velocity_predictor.cpp
 )
 
 set(GAME_HEADERS
@@ -47,6 +48,7 @@ set(GAME_HEADERS
   spawn_model.h
   bump_detector.h
   lane_scorer.h
+  velocity_predictor.h
 )
 
 set(GAME_TESTS
