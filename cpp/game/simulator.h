@@ -74,6 +74,7 @@ class Simulator {
       max_tick_time_ms = fmax(max_tick_time_ms, current_tick_time_ms);
 
       Command command = CommandFromJson(response);
+      CarState previous_state = state;
       state = car_tracker.Predict(state, command);
 
       if (fabs(state.position().angle()) > 60.0) {
@@ -86,12 +87,14 @@ class Simulator {
         raw_bot->React(SpawnMessage());
       }
 
-      if (state.position().lap() != current_lap) {
-        raw_bot->React(LapFinishedMessage(current_lap, current_lap_ticks));
+      if (previous_state.position().lap() != current_lap) {
+        current_lap_ticks -= 2;
+
+        raw_bot->React(LapFinishedMessage(current_lap, current_lap_ticks, i));
 
         current_lap = state.position().lap();
         result.best_lap_time_in_ticks = min(result.best_lap_time_in_ticks, current_lap_ticks);
-        current_lap_ticks = 0;
+        current_lap_ticks = 2;
 
         if (current_lap == options.max_laps_to_simulate) break;
       }
@@ -119,25 +122,25 @@ class Simulator {
     return data;
   }
 
-  jsoncons::json LapFinishedMessage(int lap, int lap_ticks) {
+  jsoncons::json LapFinishedMessage(int lap, int lap_ticks, int current_tick) {
     jsoncons::json data;
     data["msgType"] = "lapFinished";
     data["data"] = jsoncons::json();
     data["data"]["car"] = jsoncons::json();
     data["data"]["car"]["color"] = kCarColor;
 
-    // TODO(tomek) This is not perfect (we use ticks instead of millis
-    //             and raceTime and ranking are incorrect).
     data["data"]["lapTime"] = jsoncons::json();
     data["data"]["lapTime"]["lap"] = lap;
-    data["data"]["lapTime"]["millis"] = lap_ticks;
+    data["data"]["lapTime"]["ticks"] = lap_ticks;
+    data["data"]["lapTime"]["millis"] = static_cast<int>(100.0 / 6 * lap_ticks + 0.5);
 
     data["data"]["raceTime"] = jsoncons::json();
-    data["data"]["raceTime"]["laps"] = lap;
-    data["data"]["raceTime"]["millis"] = lap_ticks;
+    data["data"]["raceTime"]["laps"] = lap + 1;
+    data["data"]["raceTime"]["ticks"] = current_tick;
+    data["data"]["raceTime"]["millis"] = static_cast<int>(100.0 / 6 * current_tick + 0.5);
 
     data["data"]["ranking"] = jsoncons::json();
-    data["data"]["ranking"]["fastestLap"] = lap;
+    data["data"]["ranking"]["fastestLap"] = 1;
     data["data"]["ranking"]["overall"] = 1;
     return data;
   }
