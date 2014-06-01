@@ -7,7 +7,6 @@ VelocityPredictor::VelocityPredictor(CarTracker& car_tracker, const Race& race)
 }
 
 void VelocityPredictor::Record(const CarState& state) {
-  PrintData();
   // If the point is 'something new' or if we just swapped lanes
   if (!HasDataToPredict(state.position()) ||
       state.position().end_lane() != state_.position().end_lane()) {
@@ -28,6 +27,8 @@ void VelocityPredictor::Record(const CarState& state) {
     if (new_velocity > point.velocity())
       points[state.position().end_lane()].erase(point);
   }
+
+  AddPoint(state);
 }
 
 double VelocityPredictor::Velocity(const Position& p) const {
