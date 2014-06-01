@@ -68,7 +68,7 @@ vector<double> MakeMagic(int tick, int n, int horizon, const vector<double>& vm,
 
   std::ostringstream cmd;
    
-  cmd << "python magic.py ";
+  cmd << "python ../tools/magic/magic.py ";
   cmd << tick << " ";
   cmd << n << " " << horizon << " ";
   WriteDoubleVector(cmd, vm); cmd << " ";
