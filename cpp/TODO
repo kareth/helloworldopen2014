@@ -25,6 +25,8 @@
 * Solver upgrades:
     - accept turbo
 
+* Why magical is sometimes worse than wojtek? e.g. England
+
 * Solver performance:
     - add initial solution
     - add bounds on the result

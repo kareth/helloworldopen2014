@@ -1,0 +1,41 @@
+#!/usr/bin/env ipython
+# -*- coding: utf-8 -*-
+
+import os
+
+schedulers = (
+    "WojtekThrottleScheduler",
+    "BinaryThrottleScheduler",
+    "MagicThrottleScheduler",
+)
+
+maps = (
+    "elaeintarha",
+    "england",
+    "france",
+    "germany",
+    "imola",
+    "keimola",
+    "suzuka",
+    "usa",
+)
+
+with open("results.csv", "w") as f:
+    f.write('map,scheduler,best_lap,total_ticks,total_dist,max_tick_time,avg_tick_time,crash\n')
+    os.chdir('../bin')
+    for map in maps:
+        for scheduler in schedulers:
+            res = !./throttle_tester --throttle_scheduler=$scheduler --nocheck_if_safe_ahead --track=$map
+            name = scheduler + "-" + map + ".csv"
+            !cp data.csv $name
+
+            crash = "CRASHED" in res[-1]
+            if crash:
+                res = res[:-1]
+
+            line = ",".join([line.split(':')[1].replace('ms','').strip() for line in res[-5:]])
+
+            line = map + "," + scheduler + "," + line + "," + str(crash)
+            print(line)
+            f.write(line + '\n')
+        

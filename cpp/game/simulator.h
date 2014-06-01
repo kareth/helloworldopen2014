@@ -96,7 +96,7 @@ class Simulator {
     double sum_tick_time_ms = 0;
 
     std::ofstream ofs("data.csv", std::ofstream::out);
-    ofs << "tick," << "x," << "turbo," << "a," << "v," << "d," << "dir," << "rad," << "tick_time" << std::endl;
+    ofs << "tick," << "lap," << "x," << "turbo," << "a," << "v," << "d," << "dir," << "rad," << "tick_time" << std::endl;
     for (int i = 0; i < options.max_ticks_to_simulate; ++i) {
       current_lap_ticks++;
       total_ticks++;
@@ -112,7 +112,7 @@ class Simulator {
       CarState previous_state = state;
 
       Piece piece = race.track().pieces()[state.position().piece()];
-      ofs << total_ticks << ',' << command.TurboSet() << ',' << command.throttle() << ','
+      ofs << total_ticks << ',' << current_lap << ',' << command.throttle() << ',' << command.TurboSet() << ','
           << state.position().angle() << ',' << state.velocity()  << ','
           << result.total_distance << ',' << -sgn(piece.angle()) << ','
           << piece.radius() << ',' << current_tick_time_ms << std::endl;
