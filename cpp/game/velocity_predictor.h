@@ -9,7 +9,9 @@ namespace game {
 
 struct state_compare {
     bool operator() (const CarState& lhs, const CarState& rhs) const{
-        return lhs.velocity() < rhs.velocity();
+      if (lhs.position().piece() < rhs.position().piece()) return true;
+      if (lhs.position().piece() > rhs.position().piece()) return false;
+      return lhs.position().piece_distance() < rhs.position().piece_distance();
     }
 };
 
@@ -19,15 +21,16 @@ class VelocityPredictor {
                     const Race& race);
 
   void Record(const CarState& state);
-  double Velocity(const Position& position);
+  double Velocity(const Position& position) const;
 
  private:
   void AddPoint(const CarState& state);
-  double InterpolatePoint(const CarState& a, const CarState& b, const Position& p);
-  bool HasDataToPredict(const Position& p);
-  CarState Next(Position p);
-  CarState Previous(Position p);
-  Position PositionOnAnotherLane(const Position& p, int lane);
+  double InterpolatePoint(const CarState& a, const CarState& b, const Position& p) const;
+  bool HasDataToPredict(const Position& p) const;
+  CarState Next(Position p) const;
+  CarState Previous(Position p) const;
+  Position PositionOnAnotherLane(const Position& p, int lane) const;
+  void PrintData() const;
 
   static const int kMaxLanes = 10;
 

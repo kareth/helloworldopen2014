@@ -5,6 +5,7 @@
 #include <map>
 #include "game/race.h"
 #include "game/car_tracker.h"
+#include "game/velocity_predictor.h"
 
 namespace game {
 
@@ -29,7 +30,7 @@ class EnemyTracker {
   Position PositionAfterTime(int time, int target_lane = -1) const;
   int TimeToPosition(const Position& p) const;
 
-  int ExpectedSpeed(const Position& p) const { return Velocity(p.piece()); }
+  int ExpectedSpeed(const Position& p) const { return Velocity(p); }
 
   // Approximation-wise
   bool CanOvertake(const EnemyTracker& noobek, int from, int to);
@@ -51,7 +52,7 @@ class EnemyTracker {
 
  private:
   bool ShouldRecord() const;
-  double Velocity(int piece) const;
+  double Velocity(const Position& position) const;
   void RecordTick(const game::Position& position);
 
   std::vector<int> lap_times_;
@@ -89,6 +90,8 @@ class EnemyTracker {
   int time_since_crash_ = 0;
 
   bool ready_ = false;
+
+  VelocityPredictor velocity_predictor_;
 };
 }  // namespace game
 
