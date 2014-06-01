@@ -65,6 +65,14 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
     if (left_score < 0) left = kInf;
     if (right_score < 0) right = kInf;
     if (current_score < 0) current = kInf;
+
+    // Score is <-10, 0), 0 is best
+    // Nest part of algorithm chooses smallest so we need to reverse it temporarily
+    if (left_score < 0 && current_score < 0 && right_score < 0) {
+      left = -left_score;
+      current = -current_score;
+      right = -current_score;
+    }
   }
 
   printf("%lf %lf %lf\n",left, current, right);

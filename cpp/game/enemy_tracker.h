@@ -26,8 +26,10 @@ class EnemyTracker {
   void NewTurbo(const Turbo& turbo);
 
   // time = game_ticks
-  Position PositionAfterTime(int time) const;
+  Position PositionAfterTime(int time, int target_lane = -1) const;
   int TimeToPosition(const Position& p) const;
+
+  int ExpectedSpeed(const Position& p) const { return Velocity(p.piece()); }
 
   // Approximation-wise
   bool CanOvertake(const EnemyTracker& noobek, int from, int to);
