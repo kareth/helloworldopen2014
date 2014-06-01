@@ -58,8 +58,6 @@ class DriftModel {
   // Train the model 'x_' based on 'raw_points_'.
   void Train();
 
-  double ComputeMaxError();
-
   // If true, we are pretty confident, that the model is ok.
   // But it is still possible to improve it (e.g. get more points
   // to get better accuracy) so we also use very ready below.
@@ -71,11 +69,15 @@ class DriftModel {
   // friction (the part with 'max' is greater than 0).
   bool very_ready_ = false;
 
+  // If true, the x_[2] has been approximated.
+  bool straight_ready_ = false;
+
   // This is the actual model.
   std::vector<double> x_;
 
   // {angle, previous_angle, velocity, radius, direction, next_angle}
-  std::vector<std::vector<double>> raw_points_;
+  std::vector<std::vector<double>> raw_points_turn_;
+  std::vector<std::vector<double>> raw_points_straight_;
 
   ErrorTracker error_tracker_;
 };
