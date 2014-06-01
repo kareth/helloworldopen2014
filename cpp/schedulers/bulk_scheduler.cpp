@@ -45,9 +45,9 @@ void BulkScheduler::Schedule(const game::CarState& state) {
   state_with_switch.set_switch_state(switch_scheduler_->ExpectedSwitch());
   throttle_scheduler_->Schedule(state_with_switch);
 
-  if (car_tracker_.IsReady() && turbo_scheduler_->ShouldFireTurbo()) {
+  if (turbo_scheduler_->ShouldFireTurbo()) {
     command_ = game::Command(game::TurboToggle::kToggleOn);
-  } else if (car_tracker_.IsReady() && switch_scheduler_->ShouldSwitch()) {
+  } else if (switch_scheduler_->ShouldSwitch()) {
     command_ = game::Command(switch_scheduler_->SwitchDirection());
   } else {
     command_ = game::Command(throttle_scheduler_->throttle());
