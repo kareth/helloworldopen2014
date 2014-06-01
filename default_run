@@ -1,4 +1,4 @@
 #!/bin/bash
 source ./config
 
-(cd $PL && ./bin/bot --key="$BOTKEY" --nodisable_visualizer --nocontinuous_integration --print_models --write_switch_models $@)
+(cd $PL && ./bin/bot --key="$BOTKEY" --disable_visualizer --nocontinuous_integration --print_models --write_switch_models $@)
