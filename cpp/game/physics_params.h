@@ -99,7 +99,7 @@ class PhysicsParams {
     struct stat st0, st1;
 
     while(1) {
-        fd = open(lockfile, O_CREAT);
+        fd = open(lockfile, O_CREAT, 0666);
         flock(fd, LOCK_EX);
 
         fstat(fd, &st0);
