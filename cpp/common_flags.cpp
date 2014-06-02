@@ -20,3 +20,4 @@ DEFINE_bool(read_switch_models, true, "If true, switch models (length + radius) 
 DEFINE_bool(write_switch_models, false, "If true, switch models (length + radius) are written to files");
 
 DEFINE_bool(log_overtaking, false, "log overtaking scores");
+DEFINE_bool(always_switch, false, "");

@@ -31,8 +31,8 @@ std::string random_race_id() {
 }
 
 int main(int argc, char** argv) {
-  FLAGS_throttle_scheduler = "WojtekThrottleScheduler";
-  FLAGS_switch_scheduler = "NeverSwitchScheduler";
+  // FLAGS_throttle_scheduler = "BinaryThrottleScheduler";
+  // FLAGS_switch_scheduler = "NeverSwitchScheduler";
 
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   srand (time(NULL));
@@ -48,6 +48,7 @@ int main(int argc, char** argv) {
     std::unique_ptr<game::Simulator> simulator(new game::Simulator());
 
     game::Simulator::Options options;
+    options.physics_params = game::PhysicsParams::Load();
     options.track_name = FLAGS_track;
     result = simulator->Run(bot.get(), options);
   }

@@ -43,7 +43,10 @@ void SwitchLengthParams::Load() {
   }
 }
 
-void SwitchLengthParams::Save() const {
+void SwitchLengthParams::Save() {
+  // Just in case some other bot already written new data.
+  Load();
+
   std::ofstream file("data/switch-straight-lengths.csv");
   file << "length,width,switch_length" << std::endl;
   for (const auto& it : switch_on_straight_length) {
@@ -90,6 +93,87 @@ void SwitchLengthParams::LogMissingData(const Track& track) const {
   }
   if (has_all) {
     std::cout << "We have all switch lengths!" << std::endl;
+  }
+}
+
+void SwitchRadiusParams::Load() {
+  jsoncons::json radiuses = LoadCSV("data/switch-radiuses.csv");
+  for (auto it = radiuses.begin_elements(); it != radiuses.end_elements(); ++it) {
+    const auto& data = *it;
+    model.insert({std::make_tuple<double, double, double, int>(
+                         ToDouble(data["start_radius"]),
+                         ToDouble(data["end_radius"]),
+                         ToDouble(data["angle"]),
+                         static_cast<int>(ToDouble(data["percent"]))), ToDouble(data["switch_radius"])});
+  }
+}
+
+void SwitchRadiusParams::Save() {
+  // Just in case some other bot already written new data.
+  Load();
+
+  std::ofstream file("data/switch-radiuses.csv");
+  file << "start_radius,end_radius,angle,percent,switch_radius" << std::endl;
+  for (const auto& it : model) {
+    file << std::setprecision(20)
+         << std::get<0>(it.first) << ","
+         << std::get<1>(it.first) << ","
+         << std::get<2>(it.first) << ","
+         << std::get<3>(it.first) << ","
+         << it.second << std::endl;
+  }
+  file.close();
+}
+
+void SwitchRadiusParams::LogMissingData(const Track& track) const {
+  // Check if we are missing any data for current track.
+  bool has_all = true;
+  for (const auto& piece : track.pieces()) {
+    if (!piece.has_switch()) continue;
+    if (piece.type() == PieceType::kStraight) continue;
+
+    for (int i = 1; i < track.lanes().size(); ++i) {
+      double start_radius = piece.radius() + track.lanes()[i - 1].distance_from_center();
+      double end_radius = piece.radius() + track.lanes()[i].distance_from_center();
+      double angle = fabs(piece.angle());
+
+      int missing = 0;
+      for (int percent = 1; percent <= 99; ++percent) {
+        if (model.count(std::make_tuple(start_radius, end_radius, angle, percent)) == 0)
+          missing++;
+      }
+
+      if (missing > 0) {
+        has_all = false;
+        std::cout << "Missing " << missing << " percents of radiuses for "
+                  << " start_radius: " << start_radius
+                  << " end_radius: " << end_radius
+                  << " angle: " << angle << std::endl;
+      }
+    }
+
+    for (int i = 1; i < track.lanes().size(); ++i) {
+      double start_radius = piece.radius() + track.lanes()[i].distance_from_center();
+      double end_radius = piece.radius() + track.lanes()[i - 1].distance_from_center();
+      double angle = fabs(piece.angle());
+
+      int missing = 0;
+      for (int percent = 1; percent <= 99; ++percent) {
+        if (model.count(std::make_tuple(start_radius, end_radius, angle, percent)) == 0)
+          missing++;
+      }
+
+      if (missing > 0) {
+        has_all = false;
+        std::cout << "Missing " << missing << " percents of radiuses for "
+                  << " start_radius: " << start_radius
+                  << " end_radius: " << end_radius
+                  << " angle: " << angle << std::endl;
+      }
+    }
+  }
+  if (has_all) {
+    std::cout << "We have all switch radiuses!" << std::endl;
   }
 }
 

@@ -9,6 +9,27 @@
 
 namespace game {
 
+RadiusModel::RadiusModel(const Track* track,
+                         const LaneLengthModel* lane_length_model,
+                         const SwitchRadiusParams& params)
+    : track_(track), lane_length_model_(lane_length_model) {
+  for (const auto& it : params.model) {
+    double start_radius = std::get<0>(it.first);
+    double end_radius = std::get<1>(it.first);
+    double angle = std::get<2>(it.first);
+    int percent = std::get<3>(it.first);
+    double switch_radius = it.second;
+
+    if (models_[std::make_tuple(start_radius, end_radius, angle)] == nullptr) {
+      models_[std::make_tuple(start_radius, end_radius, angle)].reset(
+          new SwitchRadiusModel(start_radius, end_radius, angle, lane_length_model_));
+    }
+    auto* model = models_[std::make_tuple(start_radius, end_radius, angle)].get();
+
+    model->Add(percent, switch_radius);
+  }
+}
+
 double RadiusModel::Radius(const Position& position) {
   const auto& piece = track_->pieces()[position.piece()];
 
@@ -18,15 +39,7 @@ double RadiusModel::Radius(const Position& position) {
   if (position.start_lane() == position.end_lane())
     return track_->LaneRadius(position.piece(), position.start_lane());
 
-  const auto& model = *GetModel(position.piece(), position.start_lane());
-  if (model.IsReady()) {
-    return model.Radius(position.piece_distance());
-  }
-
-  // We try to make it safe
-  return 0.9 *
-      fmin(track_->LaneRadius(position.piece(), position.start_lane()),
-           track_->LaneRadius(position.piece(), position.end_lane()));
+  return GetModel(position)->Radius(position.piece_distance());
 }
 
 void RadiusModel::Record(const Position& position, double radius) {
@@ -34,70 +47,57 @@ void RadiusModel::Record(const Position& position, double radius) {
   if (std::isnan(radius)) return;
   if (position.start_lane() == position.end_lane()) return;
 
-  auto& model = *GetModel(position.piece(), position.start_lane());
+  auto* model = GetModel(position);
 
-  if (model.IsReady()) {
-    double predicted = model.Radius(position.piece_distance());
-    if (radius < model.Radius(position.piece_distance()) || (radius > 1e-5 && predicted < 1e-5)) {
-      std::cerr << "ERROR: We under estimate the radius" << std::endl;
-      std::cerr << "Position: " << position.DebugString();
-      std::cerr << "Radius: " << radius << std::endl;
-      std::cerr << "Predicted: " << model.Radius(position.piece_distance()) << std::endl;
-    }
-  }
-
-  model.Record(position.piece_distance(), radius);
-
-  // Log all data.
-  double previous_radius = track_->LaneRadius((position.piece() + track_->pieces().size() - 1) % track_->pieces().size(), position.start_lane());
-  double start_radius = track_->LaneRadius(position.piece(), position.start_lane());
-  double angle = track_->pieces()[position.piece()].angle();
-  double end_radius = track_->LaneRadius(position.piece(), position.end_lane());
-  double next_radius = track_->LaneRadius((position.piece() + 1) % track_->pieces().size(), position.end_lane());
-  file_ << std::setprecision(20) << previous_radius << "," << start_radius
-        << "," << angle << "," << end_radius << "," << next_radius << ","
-        << position.piece_distance() << "," << radius << std::endl;
+  model->Record(position.piece_distance(), radius);
 }
 
-double SwitchRadiusModel::Radius(double piece_distance) const {
-  double radius =
-    x_[0] * piece_distance * piece_distance +
-    x_[1] * piece_distance +
-    x_[2] - 1;
+double SwitchRadiusModel::Radius(double piece_distance) {
+  MaybeUpdateLength();
 
-  if (piece_distance < data_[0].first) {
-    return fmin(radius, data_[0].second);
+  if (!HasLength()) {
+    return 0.9 * min(start_radius_, end_radius_);
   }
-  if (piece_distance > data_.back().first) {
-    return fmin(radius, data_.back().second);
+
+  int percent = static_cast<int>(100.0 * piece_distance / length_);
+
+  double radius = percent_to_radius_[percent];
+  if (radius != -1) {
+    return radius;
   }
-  return radius;
+
+  // TODO improve this
+  return 0.9 * min(start_radius_, end_radius_);
 }
 
 void SwitchRadiusModel::Record(double piece_distance, double radius) {
-  model_.push_back({piece_distance * piece_distance, piece_distance, 1});
-  b_.push_back(radius);
-
-  data_.push_back({piece_distance, radius});
-  sort(data_.begin(), data_.end());
-
-  if (EnoughData()) {
-    ready_ = true;
-    Approximation(model_, b_, x_);
+  if (length_ == -1) {
+    raw_data_.push_back({piece_distance, radius});
+    return;
   }
+  int percent = static_cast<int>(100.0 * piece_distance / length_);
+  Add(percent, radius);
 }
 
-namespace {
-template <typename T> int sgn(T val) {
-    return (T(0) < val) - (val < T(0));
-}
-}  // anonymous namespace
+void SwitchRadiusModel::MaybeUpdateLength() {
+  if (HasLength())
+    return;
 
-bool SwitchRadiusModel::EnoughData() {
-  if (model_.size() < 5 || model_.size() > 15)
-    return false;
+  length_ = lane_length_model_->SwitchOnTurnLength(start_radius_, end_radius_, angle_);
 
-  return true;
+  // Is length still unknown?
+  if (!HasLength())
+    return;
+
+  for (const auto& p : raw_data_) {
+    double piece_distance = p.first;
+    double radius = p.second;
+
+    int percent = static_cast<int>(100.0 * piece_distance / length_);
+    Add(percent, radius);
+  }
+
+  raw_data_.clear();
 }
 
 }  // namespace game

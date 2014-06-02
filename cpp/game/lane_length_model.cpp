@@ -9,7 +9,6 @@ DECLARE_bool(print_models);
 namespace game {
 
 LaneLengthModel::LaneLengthModel(const Track* track, const SwitchLengthParams& params) : track_(track) {
-  params.LogMissingData(*track);
   switch_on_straight_length_ = params.switch_on_straight_length;
   switch_on_turn_length_ = params.switch_on_turn_length;
 }
@@ -104,6 +103,17 @@ void LaneLengthModel::Record(const Position& previous, const Position& current, 
               << ") is different that calculated one (" << switch_length << ") for turn switch "
               << radius1 << " " << radius2 << std::endl;
   }
+}
+
+double LaneLengthModel::SwitchOnTurnLength(
+    double start_radius,
+    double end_radius,
+    double angle) const {
+  auto it = switch_on_turn_length_.find(std::make_tuple(start_radius, end_radius, angle));
+  if (it == switch_on_turn_length_.end()) {
+    return -1;
+  }
+  return it->second;
 }
 
 SwitchLengthParams LaneLengthModel::CreateParams() {

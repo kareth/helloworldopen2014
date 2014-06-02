@@ -13,12 +13,14 @@ template <typename T> int sgn(T val) {
 
 CarTracker::CarTracker(const Race* race, const PhysicsParams& params)
     : race_(race),
-      radius_model_(&race_->track()),
       lane_length_model_(&race_->track(), params.switch_length_params),
+      radius_model_(&race_->track(), &lane_length_model_, params.switch_radius_params),
       velocity_model_(params.velocity_model_params),
       drift_model_(params.drift_model_params) {
   stats_file_.open ("bin/" + FLAGS_race_id + "/stats.csv");
   stats_file_ << "piece_index,start_lane,end_lane,radius,in_piece_distance,angle,velocity,throttle" << std::endl;
+
+  params.LogMissingData(race->track());
 }
 
 CarTracker::~CarTracker() {
@@ -417,6 +419,7 @@ PhysicsParams CarTracker::CreatePhysicsParams() {
   physics_params.velocity_model_params = velocity_model_.CreateParams();
   physics_params.drift_model_params = drift_model_.CreateParams();
   physics_params.switch_length_params = lane_length_model_.CreateParams();
+  physics_params.switch_radius_params = radius_model_.CreateParams();
   return physics_params;
 }
 

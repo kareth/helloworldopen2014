@@ -182,7 +182,7 @@ class Simulator {
   }
 
   jsoncons::json GameInitMessage(const Options& options) {
-    auto track = json::parse_file("../game/data/maps/" + options.track_name + ".json");
+    auto track = json::parse_file("game/data/maps/" + options.track_name + ".json");
     jsoncons::json data;
     data["gameId"] = "83abef1f-e601-438b-ad80-7f6e2f7acdd7";
     data["msgType"] = "gameInit";

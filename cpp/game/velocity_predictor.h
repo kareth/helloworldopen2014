@@ -34,6 +34,7 @@ class VelocityPredictor {
   CarState Next(Position p) const;
   CarState Previous(Position p) const;
   Position PositionOnAnotherLane(const Position& p, int lane) const;
+  bool IsOnExceedingSwitch(const CarState& state);
   void PrintData() const;
 
   static const int kMaxLanes = 10;
