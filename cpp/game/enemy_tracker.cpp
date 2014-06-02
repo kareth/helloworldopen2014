@@ -49,7 +49,7 @@ void EnemyTracker::RecordPosition(const game::Position& position) {
     average_data_points_++;
   }
 
-  velocity_predictor_.Record(state_);
+  //velocity_predictor_.Record(state_);
 }
 
 Position EnemyTracker::PositionAfterTime(int time, int target_lane) const {
@@ -147,7 +147,7 @@ bool EnemyTracker::CanOvertake(const EnemyTracker& noobek, int from, int to) {
 }
 
 double EnemyTracker::Velocity(const Position& position) const {
-  return velocity_predictor_.Velocity(position);
+  //return velocity_predictor_.Velocity(position);
 
   double velocity = piece_speed_[position.piece()];
   if (velocity < 1e-9) // Not yet calculated
