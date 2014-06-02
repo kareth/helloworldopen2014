@@ -21,6 +21,7 @@
 #include "game/simplex.h"
 #include "game/velocity_model.h"
 #include "game/spawn_model.h"
+#include "game/physics_params.h"
 
 #define SQR(X) ((X)*(X))
 
@@ -152,6 +153,8 @@ class CarTracker : public CarPredictor {
 
   // Returns empty vector if car is on the switch.
   vector<Curve> GetCurves(const CarState& car_state, double distance);
+
+  PhysicsParams CreatePhysicsParams();
 
  private:
   const int kDistanceBetweenIter = 500;

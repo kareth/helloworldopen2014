@@ -3,8 +3,11 @@
 
 #include <vector>
 #include <cmath>
+#include <map>
 
 namespace game {
+
+class Track;
 
 class VelocityModelParams {
  public:
@@ -27,8 +30,19 @@ class DriftModelParams {
  DriftModelParams() : model({1.9, -0.9, -0.00125, 0.00125 * sqrt(180000), 0.3}) {}
 };
 
-// TODO
 class SwitchLengthParams {
+ public:
+  // {length, width} => switch_length
+  std::map<std::pair<double, double>, double> switch_on_straight_length;
+  // {start_radius, end_radius, angle} => switch_length
+  std::map<std::tuple<double, double, double>, double> switch_on_turn_length;
+
+  // Loads the params from file.
+  void Load();
+  void Save() const;
+
+  // Logs to stdout the switches from track that are unknown.
+  void LogMissingData(const Track& track) const;
 };
 
 // TODO
@@ -40,9 +54,16 @@ class PhysicsParams {
  public:
   VelocityModelParams velocity_model_params;
   DriftModelParams drift_model_params;
+  SwitchLengthParams switch_length_params;
 
   static PhysicsParams Load() {
-    return PhysicsParams();
+    PhysicsParams params;
+    params.switch_length_params.Load();
+    return params;
+  }
+
+  void Save() const {
+    switch_length_params.Save();
   }
 };
 

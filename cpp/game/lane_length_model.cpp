@@ -2,23 +2,16 @@
 
 #include "game/lane_length_model.h"
 #include "gflags/gflags.h"
-#include "jsoncons_ext/csv/csv_reader.hpp"
-#include "jsoncons_ext/csv/csv_serializer.hpp"
 
 DECLARE_string(race_id);
 DECLARE_bool(print_models);
-DECLARE_bool(read_switch_models);
-DECLARE_bool(write_switch_models);
-
-using jsoncons_ext::csv::csv_reader;
-using jsoncons_ext::csv::csv_serializer;
 
 namespace game {
 
-LaneLengthModel::LaneLengthModel(const Track* track) : track_(track) {
-  if (FLAGS_read_switch_models) {
-    LoadSwitchLengths();
-  }
+LaneLengthModel::LaneLengthModel(const Track* track, const SwitchLengthParams& params) : track_(track) {
+  params.LogMissingData(*track);
+  switch_on_straight_length_ = params.switch_on_straight_length;
+  switch_on_turn_length_ = params.switch_on_turn_length;
 }
 
 LaneLengthModel::~LaneLengthModel() {
@@ -32,10 +25,6 @@ LaneLengthModel::~LaneLengthModel() {
     for (const auto& p : switch_on_turn_length_) {
       std::cout << "(" << std::get<0>(p.first) << "," << std::get<1>(p.first) << "," << std::get<2>(p.first) << ") => " << p.second << std::endl;
     }
-  }
-
-  if (FLAGS_write_switch_models) {
-    SaveSwitchLengths();
   }
 }
 
@@ -117,87 +106,11 @@ void LaneLengthModel::Record(const Position& previous, const Position& current, 
   }
 }
 
-static jsoncons::json LoadCSV(const string& file_name) {
-  std::ifstream file(file_name);
-  if (!file.good()) {
-    file.close();
-    return jsoncons::json(::jsoncons::json::an_array);
-  }
-
-  jsoncons::json_deserializer handler;
-  jsoncons::json params;
-  params["has_header"] = true;
-
-  csv_reader reader(file, handler, params);
-  reader.read();
-  jsoncons::json j = std::move(handler.root());
-  return j;
-}
-
-static double ToDouble(jsoncons::json data) {
-  return std::strtod(data.as_string().c_str(), nullptr);
-}
-
-void LaneLengthModel::LoadSwitchLengths() {
-  jsoncons::json straight_lengths = LoadCSV("data/switch-straight-lengths.csv");
-  for (auto it = straight_lengths.begin_elements(); it != straight_lengths.end_elements(); ++it) {
-    const auto& data = *it;
-    switch_on_straight_length_[{ToDouble(data["length"]), ToDouble(data["width"])}] = ToDouble(data["switch_length"]);
-  }
-
-  jsoncons::json turn_lengths = LoadCSV("data/switch-turn-lengths.csv");
-  for (auto it = turn_lengths.begin_elements(); it != turn_lengths.end_elements(); ++it) {
-    const auto& data = *it;
-    switch_on_turn_length_[std::make_tuple(ToDouble(data["start_radius"]), ToDouble(data["end_radius"]), ToDouble(data["angle"]))] = ToDouble(data["switch_length"]);
-  }
-
-  // Check if we are missing any data for current track.
-  bool has_all = true;
-  for (const auto& piece : track_->pieces()) {
-    if (!piece.has_switch()) continue;
-
-    if (piece.type() == PieceType::kStraight) {
-      for (int i = 1; i < track_->lanes().size(); ++i) {
-        double width = fabs(track_->lanes()[i].distance_from_center() - track_->lanes()[i - 1].distance_from_center());
-        if (switch_on_straight_length_.count({piece.length(), width}) == 0) {
-          has_all = false;
-          std::cout << "WARNING: Missing length for switch on straight with length " << piece.length() << " and width " << width << std::endl;
-        }
-      }
-    } else {
-      for (int i = 1; i < track_->lanes().size(); ++i) {
-        double start_radius = piece.radius() + track_->lanes()[i - 1].distance_from_center();
-        double end_radius = piece.radius() + track_->lanes()[i].distance_from_center();
-        if (switch_on_turn_length_.count(std::make_tuple(start_radius, end_radius, fabs(piece.angle()))) == 0) {
-          has_all = false;
-          std::cout << "WARNING: Missing length for switch on turn start_radius: " << start_radius << " end_radius: " << end_radius << " angle: " << fabs(piece.angle()) << std::endl;
-        }
-        if (switch_on_turn_length_.count(std::make_tuple(end_radius, start_radius, fabs(piece.angle()))) == 0) {
-          has_all = false;
-          std::cout << "WARNING: Missing length for switch on turn start_radius: " << end_radius << " end_radius: " << start_radius << " angle: " << fabs(piece.angle()) << std::endl;
-        }
-      }
-    }
-  }
-  if (has_all) {
-    std::cout << "We have all switch lengths!" << std::endl;
-  }
-}
-
-void LaneLengthModel::SaveSwitchLengths() {
-  std::ofstream file("data/switch-straight-lengths.csv");
-  file << "length,width,switch_length" << std::endl;
-  for (const auto& it : switch_on_straight_length_) {
-    file << std::setprecision(20) << it.first.first << "," << it.first.second << "," << it.second << std::endl;
-  }
-  file.close();
-
-  file.open("data/switch-turn-lengths.csv");
-  file << "start_radius,end_radius,angle,switch_length" << std::endl;
-  for (const auto& it : switch_on_turn_length_) {
-    file << std::setprecision(20) << std::get<0>(it.first) << "," << std::get<1>(it.first) << "," << std::get<2>(it.first) << "," << it.second << std::endl;
-  }
-  file.close();
+SwitchLengthParams LaneLengthModel::CreateParams() {
+  SwitchLengthParams params;
+  params.switch_on_turn_length = switch_on_turn_length_;
+  params.switch_on_straight_length = switch_on_straight_length_;
+  return params;
 }
 
 }  // namespace game

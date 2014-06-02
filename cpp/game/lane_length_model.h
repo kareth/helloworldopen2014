@@ -8,13 +8,14 @@
 #include <algorithm>
 
 #include "game/track.h"
+#include "game/physics_params.h"
 
 namespace game {
 
 class LaneLengthModel {
  public:
   // Track has to outlive this model.
-  LaneLengthModel(const Track* track);
+  LaneLengthModel(const Track* track, const SwitchLengthParams& params);
   ~LaneLengthModel();
 
   // perfect - return if the returned length is on 100% correct
@@ -22,9 +23,11 @@ class LaneLengthModel {
 
   void Record(const Position& previous, const Position& current, double predicted_velocity);
 
+  // Creates params that can be used in simulator, written to files or
+  // validated in unittests.
+  SwitchLengthParams CreateParams();
+
  private:
-  void LoadSwitchLengths();
-  void SaveSwitchLengths();
 
   const Track* track_;
 

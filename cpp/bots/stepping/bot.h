@@ -26,6 +26,7 @@ namespace stepping {
 class Bot : public bots::BotInterface {
  public:
   Bot();
+  ~Bot();
 
   void JoinedGame() override {}
   void YourCar(const std::string& color) override;

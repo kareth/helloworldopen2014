@@ -14,7 +14,7 @@ template <typename T> int sgn(T val) {
 CarTracker::CarTracker(const Race* race, const PhysicsParams& params)
     : race_(race),
       radius_model_(&race_->track()),
-      lane_length_model_(&race_->track()),
+      lane_length_model_(&race_->track(), params.switch_length_params),
       velocity_model_(params.velocity_model_params),
       drift_model_(params.drift_model_params) {
   stats_file_.open ("bin/" + FLAGS_race_id + "/stats.csv");
@@ -405,6 +405,14 @@ vector<CarTracker::Curve> CarTracker::GetCurves(const CarState& car_state, doubl
   }
 
   return curves;
+}
+
+PhysicsParams CarTracker::CreatePhysicsParams() {
+  PhysicsParams physics_params;
+  physics_params.velocity_model_params = velocity_model_.CreateParams();
+  physics_params.drift_model_params = drift_model_.CreateParams();
+  physics_params.switch_length_params = lane_length_model_.CreateParams();
+  return physics_params;
 }
 
 }  // namespace game
