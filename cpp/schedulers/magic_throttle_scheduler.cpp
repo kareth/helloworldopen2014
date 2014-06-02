@@ -92,8 +92,8 @@ vector<double> MakeMagic(int tick, int n, int horizon, const vector<double>& vm,
 }
 
 void MagicThrottleScheduler::ImproveByMagic(const game::CarState& state, Sched& schedule) {
-  vector<double> dm = car_tracker_.GetDriftModel().GetModel();
-  vector<double> vm = car_tracker_.GetVelocityModel().GetModel();
+  vector<double> dm = car_tracker_.GetDriftModel().CreateParams().model;
+  vector<double> vm = car_tracker_.GetVelocityModel().CreateParams().model;
   double max_drift = car_tracker_.GetCrashModel().GetModel();
 
   //TODO: Appropriate distance (N*10 is not OK in case of turbo). Does adding more influence performance?

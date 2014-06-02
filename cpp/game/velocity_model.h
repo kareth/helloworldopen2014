@@ -88,10 +88,6 @@ class VelocityModel {
     return ready_;
   }
 
-  std::vector<double> GetModel() const {
-      return x_;
-  }
-
   VelocityModelParams CreateParams() const {
     VelocityModelParams params;
     params.model = x_;

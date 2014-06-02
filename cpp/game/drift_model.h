@@ -55,11 +55,7 @@ class DriftModel {
     return ready_;
   }
 
-  std::vector<double> GetModel() const {
-      return x_;
-  }
-
-  DriftModelParams CreateParams() {
+  DriftModelParams CreateParams() const {
     DriftModelParams params;
     params.model = x_;
     return params;
