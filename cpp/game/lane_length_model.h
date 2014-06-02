@@ -21,6 +21,11 @@ class LaneLengthModel {
   // perfect - return if the returned length is on 100% correct
   double Length(const Position& position, bool* perfect=nullptr) const;
 
+  // Returns -1 if unknown.
+  double SwitchOnTurnLength(double start_radius,
+                            double end_radius,
+                            double angle) const;
+
   void Record(const Position& previous, const Position& current, double predicted_velocity);
 
   // Creates params that can be used in simulator, written to files or

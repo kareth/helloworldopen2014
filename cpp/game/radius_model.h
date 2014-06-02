@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include "game/error_tracker.h"
+#include "game/lane_length_model.h"
 #include "game/gauss.h"
 #include "game/position.h"
 #include "game/race.h"
@@ -23,59 +24,54 @@ namespace game {
 
 class SwitchRadiusModel {
  public:
-  SwitchRadiusModel(int piece, int start_lane)
-    : piece_(piece), start_lane_(start_lane) {}
+  SwitchRadiusModel(double start_radius, double end_radius,
+                    double angle, const LaneLengthModel* lane_length_model)
+    : start_radius_(start_radius),
+      end_radius_(end_radius),
+      angle_(angle),
+      lane_length_model_(lane_length_model) {
+    percent_to_radius_.assign(100, -1);
+    // For some strange reason, the first percent is always a straight.
+    percent_to_radius_[0] = 0;
+    // Will return -1 if unknown.
+    length_ = lane_length_model_->SwitchOnTurnLength(start_radius_, end_radius_, angle_);
+  }
 
   ~SwitchRadiusModel() {
-    if (FLAGS_print_models) {
-      std::cout << "==== Switch Radius Model ====" << std::endl;
-      std::cout << "piece: " << piece_ << " start_lane: " << start_lane_ << std::endl;
-      if (IsReady()) {
-        for (int i = 0; i < x_.size(); i++)
-          std::cout << std::setprecision(20) << "x" << i <<": " << x_[i] << " ";
-        std::cout << std::endl;
-
-        std::cout << "Model trained using: " << std::endl;
-        for (int i = 0; i < model_.size(); ++i) {
-          for (int j = 0; j < model_[i].size(); ++j) std::cout << std::setprecision(20) << model_[i][j] << " ";
-          std::cout << std::endl;
-        }
-      }
-      std::cout << std::endl;
-    }
   }
 
   // Returns 0 for straight line.
-  double Radius(double piece_distance) const;
+  double Radius(double piece_distance);
 
   void Record(double piece_distance, double radius);
 
-  bool IsReady() const {
-    return ready_;
+ private:
+  void MaybeUpdateLength();
+
+  bool HasLength() {
+    return length_ != -1;
   }
 
- private:
-  bool EnoughData();
-
-  vector<vector<double>> model_;
-  vector<double> b_;
-  vector<double> x_;
+  double start_radius_;
+  double end_radius_;
+  double angle_;
+  const LaneLengthModel* lane_length_model_;
 
   // (piece_distance, radius)
-  vector<std::pair<double, double> > data_;
+  // Used only to record points when length is not known yet.
+  vector<std::pair<double, double>> raw_data_;
 
-  int piece_;
-  int start_lane_;
+  // If radius is -1, then it is unknown.
+  vector<double> percent_to_radius_;
 
-  bool ready_ = false;
+  // -1 if unknown;
+  double length_ = -1;
 };
 
 class RadiusModel {
  public:
-  RadiusModel(const Track* track) : track_(track) {
-    // file_.open("bin/switch.csv", std::ios::out | std::ios::app);
-    file_.open("bin/" + FLAGS_race_id + "/switch-radius.csv");
-    file_ << "previous_radius,start_radius,angle,end_radius,next_radius,piece_distance,radius" << std::endl;
+  RadiusModel(const Track* track, const LaneLengthModel* lane_length_model)
+      : track_(track), lane_length_model_(lane_length_model) {
   }
 
   void Record(const Position& position, double radius);
@@ -84,18 +80,25 @@ class RadiusModel {
   double Radius(const Position& position);
 
  private:
-  SwitchRadiusModel* GetModel(int piece, int start_lane) {
-    if (models_[{piece, start_lane}] == nullptr) {
-      models_[{piece, start_lane}].reset(new SwitchRadiusModel(piece, start_lane));
+  SwitchRadiusModel* GetModel(const Position& position) {
+    const auto& piece = track_->pieces()[position.piece()];
+
+    double start_radius = track_->LaneRadius(position.piece(), position.start_lane());
+    double end_radius = track_->LaneRadius(position.piece(), position.end_lane());
+    double angle = fabs(piece.angle());
+
+    if (models_[std::make_tuple(start_radius, end_radius, angle)] == nullptr) {
+      models_[std::make_tuple(start_radius, end_radius, angle)].reset(
+          new SwitchRadiusModel(start_radius, end_radius, angle, lane_length_model_));
     }
-    return models_[{piece, start_lane}].get();
+    return models_[std::make_tuple(start_radius, end_radius, angle)].get();
   }
 
-  // (piece, start_lane) -> model
-  std::map<std::pair<int, int>, std::unique_ptr<SwitchRadiusModel>> models_;
-  std::ofstream file_;
+  // (start_radius, end_radius, angle) -> model
+  std::map<std::tuple<double, double, double>, std::unique_ptr<SwitchRadiusModel>> models_;
 
   const Track* track_;
+  const LaneLengthModel* lane_length_model_;
 };
 
 }  // namespace game

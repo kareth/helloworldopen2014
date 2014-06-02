@@ -106,6 +106,17 @@ void LaneLengthModel::Record(const Position& previous, const Position& current, 
   }
 }
 
+double LaneLengthModel::SwitchOnTurnLength(
+    double start_radius,
+    double end_radius,
+    double angle) const {
+  auto it = switch_on_turn_length_.find(std::make_tuple(start_radius, end_radius, angle));
+  if (it == switch_on_turn_length_.end()) {
+    return -1;
+  }
+  return it->second;
+}
+
 SwitchLengthParams LaneLengthModel::CreateParams() {
   SwitchLengthParams params;
   params.switch_on_turn_length = switch_on_turn_length_;

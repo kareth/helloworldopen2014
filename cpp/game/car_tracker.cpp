@@ -13,8 +13,8 @@ template <typename T> int sgn(T val) {
 
 CarTracker::CarTracker(const Race* race, const PhysicsParams& params)
     : race_(race),
-      radius_model_(&race_->track()),
       lane_length_model_(&race_->track(), params.switch_length_params),
+      radius_model_(&race_->track(), &lane_length_model_),
       velocity_model_(params.velocity_model_params),
       drift_model_(params.drift_model_params) {
   stats_file_.open ("bin/" + FLAGS_race_id + "/stats.csv");
