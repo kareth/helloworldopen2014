@@ -16,7 +16,7 @@ class CarTrackerTest : public testing::Test {
     const auto& race_json = game_init_json["data"]["race"];
 
     race_.ParseFromJson(race_json);
-    car_tracker_.reset(new CarTracker(&race_));
+    car_tracker_.reset(new CarTracker(&race_, PhysicsParams()));
   }
 
   Command ParseCommand(const json& data) {

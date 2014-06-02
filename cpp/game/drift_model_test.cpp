@@ -3,6 +3,7 @@
 #include "game/track.h"
 #include "game/position.h"
 #include "game/drift_model.h"
+#include "game/physics_params.h"
 #include "gtest/gtest.h"
 #include "jsoncons/json.hpp"
 
@@ -13,6 +14,8 @@ namespace {
 
 class DriftModelTest : public testing::Test {
  protected:
+  DriftModelTest() : model_(DriftModelParams()) {}
+
   const double kEps = 1e-9;
 
   DriftModel model_;

@@ -11,8 +11,12 @@ template <typename T> int sgn(T val) {
 }
 }  // anonymous namespace
 
-CarTracker::CarTracker(const Race* race)
-  : race_(race), radius_model_(&race_->track()), lane_length_model_(&race_->track()) {
+CarTracker::CarTracker(const Race* race, const PhysicsParams& params)
+    : race_(race),
+      radius_model_(&race_->track()),
+      lane_length_model_(&race_->track()),
+      velocity_model_(params.velocity_model_params),
+      drift_model_(params.drift_model_params) {
   stats_file_.open ("bin/" + FLAGS_race_id + "/stats.csv");
   stats_file_ << "piece_index,start_lane,end_lane,radius,in_piece_distance,angle,velocity,throttle" << std::endl;
 }

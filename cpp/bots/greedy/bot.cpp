@@ -1,5 +1,7 @@
-#include "bots/greedy/bot.h"
 #include <cstring>
+
+#include "bots/greedy/bot.h"
+#include "game/physics_params.h"
 
 using std::string;
 using std::vector;
@@ -10,6 +12,7 @@ using game::CarState;
 using game::Command;
 using game::Position;
 using game::Race;
+using game::PhysicsParams;
 
 namespace bots {
 namespace greedy {
@@ -79,7 +82,7 @@ void Bot::NewRace(const Race& race) {
   // We do not want to loose all models between qualification and race.
   // TODO We assume that the race is exactly the same as the one in car_tracker_.
   if (car_tracker_ == nullptr) {
-    car_tracker_.reset(new CarTracker(&race_));
+    car_tracker_.reset(new CarTracker(&race_, PhysicsParams::Load()));
   }
 }
 

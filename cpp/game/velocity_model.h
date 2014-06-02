@@ -1,12 +1,14 @@
 #ifndef CPP_GAME_VELOCITY_MODEL_H_
 #define CPP_GAME_VELOCITY_MODEL_H_
 
+#include <cassert>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <map>
 #include <algorithm>
 
+#include "game/physics_params.h"
 #include "game/approximation.h"
 #include "game/error_tracker.h"
 #include "gflags/gflags.h"
@@ -20,8 +22,9 @@ namespace game {
 // velocity = x0 * previous_velocity + x1 * throttle
 class VelocityModel {
  public:
-  VelocityModel() : error_tracker_("velocity") {
-    x_ = {0.98, 0.2};
+  VelocityModel(const VelocityModelParams& params) : error_tracker_("velocity") {
+    assert(params.model.size() == 2);
+    x_ = params.model;
   }
   ~VelocityModel() {
     if (FLAGS_print_models) {

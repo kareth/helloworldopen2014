@@ -1,4 +1,5 @@
 #include "bots/stepping/bot.h"
+#include "game/physics_params.h"
 
 DECLARE_int32(handicap);
 DECLARE_bool(check_if_safe_ahead);
@@ -16,6 +17,7 @@ using game::CarState;
 using game::Command;
 using game::Position;
 using game::Race;
+using game::PhysicsParams;
 using schedulers::Strategy;
 
 namespace bots {
@@ -30,7 +32,7 @@ void Bot::NewRace(const Race& race) {
   // TODO We assume that the race is exactly the same as the one in car_tracker_.
   // (kareth) Is resetting race enough? it only differs in laps/duration
   if (car_tracker_ == nullptr) {
-    car_tracker_.reset(new CarTracker(&race_));
+    car_tracker_.reset(new CarTracker(&race_, PhysicsParams::Load()));
     race_tracker_.reset(new RaceTracker(*car_tracker_.get(), race_, color_));
     bump_tracker_.reset(new game::BumpTracker(*car_tracker_.get(), race_));
   } else {

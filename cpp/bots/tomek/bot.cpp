@@ -7,6 +7,7 @@ using game::CarTracker;
 using game::Race;
 using game::Command;
 using game::Switch;
+using game::PhysicsParams;
 
 namespace bots {
 namespace tomek {
@@ -92,7 +93,7 @@ void Bot::YourCar(const std::string& color) {
 
 void Bot::NewRace(const Race& race) {
   race_ = race;
-  car_tracker_.reset(new CarTracker(&race_));
+  car_tracker_.reset(new CarTracker(&race_, PhysicsParams::Load()));
 }
 
 void Bot::CarCrashed(const std::string& color)  {

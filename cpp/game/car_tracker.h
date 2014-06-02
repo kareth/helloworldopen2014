@@ -9,6 +9,7 @@
 #include <string>
 #include <cmath>
 
+#include "game/physics_params.h"
 #include "game/car_predictor.h"
 #include "game/crash_model.h"
 #include "game/drift_model.h"
@@ -42,7 +43,7 @@ namespace game {
 // }
 class CarTracker : public CarPredictor {
  public:
-  CarTracker(const Race* race);
+  CarTracker(const Race* race, const PhysicsParams& params);
 
   virtual ~CarTracker();
 
