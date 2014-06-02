@@ -24,7 +24,7 @@ const vector<double> WojtekThrottleScheduler::values{0.0, 1.0};
 
 WojtekThrottleScheduler::WojtekThrottleScheduler(const game::Race& race,
     game::CarTracker& car_tracker, int time_limit)
-  : race_(race), car_tracker_(car_tracker), best_schedule_(&car_tracker, HORIZON), bb_(&car_tracker, HORIZON, groups, values), log_file_("wojtek_data_log.csv", std::ofstream::out), tick_(0), time_limit_(time_limit)
+  : race_(race), car_tracker_(car_tracker), best_schedule_(&car_tracker, HORIZON), branch_and_bound_(&car_tracker, HORIZON, groups, values), log_file_("wojtek_data_log.csv", std::ofstream::out), tick_(0), time_limit_(time_limit)
 {
    //Watchout: executing two WojtekThrottleSchedulers in pararell could be risky becase of log file (TODO)
    log_file_ << "tick," << "x," << "turbo," << "switch," << "a," << "v," << "dir," << "rad," << "piece_no," << "schedule_time," << "initial_schedule_safe," << "schedule" << std::endl;
@@ -46,7 +46,7 @@ void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
     best_schedule_.Reset(state);
   }
 
-  bb_.Improve(state, best_schedule_);
+  branch_and_bound_.Improve(state, best_schedule_);
   local_improver_.Improve(state, best_schedule_, 0.1);
 
   last_schedule_time_ = stopwatch.elapsed();

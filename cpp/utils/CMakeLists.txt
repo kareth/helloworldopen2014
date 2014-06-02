@@ -2,6 +2,7 @@ set(UTILS_SOURCES
   connection.cpp
   protocol.cpp
   game_visualizer.cpp
+  deadline.cpp
 )
 
 set(UTILS_HEADERS
@@ -9,6 +10,7 @@ set(UTILS_HEADERS
   connection.h
   game_visualizer.h
   stopwatch.h
+  deadline.h
 )
 
 add_library(utils ${UTILS_SOURCES})

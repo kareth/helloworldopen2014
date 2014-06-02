@@ -48,7 +48,7 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   game::CarTracker& car_tracker_;
   const game::Race& race_;
   Sched best_schedule_;
-  BranchAndBound bb_;
+  BranchAndBound branch_and_bound_;
   LocalImprover local_improver_;
   std::ofstream log_file_;
   double last_schedule_time_; // ms
