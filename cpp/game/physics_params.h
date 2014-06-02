@@ -4,6 +4,12 @@
 #include <vector>
 #include <cmath>
 #include <map>
+#include <iostream>
+
+#include <sys/file.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 namespace game {
 
@@ -53,6 +59,10 @@ class SwitchRadiusParams {
 
   void Load();
   void Save() const;
+
+  // Logs to stdout the switches from track that are unknown.
+  void LogMissingData(const Track& track) const {
+  }
 };
 
 class PhysicsParams {
@@ -63,15 +73,56 @@ class PhysicsParams {
   SwitchRadiusParams switch_radius_params;
 
   static PhysicsParams Load() {
+    int fd = LockFile();
+
     PhysicsParams params;
     params.switch_length_params.Load();
     params.switch_radius_params.Load();
+
+    UnlockFile(fd);
+
     return params;
   }
 
   void Save() const {
+    int fd = LockFile();
+
     switch_length_params.Save();
     switch_radius_params.Save();
+
+    UnlockFile(fd);
+  }
+
+  static int LockFile() {
+    std::cout << "Waiting to lock the file ..." << std::endl;
+    const char* lockfile = "/tmp/hwo.lock";
+    int fd;
+    struct stat st0, st1;
+
+    while(1) {
+        fd = open(lockfile, O_CREAT);
+        flock(fd, LOCK_EX);
+
+        fstat(fd, &st0);
+        stat(lockfile, &st1);
+        if(st0.st_ino == st1.st_ino) break;
+
+        close(fd);
+    }
+    std::cout << "File locked." << std::endl;
+    return fd;
+  }
+
+  static void UnlockFile(int fd) {
+    std::cout << "Unlocking file ..." << std::endl;
+    unlink("/tmp/hwo.lock");
+    flock(fd, LOCK_UN);
+    std::cout << "File unlocked." << std::endl;
+  }
+
+  void LogMissingData(const Track& track) const {
+    switch_radius_params.LogMissingData(track);
+    switch_length_params.LogMissingData(track);
   }
 };
 
