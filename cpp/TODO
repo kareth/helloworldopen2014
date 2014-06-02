@@ -18,6 +18,7 @@ WojtekThrottleScheduler
     - idea: 111111000 is always better than some other combination of 7 1' and 3 0'
         - could this be used as upper bound?
     - in each node consider 0, 1. If 1 is too much than consider something less than 1, maximizing future angle (with all other throttles set to 0; binary search for feasibility).
+    - if initial best was found best than also use the best from bb trying to local search on it, if there is time
 * Optimize groups (vide perf. measure)
     - idea: choose among a set of different groups?
     - idea: different groups for different circumstances (e.g. switch)? Some ML based on curves ahead?

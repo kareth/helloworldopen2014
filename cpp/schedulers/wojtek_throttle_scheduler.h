@@ -5,6 +5,8 @@
 #include <array>
 #include <cmath>
 #include <random>
+#include <fstream>
+
 #include "game/car_tracker.h"
 #include "schedulers/strategy.h"
 #include "schedulers/throttle_scheduler.h"
@@ -22,6 +24,8 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   WojtekThrottleScheduler(const game::Race* race,
                           game::CarTracker* car_tracker);
 
+  ~WojtekThrottleScheduler() override;
+
   // Returns scheduled throttle
   double throttle() override { return throttle_; };
 
@@ -36,20 +40,18 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
 
   const std::vector<double>& full_schedule() const override { return best_schedule_.throttles; }
 
-  bool VNS(const game::CarState& state, Sched& schedule, double step);
-
-  bool Improve(const game::CarState& state, Sched& schedule, double step);
-
-  bool ImproveOne(const game::CarState& state, Sched& schedule, int idx, double step);
-
  private:
+  bool Improve(const game::CarState& state, Sched& schedule, double step);
+  bool ImproveOne(const game::CarState& state, Sched& schedule, int idx, double step);
+  void Log(const game::CarState& state);
+
   game::CarTracker* car_tracker_;
   const game::Race* race_;
-  double throttle_ = 1.0;
+  double throttle_ = 1.0; //TODO: remove it
   Sched best_schedule_;
   BranchAndBound bb_;
-
-  void Log(const game::CarState& state);
+  std::ofstream log_file_;
+  double last_schedule_time_; // ms
 };
 
 }  // namespace schedulers

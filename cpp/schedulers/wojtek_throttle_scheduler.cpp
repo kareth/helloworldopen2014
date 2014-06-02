@@ -1,8 +1,17 @@
 #include "schedulers/wojtek_throttle_scheduler.h"
 
 #include <chrono>
+#include <cstdio>
+#include <cmath>
 
 #include "gflags/gflags.h"
+#include "utils/stopwatch.h"
+
+namespace {
+  template <typename T> int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+  }
+}
 
 namespace schedulers {
 
@@ -14,13 +23,21 @@ const int WojtekThrottleScheduler::HORIZON = std::accumulate(groups.begin(),grou
 const vector<double> WojtekThrottleScheduler::values{0.0, 1.0};
 
 WojtekThrottleScheduler::WojtekThrottleScheduler(const game::Race* race,
-    game::CarTracker* car_tracker)
-  : race_(race), car_tracker_(car_tracker), best_schedule_(car_tracker, HORIZON), bb_(car_tracker, HORIZON, groups, values) {
+    game::CarTracker* car_tracker) //TODO: Reference
+  : race_(race), car_tracker_(car_tracker), best_schedule_(car_tracker, HORIZON), bb_(car_tracker, HORIZON, groups, values), log_file_("wojtek_data_log.csv", std::ofstream::out)
+{
+    //Watchout: executing two WojtekThrottleSchedulers in pararell could be risky becase of log file (TODO)
+   log_file_ << "tick," << "lap," << "x," << "turbo," << "switch," << "a," << "v," << "dir," << "rad," << "schedule_time" << "schedule" << std::endl;
+}
+
+WojtekThrottleScheduler::~WojtekThrottleScheduler() {
+    log_file_.close();
 }
 
 void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
+  utils::StopWatch stopwatch;
   best_schedule_.ShiftLeftFillSafe(state);
-  best_schedule_.UpdateDistance(state);      // Must do it, because throttle could have changed!
+  best_schedule_.UpdateDistance(state); // Must do it, because we could have unpredicted turbo/switches, etc. ahead
   if (!best_schedule_.IsSafe(state))
     best_schedule_.Reset(state);
 
@@ -28,43 +45,10 @@ void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
 
   Improve(state, best_schedule_, 0.1);
 
-  //VNS(state, best_schedule_, 0.1);
-
-  /*if (!Optimize(state)) {
-    VNS(state, best_schedule_);
-  }*/
-
   throttle_ = best_schedule_.throttles[0];
 
+  last_schedule_time_ = stopwatch.elapsed();
   Log(state);
-}
-
-bool WojtekThrottleScheduler::VNS(const game::CarState& state, Sched& schedule, double step) {
-
-  const int STEPS = 100; //TODO: Fix this. Make it a proper local search
-
-  bool improved = false;
-  for (int i = 0; i < STEPS; ++i) {
-    int idx = rand() % 3; //TODO: make deterministic random
-    if (schedule.throttles[idx] == 0.0)
-      continue;
-
-    Sched tmp(schedule);
-
-    tmp.throttles[idx] = 0.0;
-
-    // TODO: This order could be randomized
-    for (int j = 0; j < tmp.size(); ++j) if (j != idx)
-      ImproveOne(state, tmp, j, step);
-    ImproveOne(state, tmp, idx, step);
-    tmp.UpdateDistance(state);
-    if (tmp.distance > schedule.distance) {
-      schedule = tmp;
-      improved = true;
-      printf("IMPROVED");
-    }
-  }
-  return improved;
 }
 
 bool WojtekThrottleScheduler::ImproveOne(const game::CarState& state, Sched& schedule, int idx, double step) {
@@ -92,13 +76,34 @@ bool WojtekThrottleScheduler::Improve(const game::CarState& state, Sched& schedu
 }
 
 void WojtekThrottleScheduler::Log(const game::CarState& state) {
-  for (int i=0; i<HORIZON; ++i)
-    printf("%.1f ", best_schedule_.throttles[i]);
+  for (int i=0; i<std::max(HORIZON, 20); ++i)
+    printf("%.3f ", best_schedule_.throttles[i]);
   printf("\n");
 
-  std::cout << "(" << state.position().piece() << ")" << " angle: " <<
-    state.position().angle() << " velocity: " << state.velocity() <<
-    std::endl;
+  CarState next = state;
+  for (int i=0; i<std::max(HORIZON, 20); ++i) {
+    next = car_tracker_->Predict(next, game::Command(best_schedule_.throttles[i]));
+    printf("%.2f ", next.position().angle());
+  }
+  printf("\n");
+
+  //TODO: Tick and lap number
+  game::Piece piece = race_->track().pieces()[state.position().piece()];
+  log_file_ << 0
+            << ',' << 0
+            << ',' << throttle()
+            << ',' << state.turbo_state().is_on() 
+            << ',' << (int)state.switch_state() 
+            << ',' << state.position().angle() 
+            << ',' << state.velocity()
+            << ',' << -sgn(piece.angle())
+            << ',' << piece.radius() 
+            << ',' << last_schedule_time_
+            << ',';
+  for (int i = 0; i < best_schedule_.size(); ++i)
+    log_file_ << std::setprecision (2) << best_schedule_.throttles[i] << " ";
+  log_file_ << std::endl;
+  log_file_.flush();
 }
 
 }  // namespace schedulers
