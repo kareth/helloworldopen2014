@@ -61,8 +61,7 @@ class SwitchRadiusParams {
   void Save() const;
 
   // Logs to stdout the switches from track that are unknown.
-  void LogMissingData(const Track& track) const {
-  }
+  void LogMissingData(const Track& track) const;
 };
 
 class PhysicsParams {

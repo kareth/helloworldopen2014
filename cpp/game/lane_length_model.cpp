@@ -9,7 +9,6 @@ DECLARE_bool(print_models);
 namespace game {
 
 LaneLengthModel::LaneLengthModel(const Track* track, const SwitchLengthParams& params) : track_(track) {
-  params.LogMissingData(*track);
   switch_on_straight_length_ = params.switch_on_straight_length;
   switch_on_turn_length_ = params.switch_on_turn_length;
 }

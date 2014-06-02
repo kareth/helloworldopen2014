@@ -119,4 +119,56 @@ void SwitchRadiusParams::Save() const {
   file.close();
 }
 
+void SwitchRadiusParams::LogMissingData(const Track& track) const {
+  // Check if we are missing any data for current track.
+  bool has_all = true;
+  for (const auto& piece : track.pieces()) {
+    if (!piece.has_switch()) continue;
+    if (piece.type() == PieceType::kStraight) continue;
+
+    for (int i = 1; i < track.lanes().size(); ++i) {
+      double start_radius = piece.radius() + track.lanes()[i - 1].distance_from_center();
+      double end_radius = piece.radius() + track.lanes()[i].distance_from_center();
+      double angle = fabs(piece.angle());
+
+      int missing = 0;
+      for (int percent = 1; percent <= 99; ++percent) {
+        if (model.count(std::make_tuple(start_radius, end_radius, angle, percent)) == 0)
+          missing++;
+      }
+
+      if (missing > 0) {
+        has_all = false;
+        std::cout << "Missing " << missing << " percents of radiuses for "
+                  << " start_radius: " << start_radius
+                  << " end_radius: " << end_radius
+                  << " angle: " << angle << std::endl;
+      }
+    }
+
+    for (int i = 1; i < track.lanes().size(); ++i) {
+      double start_radius = piece.radius() + track.lanes()[i].distance_from_center();
+      double end_radius = piece.radius() + track.lanes()[i - 1].distance_from_center();
+      double angle = fabs(piece.angle());
+
+      int missing = 0;
+      for (int percent = 1; percent <= 99; ++percent) {
+        if (model.count(std::make_tuple(start_radius, end_radius, angle, percent)) == 0)
+          missing++;
+      }
+
+      if (missing > 0) {
+        has_all = false;
+        std::cout << "Missing " << missing << " percents of radiuses for "
+                  << " start_radius: " << start_radius
+                  << " end_radius: " << end_radius
+                  << " angle: " << angle << std::endl;
+      }
+    }
+  }
+  if (has_all) {
+    std::cout << "We have all switch radiuses!" << std::endl;
+  }
+}
+
 }  // namespace game
