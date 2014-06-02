@@ -25,7 +25,7 @@ void VelocityPredictor::Record(const CarState& state) {
 
     auto new_velocity = InterpolatePoint(state_, state, point.position());
     if (new_velocity > point.velocity())
-      points[state.position().end_lane()].erase(point);
+      points[point.position().end_lane()].erase(point);
   }
 
   AddPoint(state);
@@ -61,7 +61,7 @@ double VelocityPredictor::InterpolatePoint(const CarState& a, const CarState& b,
 }
 
 bool VelocityPredictor::HasDataToPredict(const Position& p) const {
-  if (points[p.end_lane()].size() < 3) return false;
+  if (points[p.end_lane()].size() < 2) return false;
 
   auto previous = Previous(p);
   auto next = Next(p);

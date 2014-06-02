@@ -131,6 +131,7 @@ bool ShortestPathSwitchScheduler::ShouldSwitch() {
 }
 
 game::Switch ShortestPathSwitchScheduler::ExpectedSwitch() {
+  // TODO REFACTOR why do we have 2 weird separate variables lol?
   if (should_switch_now_ && !waiting_for_switch_)
     return scheduled_switch_;
   return game::Switch::kStay;
