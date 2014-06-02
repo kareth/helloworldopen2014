@@ -19,10 +19,10 @@ void VelocityPredictor::Record(const CarState& state) {
   // If the point is 'something new' or if we just swapped lanes
   if (!HasDataToPredict(state.position()) ||
       state.position().end_lane() != state_.position().end_lane()) {
-    printf("Adding raw point %d %.2lf %.2lf\n",
+    /*printf("Adding raw point %d %.2lf %.2lf\n",
         state.position().piece(),
         state.position().piece_distance(),
-        state.velocity());
+        state.velocity());*/
     AddPoint(state);
     return;
   }
@@ -32,10 +32,10 @@ void VelocityPredictor::Record(const CarState& state) {
   auto point = state_;
   while (true) {
     point = Next(point.position());
-      printf("candidate: %d %.2lf %.2lf\n",
+      /*printf("candidate: %d %.2lf %.2lf\n",
           point.position().piece(),
           point.position().piece_distance(),
-          point.velocity());
+          point.velocity());*/
 
     if (car_tracker_.DistanceBetween(point.position(), state.position()) >
         car_tracker_.DistanceBetween(state.position(), point.position()))
@@ -44,15 +44,15 @@ void VelocityPredictor::Record(const CarState& state) {
     auto new_velocity = InterpolatePoint(state_, state, point.position());
     if (new_velocity > point.velocity()) {
       points[point.position().end_lane()].erase(point);
-      printf("removing old point %d %.2lf %.2lf\n",
+      /*printf("removing old point %d %.2lf %.2lf\n",
           point.position().piece(),
           point.position().piece_distance(),
-          point.velocity());
+          point.velocity());*/
     } else {
-      printf("Point survived! %d %.2lf %.2lf\n",
+      /*printf("Point survived! %d %.2lf %.2lf\n",
           point.position().piece(),
           point.position().piece_distance(),
-          point.velocity());
+          point.velocity());*/
     }
   }
 
@@ -83,13 +83,13 @@ void VelocityPredictor::AddPoint(const CarState& state) {
 }
 
 double VelocityPredictor::InterpolatePoint(const CarState& a, const CarState& b, const Position& p) const {
-      printf("Interpolating! (%d %.2lf %.2lf) (%d %.2lf %.2lf)\n",
+  /*    printf("Interpolating! (%d %.2lf %.2lf) (%d %.2lf %.2lf)\n",
           a.position().piece(),
           a.position().piece_distance(),
           a.velocity(),
           b.position().piece(),
           b.position().piece_distance(),
-          b.velocity());
+          b.velocity());*/
 
   double distance = car_tracker_.DistanceBetween(a.position(), b.position());
   double point_distance = car_tracker_.DistanceBetween(a.position(), p);
