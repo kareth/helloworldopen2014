@@ -16,13 +16,12 @@ void VelocityPredictor::Reset(const CarState& state) {
 }
 
 void VelocityPredictor::Record(const CarState& state) {
+  if (IsOnExceedingSwitch(state))
+    return;
+
   // If the point is 'something new' or if we just swapped lanes
   if (!HasDataToPredict(state.position()) ||
       state.position().end_lane() != state_.position().end_lane()) {
-    /*printf("Adding raw point %d %.2lf %.2lf\n",
-        state.position().piece(),
-        state.position().piece_distance(),
-        state.velocity());*/
     AddPoint(state);
     return;
   }
@@ -32,28 +31,14 @@ void VelocityPredictor::Record(const CarState& state) {
   auto point = state_;
   while (true) {
     point = Next(point.position());
-      /*printf("candidate: %d %.2lf %.2lf\n",
-          point.position().piece(),
-          point.position().piece_distance(),
-          point.velocity());*/
 
     if (car_tracker_.DistanceBetween(point.position(), state.position()) >
         car_tracker_.DistanceBetween(state.position(), point.position()))
       break;
 
     auto new_velocity = InterpolatePoint(state_, state, point.position());
-    if (new_velocity > point.velocity()) {
+    if (new_velocity > point.velocity())
       points[point.position().end_lane()].erase(point);
-      /*printf("removing old point %d %.2lf %.2lf\n",
-          point.position().piece(),
-          point.position().piece_distance(),
-          point.velocity());*/
-    } else {
-      /*printf("Point survived! %d %.2lf %.2lf\n",
-          point.position().piece(),
-          point.position().piece_distance(),
-          point.velocity());*/
-    }
   }
 
   AddPoint(state);
@@ -69,7 +54,7 @@ double VelocityPredictor::Velocity(const Position& p) const {
         // Approximate velocity from another lane
         auto pos = PositionOnAnotherLane(p, p.end_lane() + off * side);
         if (HasDataToPredict(pos))
-          return InterpolatePoint(Previous(pos), Next(pos), p);
+          return InterpolatePoint(Previous(pos), Next(pos), pos);
       }
     }
   }
@@ -83,16 +68,9 @@ void VelocityPredictor::AddPoint(const CarState& state) {
 }
 
 double VelocityPredictor::InterpolatePoint(const CarState& a, const CarState& b, const Position& p) const {
-  /*    printf("Interpolating! (%d %.2lf %.2lf) (%d %.2lf %.2lf)\n",
-          a.position().piece(),
-          a.position().piece_distance(),
-          a.velocity(),
-          b.position().piece(),
-          b.position().piece_distance(),
-          b.velocity());*/
-
   double distance = car_tracker_.DistanceBetween(a.position(), b.position());
   double point_distance = car_tracker_.DistanceBetween(a.position(), p);
+  //printf ("%.2lf %.2lf\n", distance, point_distance);
   return (b.velocity() - a.velocity()) * point_distance / distance + a.velocity();
 }
 
@@ -128,15 +106,31 @@ CarState VelocityPredictor::Previous(Position p) const {
   return *previous;
 }
 
+bool VelocityPredictor::IsOnExceedingSwitch(const CarState& state) {
+  if (state.position().end_lane() != state.position().start_lane()) {
+    auto pos = state.position();
+    pos.set_start_lane(pos.end_lane());
+    if (state.position().piece_distance() >
+        car_tracker_.lane_length_model().Length(pos))
+      return true;
+  }
+  return false;
+}
+
+
 // TODO lane_model
 Position VelocityPredictor::PositionOnAnotherLane(const Position& p, int lane) const {
   Position a = p;
   a.set_piece_distance(0);
+  a.set_start_lane(a.end_lane());
   Position b = p;
   b.set_piece((b.piece() + 1) % race_.track().pieces().size());
   b.set_piece_distance(0);
+  b.set_start_lane(b.end_lane());
   double unknown_lane_length = car_tracker_.DistanceBetween(a, b);
 
+  a.set_start_lane(lane);
+  b.set_start_lane(lane);
   a.set_end_lane(lane);
   b.set_end_lane(lane);
   double data_lane_length = car_tracker_.DistanceBetween(a, b);
@@ -144,7 +138,9 @@ Position VelocityPredictor::PositionOnAnotherLane(const Position& p, int lane) c
   auto pos = p;
   pos.set_piece_distance(
       pos.piece_distance() / unknown_lane_length * data_lane_length);
+  pos.set_start_lane(lane);
   pos.set_end_lane(lane);
+
   return pos;
 }
 

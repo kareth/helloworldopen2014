@@ -119,4 +119,16 @@ TEST_F(VelocityPredictorTest, ExactSamePoints) {
   EXPECT_NEAR(15, velocity_predictor_->Velocity(BuildPosition(2, 30)), kEps);
 }
 
+TEST_F(VelocityPredictorTest, AnotherLaneStraight) {
+  velocity_predictor_->Record(BuildState(0, 0, 5, 0));
+  velocity_predictor_->Record(BuildState(0, 7.5, 7.5, 0));
+  velocity_predictor_->Record(BuildState(0, 20, 12.5, 0));
+
+  EXPECT_NEAR(6, velocity_predictor_->Velocity(BuildPosition(0, 3, 0)), kEps);
+  EXPECT_NEAR(10.5, velocity_predictor_->Velocity(BuildPosition(0, 15, 0)), kEps);
+
+  EXPECT_NEAR(6, velocity_predictor_->Velocity(BuildPosition(0, 3, 1)), kEps);
+  EXPECT_NEAR(10.5, velocity_predictor_->Velocity(BuildPosition(0, 15, 1)), kEps);
+}
+
 }  // namespace game

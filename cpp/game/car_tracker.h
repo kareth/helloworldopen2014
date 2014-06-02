@@ -156,6 +156,8 @@ class CarTracker : public CarPredictor {
 
   PhysicsParams CreatePhysicsParams();
 
+  const LaneLengthModel& lane_length_model() { return lane_length_model_; }
+
  private:
   const int kDistanceBetweenIter = 500;
   bool just_started_ = true;
