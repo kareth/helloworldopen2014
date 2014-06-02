@@ -11,7 +11,7 @@ struct state_compare {
     bool operator() (const CarState& lhs, const CarState& rhs) const{
       if (lhs.position().piece() < rhs.position().piece()) return true;
       if (lhs.position().piece() > rhs.position().piece()) return false;
-      return lhs.position().piece_distance() < rhs.position().piece_distance();
+      return lhs.position().piece_distance() + 1e-9 < rhs.position().piece_distance();
     }
 };
 
@@ -22,6 +22,10 @@ class VelocityPredictor {
 
   void Record(const CarState& state);
   double Velocity(const Position& position) const;
+
+  // After a crash or bump where last point is not continuous with next one,
+  // we have to reset it.
+  void Reset(const CarState& state);
 
  private:
   void AddPoint(const CarState& state);
