@@ -21,8 +21,8 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   static const vector<double> values; // possible throttle values to check
 
   // Expected time limit in miliseconds
-  WojtekThrottleScheduler(const game::Race* race,
-                          game::CarTracker* car_tracker);
+  WojtekThrottleScheduler(const game::Race& race,
+                          game::CarTracker& car_tracker);
 
   ~WojtekThrottleScheduler() override;
 
@@ -46,8 +46,8 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   void Log(const game::CarState& state);
   void PrintSchedule(const game::CarState& state, const Sched& schedule, int len);
 
-  game::CarTracker* car_tracker_;
-  const game::Race* race_;
+  game::CarTracker& car_tracker_;
+  const game::Race& race_;
   double throttle_ = 1.0; //TODO: remove it
   Sched best_schedule_;
   BranchAndBound bb_;

@@ -22,9 +22,9 @@ vector<int> groups {1,1,2,2,4,4,4,4,4,4,4,2,1};
 const int WojtekThrottleScheduler::HORIZON = std::accumulate(groups.begin(),groups.end(),0);
 const vector<double> WojtekThrottleScheduler::values{0.0, 1.0};
 
-WojtekThrottleScheduler::WojtekThrottleScheduler(const game::Race* race,
-    game::CarTracker* car_tracker) //TODO: Reference
-  : race_(race), car_tracker_(car_tracker), best_schedule_(car_tracker, HORIZON), bb_(car_tracker, HORIZON, groups, values), log_file_("wojtek_data_log.csv", std::ofstream::out), tick_(0)
+WojtekThrottleScheduler::WojtekThrottleScheduler(const game::Race& race,
+    game::CarTracker& car_tracker) //TODO: Reference
+  : race_(race), car_tracker_(car_tracker), best_schedule_(&car_tracker, HORIZON), bb_(&car_tracker, HORIZON, groups, values), log_file_("wojtek_data_log.csv", std::ofstream::out), tick_(0)
 {
     //Watchout: executing two WojtekThrottleSchedulers in pararell could be risky becase of log file (TODO)
    log_file_ << "tick," << "lap," << "x," << "turbo," << "switch," << "a," << "v," << "dir," << "rad," << "piece_no," << "schedule_time," << "schedule" << std::endl;
@@ -39,7 +39,7 @@ void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
 
   printf("tick: %d\n", tick_);
   printf("prediction with all zeros:\n");
-  PrintSchedule(state, Sched(car_tracker_, HORIZON), HORIZON);
+  PrintSchedule(state, Sched(&car_tracker_, HORIZON), HORIZON);
 
   utils::StopWatch stopwatch;
   best_schedule_.ShiftLeftFillSafe(state);
@@ -88,7 +88,7 @@ void WojtekThrottleScheduler::PrintSchedule(const game::CarState& state, const S
 
   CarState next = state;
   for (int i=0; i<len; ++i) {
-    next = car_tracker_->Predict(next, game::Command(schedule.throttles[i]));
+    next = car_tracker_.Predict(next, game::Command(schedule.throttles[i]));
     printf("%.1f ", next.position().angle());
   }
   printf("\n");
@@ -98,9 +98,9 @@ void WojtekThrottleScheduler::Log(const game::CarState& state) {
   //PrintSchedule(state, best_schedule_, std::min(HORIZON, 20));
 
   //TODO: Tick and lap number
-  game::Piece piece = race_->track().pieces()[state.position().piece()];
-  log_file_ << 0
-            << ',' << tick_
+  game::Piece piece = race_.track().pieces()[state.position().piece()];
+  log_file_ << ',' << tick_
+            << ',' << 0
             << ',' << throttle()
             << ',' << state.turbo_state().is_on() 
             << ',' << (int)state.switch_state() 
