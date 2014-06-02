@@ -48,6 +48,7 @@ int main(int argc, char** argv) {
     std::unique_ptr<game::Simulator> simulator(new game::Simulator());
 
     game::Simulator::Options options;
+    options.physics_params = game::PhysicsParams::Load();
     options.track_name = FLAGS_track;
     result = simulator->Run(bot.get(), options);
   }
