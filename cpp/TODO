@@ -1,16 +1,17 @@
 WojtekThrottleScheduler
 -----------------------
-* Analyse decision smoothness. Is there something that make us radically change decisions?
 * For live:
     - Implement timelimit. Return currently best:
         - Use stopwatch class. Check from time to time if exceeded
     - Shift accordingly if missed tick (for LB)
-    - In case initial LB is not safe provide a greedy one
-    - Try modifying the schedule by putting 0's to the end one by one
+    - Initial LB:
+        - All maps simulated + live analyse any case where initial_schedule is not safe. Are there any serious?
+        - In case initial LB is not safe provide a greedy one
+        - Try modifying the schedule by putting 0's to the end one by one
+    - Add deadline class
 * Performance:
     - gprof bottlenecks
     - how many cuts?
-    - if the initial solution is not valid what
     - analyse what cased max tick time
     - provide also in-tree LB (in case the initial did not work)
 * Ideas:
@@ -23,12 +24,15 @@ WojtekThrottleScheduler
 * Optimize groups (vide perf. measure)
     - idea: choose among a set of different groups?
     - idea: different groups for different circumstances (e.g. switch)? Some ML based on curves ahead?
+    - 0.01 step improves things a bit on some maps. Verify it live and explore it.
 * Improve local search: remove randomness. Improve on edges.
 * Use Tomek's code for fractional throttle
 
 * Minor: Compare data.csv of Magic and Wojtek. Where Wojtek loses.
     - are results2.csv 3.csv still valid? Rather yes
 
+DONE: 
+* Analyse decision smoothness. Is there something that make us radically change decisions?
 
 Performance measure
 -------------------

@@ -23,11 +23,11 @@ const int WojtekThrottleScheduler::HORIZON = std::accumulate(groups.begin(),grou
 const vector<double> WojtekThrottleScheduler::values{0.0, 1.0};
 
 WojtekThrottleScheduler::WojtekThrottleScheduler(const game::Race& race,
-    game::CarTracker& car_tracker) //TODO: Reference
-  : race_(race), car_tracker_(car_tracker), best_schedule_(&car_tracker, HORIZON), bb_(&car_tracker, HORIZON, groups, values), log_file_("wojtek_data_log.csv", std::ofstream::out), tick_(0)
+    game::CarTracker& car_tracker, int time_limit)
+  : race_(race), car_tracker_(car_tracker), best_schedule_(&car_tracker, HORIZON), bb_(&car_tracker, HORIZON, groups, values), log_file_("wojtek_data_log.csv", std::ofstream::out), tick_(0), time_limit_(time_limit)
 {
-    //Watchout: executing two WojtekThrottleSchedulers in pararell could be risky becase of log file (TODO)
-   log_file_ << "tick," << "lap," << "x," << "turbo," << "switch," << "a," << "v," << "dir," << "rad," << "piece_no," << "schedule_time," << "schedule" << std::endl;
+   //Watchout: executing two WojtekThrottleSchedulers in pararell could be risky becase of log file (TODO)
+   log_file_ << "tick," << "x," << "turbo," << "switch," << "a," << "v," << "dir," << "rad," << "piece_no," << "schedule_time," << "initial_schedule_safe," << "schedule" << std::endl;
 }
 
 WojtekThrottleScheduler::~WojtekThrottleScheduler() {
@@ -37,21 +37,18 @@ WojtekThrottleScheduler::~WojtekThrottleScheduler() {
 void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
   tick_ += 1; //FIXME: get it as parameter
 
-  printf("tick: %d\n", tick_);
-  printf("prediction with all zeros:\n");
-  PrintSchedule(state, Sched(&car_tracker_, HORIZON), HORIZON);
-
   utils::StopWatch stopwatch;
   best_schedule_.ShiftLeftFillSafe(state);
   best_schedule_.UpdateDistance(state); // Must do it, because we could have unpredicted turbo/switches, etc. ahead
-  if (!best_schedule_.IsSafe(state))
+
+  initial_schedule_safe_ = best_schedule_.IsSafe(state);
+  if (!initial_schedule_safe_) {
     best_schedule_.Reset(state);
+  }
 
   bb_.Improve(state, best_schedule_);
 
   Improve(state, best_schedule_, 0.1);
-
-  throttle_ = best_schedule_.throttles[0];
 
   last_schedule_time_ = stopwatch.elapsed();
   Log(state);
@@ -95,12 +92,10 @@ void WojtekThrottleScheduler::PrintSchedule(const game::CarState& state, const S
 }
 
 void WojtekThrottleScheduler::Log(const game::CarState& state) {
-  //PrintSchedule(state, best_schedule_, std::min(HORIZON, 20));
+  PrintSchedule(state, best_schedule_, std::min(HORIZON, 20));
 
-  //TODO: Tick and lap number
   game::Piece piece = race_.track().pieces()[state.position().piece()];
-  log_file_ << ',' << tick_
-            << ',' << 0
+  log_file_ << tick_
             << ',' << throttle()
             << ',' << state.turbo_state().is_on() 
             << ',' << (int)state.switch_state() 
@@ -110,6 +105,7 @@ void WojtekThrottleScheduler::Log(const game::CarState& state) {
             << ',' << piece.radius() 
             << ',' << state.position().piece()
             << ',' << last_schedule_time_
+            << ',' << initial_schedule_safe_
             << ',';
   for (int i = 0; i < best_schedule_.size(); ++i)
     log_file_ << std::setprecision (2) << best_schedule_.throttles[i] << " ";

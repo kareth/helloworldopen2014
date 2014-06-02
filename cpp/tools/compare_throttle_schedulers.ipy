@@ -5,8 +5,8 @@ import os
 
 schedulers = (
     "WojtekThrottleScheduler",
-    "BinaryThrottleScheduler",
-    "MagicThrottleScheduler",
+#    "BinaryThrottleScheduler",
+#    "MagicThrottleScheduler",
 )
 
 maps = (

@@ -22,12 +22,12 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
 
   // Expected time limit in miliseconds
   WojtekThrottleScheduler(const game::Race& race,
-                          game::CarTracker& car_tracker);
+                          game::CarTracker& car_tracker, int time_limit);
 
   ~WojtekThrottleScheduler() override;
 
   // Returns scheduled throttle
-  double throttle() override { return throttle_; };
+  double throttle() override { return best_schedule_.throttles[0]; };
 
   // Prepares for overtake
   void Overtake(const string& color) override { }
@@ -48,12 +48,13 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
 
   game::CarTracker& car_tracker_;
   const game::Race& race_;
-  double throttle_ = 1.0; //TODO: remove it
   Sched best_schedule_;
   BranchAndBound bb_;
   std::ofstream log_file_;
   double last_schedule_time_; // ms
   int tick_;
+  int time_limit_; // ms
+  bool initial_schedule_safe_; 
 };
 
 }  // namespace schedulers
