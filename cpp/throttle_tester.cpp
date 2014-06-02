@@ -31,8 +31,8 @@ std::string random_race_id() {
 }
 
 int main(int argc, char** argv) {
-  FLAGS_throttle_scheduler = "WojtekThrottleScheduler";
-  FLAGS_switch_scheduler = "NeverSwitchScheduler";
+  // FLAGS_throttle_scheduler = "BinaryThrottleScheduler";
+  // FLAGS_switch_scheduler = "NeverSwitchScheduler";
 
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   srand (time(NULL));
