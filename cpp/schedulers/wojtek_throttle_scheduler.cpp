@@ -18,7 +18,7 @@ namespace schedulers {
 using game::CarState;
 
 vector<int> groups {1,1,2,2,4,4,4,4,4,4,4,2,1};
-//vector<int> groups {1,1,1,1,1,1,1,1,1,1,1,1,1};
+
 const int WojtekThrottleScheduler::HORIZON = std::accumulate(groups.begin(),groups.end(),0);
 const vector<double> WojtekThrottleScheduler::values{0.0, 1.0};
 
@@ -56,10 +56,10 @@ void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
 
 bool WojtekThrottleScheduler::ImproveOne(const game::CarState& state, Sched& schedule, int idx, double step) {
   bool improved = false;
-  while (schedule.throttles[idx] + step <= 1.0) {
-    schedule.throttles[idx] += step;
+  while (schedule[idx] + step <= 1.0) {
+    schedule[idx] += step;
     if (!schedule.IsSafe(state)) {
-      schedule.throttles[idx] -= step;
+      schedule[idx] -= step;
       break;
     }
     // If throttle was increased there has to be distance improvement
@@ -80,12 +80,12 @@ bool WojtekThrottleScheduler::Improve(const game::CarState& state, Sched& schedu
 
 void WojtekThrottleScheduler::PrintSchedule(const game::CarState& state, const Sched& schedule, int len) {
   for (int i=0; i<len; ++i)
-    printf("%.2f ", schedule.throttles[i]);
+    printf("%.2f ", schedule[i]);
   printf("\n");
 
   CarState next = state;
   for (int i=0; i<len; ++i) {
-    next = car_tracker_.Predict(next, game::Command(schedule.throttles[i]));
+    next = car_tracker_.Predict(next, game::Command(schedule[i]));
     printf("%.1f ", next.position().angle());
   }
   printf("\n");
@@ -108,7 +108,7 @@ void WojtekThrottleScheduler::Log(const game::CarState& state) {
             << ',' << initial_schedule_safe_
             << ',';
   for (int i = 0; i < best_schedule_.size(); ++i)
-    log_file_ << std::setprecision (2) << best_schedule_.throttles[i] << " ";
+    log_file_ << std::setprecision (2) << best_schedule_[i] << " ";
   log_file_ << std::endl;
   log_file_.flush();
 }

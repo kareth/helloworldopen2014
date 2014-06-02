@@ -27,7 +27,7 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   ~WojtekThrottleScheduler() override;
 
   // Returns scheduled throttle
-  double throttle() override { return best_schedule_.throttles[0]; };
+  double throttle() override { return best_schedule_[0]; };
 
   // Prepares for overtake
   void Overtake(const string& color) override { }
@@ -38,7 +38,7 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   // Updates the state and calculates next state
   void Schedule(const game::CarState& state) override;
 
-  const std::vector<double>& full_schedule() const override { return best_schedule_.throttles; }
+  const std::vector<double>& full_schedule() const override { return best_schedule_.throttles_; }
 
  private:
   bool Improve(const game::CarState& state, Sched& schedule, double step);

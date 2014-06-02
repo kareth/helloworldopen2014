@@ -23,7 +23,7 @@ class MagicThrottleScheduler : public ThrottleScheduler {
                          game::CarTracker& car_tracker, int time_limit);
 
   // Returns scheduled throttle
-  double throttle() override { return best_schedule_.throttles[0]; };
+  double throttle() override { return best_schedule_[0]; };
 
   // Prepares for overtake
   void Overtake(const string& color) override { }
@@ -35,7 +35,7 @@ class MagicThrottleScheduler : public ThrottleScheduler {
   void Schedule(const game::CarState& state) override;
 
 
-  const std::vector<double>& full_schedule() const override { return best_schedule_.throttles; }
+  const std::vector<double>& full_schedule() const override { return best_schedule_.throttles_; }
 
  private:
   game::CarTracker& car_tracker_;
@@ -52,3 +52,4 @@ class MagicThrottleScheduler : public ThrottleScheduler {
 }  // namespace schedulers
 
 #endif  // CPP_SCHEDULERS_MAGIC_THROTTLE_SCHEDULER_H_
+

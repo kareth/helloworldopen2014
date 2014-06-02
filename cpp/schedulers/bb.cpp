@@ -27,7 +27,7 @@ void BranchAndBound::Improve(const game::CarState& state, Sched& schedule) {
   lower_bound_ = LowerBound(best_);
   upper_bound_ = UpperBound(state, 0, best_, 0); 
 
-  //printf("Init: (d=%.1f): ", best_.distance); best_.Print();
+  //printf("Init: (d=%.1f): ", best_.distance()); best_.Print();
   schedule.Reset(state);
 
   nodes_visited_ = 0;
@@ -40,7 +40,7 @@ void BranchAndBound::Improve(const game::CarState& state, Sched& schedule) {
 }
 
 double BranchAndBound::LowerBound(const Sched& schedule) {
-  return schedule.distance;
+  return schedule.distance();
 }
 
 double BranchAndBound::UpperBound(const game::CarState& from_state, double from_dist, const Sched& schedule, int from) {
@@ -59,15 +59,15 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
 
 
   if (from >= horizon_) {
-    bool better = (curr_dist > best_.distance);
+    bool better = (curr_dist > best_.distance());
     //printf ("found dist = %.1f\n", curr_dist);
 
     if (better) {
       if (car_tracker_->IsSafe(state)) {
         //printf("Found better (d=%.1f):", curr_dist); schedule.Print();
         best_ = schedule;
-        best_.distance = curr_dist;
-        lower_bound_ = best_.distance;
+        best_.set_distance(curr_dist);  // For performance
+        lower_bound_ = curr_dist;
         if (upper_bound_ - lower_bound_ <= EGAP)
           return true;
       }
@@ -88,7 +88,7 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
         fail = true;
         break;
       }
-      schedule.throttles[from+i] = throttle;
+      schedule[from+i] = throttle;
     }
     if (fail) continue;
 

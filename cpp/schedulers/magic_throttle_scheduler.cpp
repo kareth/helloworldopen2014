@@ -32,7 +32,7 @@ void MagicThrottleScheduler::Schedule(const game::CarState& state) {
   
   Sched maxs(&car_tracker_, HORIZON);
   for (int i = 0;i < HORIZON; ++i)
-      maxs.throttles[i] = 1.0;
+      maxs[i] = 1.0;
   if (maxs.IsSafe(state)) {
     maxs.UpdateDistance(state);
     best_schedule_ = maxs;
@@ -100,37 +100,39 @@ void MagicThrottleScheduler::ImproveByMagic(const game::CarState& state, Sched& 
   vector<CarTracker::Curve> curves = car_tracker_.GetCurves(state, N*10); 
 
   Sched new_schedule(schedule);
-  new_schedule.throttles = MakeMagic(tick_, N, HORIZON, vm, dm, max_drift, state.velocity(),
-          state.previous_angle(), state.position().angle(), curves, schedule.throttles);
+  vector<double> throttles = MakeMagic(tick_, N, HORIZON, vm, dm, max_drift, state.velocity(),
+          state.previous_angle(), state.position().angle(), curves, schedule.throttles());
+  for (int i=0; i<throttles.size(); ++i)
+      new_schedule[i] = throttles[i];
   new_schedule.UpdateDistance(state);
 
   // Just in case the magic makes something stupid
-  if (new_schedule.distance > schedule.distance)
+  if (new_schedule.distance() > schedule.distance())
       schedule = new_schedule;
 }
 
 void MagicThrottleScheduler::Log(const game::CarState& state) {
   for (int i=0; i<20; ++i)
-    printf("%.3f ", best_schedule_.throttles[i]);
+    printf("%.3f ", best_schedule_[i]);
   printf("\n");
 
   CarState next = state;
   for (int i=0; i<20; ++i) {
-    next = car_tracker_.Predict(next, game::Command(best_schedule_.throttles[i]));
+    next = car_tracker_.Predict(next, game::Command(best_schedule_[i]));
     printf("%.2f ", next.position().angle());
   }
   printf("\n");
 
   next = state;
   for (int i=0; i<20; ++i) {
-    next = car_tracker_.Predict(next, game::Command(best_schedule_.throttles[i]));
+    next = car_tracker_.Predict(next, game::Command(best_schedule_[i]));
     printf("%.3f ", next.velocity());
   }
   printf("\n");
 
 /*  next = state;
   for (int i=0; i<20; ++i) {
-    next = car_tracker_.Predict(next, game::Command(best_schedule_.throttles[i]));
+    next = car_tracker_.Predict(next, game::Command(best_schedule_[i]));
     printf("%d(%.2f) ", next.position().piece(), next.position().piece_distance());
   }
   printf("\n");*/
