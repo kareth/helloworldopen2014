@@ -59,6 +59,12 @@ class DriftModel {
       return x_;
   }
 
+  DriftModelParams CreateParams() {
+    DriftModelParams params;
+    params.model = x_;
+    return params;
+  }
+
  private:
   // Train the model 'x_' based on 'raw_points_'.
   void Train();

@@ -92,6 +92,12 @@ class VelocityModel {
       return x_;
   }
 
+  VelocityModelParams CreateParams() const {
+    VelocityModelParams params;
+    params.model = x_;
+    return params;
+  }
+
  private:
   void Train() {
     Approximation(m_, b_, x_);

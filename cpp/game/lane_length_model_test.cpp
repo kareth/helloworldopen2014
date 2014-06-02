@@ -3,6 +3,7 @@
 #include "game/track.h"
 #include "game/position.h"
 #include "game/lane_length_model.h"
+#include "game/physics_params.h"
 #include "gtest/gtest.h"
 #include "jsoncons/json.hpp"
 
@@ -20,7 +21,7 @@ class LaneLengthModelTest : public testing::Test {
     const auto& track_json = game_init_json["data"]["race"]["track"];
 
     track_.ParseFromJson(track_json);
-    model_.reset(new LaneLengthModel(&track_));
+    model_.reset(new LaneLengthModel(&track_, SwitchLengthParams()));
     perfect_ = false;
   }
 

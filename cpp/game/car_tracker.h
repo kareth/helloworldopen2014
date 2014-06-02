@@ -22,6 +22,7 @@
 #include "game/simplex.h"
 #include "game/velocity_model.h"
 #include "game/spawn_model.h"
+#include "game/physics_params.h"
 
 #define SQR(X) ((X)*(X))
 
@@ -168,6 +169,8 @@ class CarTracker : public CarPredictor {
   const VelocityModel& GetVelocityModel() const { return velocity_model_; }
   
   const DriftModel& GetDriftModel() const { return drift_model_; }
+
+  PhysicsParams CreatePhysicsParams();
 
  private:
   const int kDistanceBetweenIter = 500;

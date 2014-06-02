@@ -6,6 +6,7 @@ DECLARE_bool(check_if_safe_ahead);
 DECLARE_int32(answer_time);
 DECLARE_bool(bump_with_turbo);
 DECLARE_bool(defend_turbo_bump);
+DECLARE_bool(write_switch_models);
 
 using std::string;
 using std::vector;
@@ -24,6 +25,12 @@ namespace bots {
 namespace stepping {
 
 Bot::Bot() {
+}
+
+Bot::~Bot() {
+  if (car_tracker_ != nullptr && FLAGS_write_switch_models) {
+    car_tracker_->CreatePhysicsParams().Save();
+  }
 }
 
 void Bot::NewRace(const Race& race) {

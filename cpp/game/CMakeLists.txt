@@ -20,6 +20,7 @@ set(GAME_SOURCES
   bump_detector.cpp
   lane_scorer.cpp
   velocity_predictor.cpp
+  physics_params.cpp
 )
 
 set(GAME_HEADERS
@@ -49,6 +50,7 @@ set(GAME_HEADERS
   bump_detector.h
   lane_scorer.h
   velocity_predictor.h
+  physics_params.h
 )
 
 set(GAME_TESTS
