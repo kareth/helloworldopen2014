@@ -6,10 +6,23 @@ VelocityPredictor::VelocityPredictor(CarTracker& car_tracker, const Race& race)
   : car_tracker_(car_tracker), race_(race) {
 }
 
+void VelocityPredictor::Reset(const CarState& state) {
+  // If new point or faster one;
+  if (!HasDataToPredict(state.position()) ||
+      Velocity(state.position()) < state.velocity()) {
+    points[state.position().end_lane()].insert(state);
+  }
+  state_ = state;
+}
+
 void VelocityPredictor::Record(const CarState& state) {
   // If the point is 'something new' or if we just swapped lanes
   if (!HasDataToPredict(state.position()) ||
       state.position().end_lane() != state_.position().end_lane()) {
+    /*printf("Adding raw point %d %.2lf %.2lf\n",
+        state.position().piece(),
+        state.position().piece_distance(),
+        state.velocity());*/
     AddPoint(state);
     return;
   }
@@ -19,13 +32,28 @@ void VelocityPredictor::Record(const CarState& state) {
   auto point = state_;
   while (true) {
     point = Next(point.position());
-    if (car_tracker_.DistanceBetween(point.position(), state.position()) <
+      /*printf("candidate: %d %.2lf %.2lf\n",
+          point.position().piece(),
+          point.position().piece_distance(),
+          point.velocity());*/
+
+    if (car_tracker_.DistanceBetween(point.position(), state.position()) >
         car_tracker_.DistanceBetween(state.position(), point.position()))
       break;
 
     auto new_velocity = InterpolatePoint(state_, state, point.position());
-    if (new_velocity > point.velocity())
-      points[state.position().end_lane()].erase(point);
+    if (new_velocity > point.velocity()) {
+      points[point.position().end_lane()].erase(point);
+      /*printf("removing old point %d %.2lf %.2lf\n",
+          point.position().piece(),
+          point.position().piece_distance(),
+          point.velocity());*/
+    } else {
+      /*printf("Point survived! %d %.2lf %.2lf\n",
+          point.position().piece(),
+          point.position().piece_distance(),
+          point.velocity());*/
+    }
   }
 
   AddPoint(state);
@@ -55,13 +83,21 @@ void VelocityPredictor::AddPoint(const CarState& state) {
 }
 
 double VelocityPredictor::InterpolatePoint(const CarState& a, const CarState& b, const Position& p) const {
+  /*    printf("Interpolating! (%d %.2lf %.2lf) (%d %.2lf %.2lf)\n",
+          a.position().piece(),
+          a.position().piece_distance(),
+          a.velocity(),
+          b.position().piece(),
+          b.position().piece_distance(),
+          b.velocity());*/
+
   double distance = car_tracker_.DistanceBetween(a.position(), b.position());
   double point_distance = car_tracker_.DistanceBetween(a.position(), p);
   return (b.velocity() - a.velocity()) * point_distance / distance + a.velocity();
 }
 
 bool VelocityPredictor::HasDataToPredict(const Position& p) const {
-  if (points[p.end_lane()].size() < 3) return false;
+  if (points[p.end_lane()].size() < 2) return false;
 
   auto previous = Previous(p);
   auto next = Next(p);
@@ -82,9 +118,9 @@ CarState VelocityPredictor::Next(Position p) const {
   return *next;
 }
 
-// Assumes that there is anything!
+// Assumes that there is anything! (less or equal)
 CarState VelocityPredictor::Previous(Position p) const {
-  auto previous = points[p.end_lane()].lower_bound(CarState(p));
+  auto previous = points[p.end_lane()].upper_bound(CarState(p));
   if (previous == points[p.end_lane()].begin())
     previous = points[p.end_lane()].end();
   previous--;
