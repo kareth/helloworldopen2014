@@ -45,7 +45,7 @@ class SwitchLengthParams {
 
   // Loads the params from file.
   void Load();
-  void Save() const;
+  void Save();
 
   // Logs to stdout the switches from track that are unknown.
   void LogMissingData(const Track& track) const;
@@ -58,7 +58,7 @@ class SwitchRadiusParams {
   std::map<std::tuple<double, double, double, int>, double> model;
 
   void Load();
-  void Save() const;
+  void Save();
 
   // Logs to stdout the switches from track that are unknown.
   void LogMissingData(const Track& track) const;
@@ -83,7 +83,7 @@ class PhysicsParams {
     return params;
   }
 
-  void Save() const {
+  void Save() {
     int fd = LockFile();
 
     switch_length_params.Save();

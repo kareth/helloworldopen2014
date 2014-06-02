@@ -43,7 +43,7 @@ void SwitchLengthParams::Load() {
   }
 }
 
-void SwitchLengthParams::Save() const {
+void SwitchLengthParams::Save() {
   // Just in case some other bot already written new data.
   Load();
 
@@ -108,7 +108,7 @@ void SwitchRadiusParams::Load() {
   }
 }
 
-void SwitchRadiusParams::Save() const {
+void SwitchRadiusParams::Save() {
   // Just in case some other bot already written new data.
   Load();
 
