@@ -47,36 +47,12 @@ void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
   }
 
   bb_.Improve(state, best_schedule_);
-
-  Improve(state, best_schedule_, 0.1);
+  local_improver_.Improve(state, best_schedule_, 0.1);
 
   last_schedule_time_ = stopwatch.elapsed();
   Log(state);
 }
 
-bool WojtekThrottleScheduler::ImproveOne(const game::CarState& state, Sched& schedule, int idx, double step) {
-  bool improved = false;
-  while (schedule[idx] + step <= 1.0) {
-    schedule[idx] += step;
-    if (!schedule.IsSafe(state)) {
-      schedule[idx] -= step;
-      break;
-    }
-    // If throttle was increased there has to be distance improvement
-    improved = true;
-  }
-  return improved;
-}
-
-bool WojtekThrottleScheduler::Improve(const game::CarState& state, Sched& schedule, double step) {
-  bool improved = false;
-  for (int i=0; i<schedule.size(); ++i) {
-    improved = ImproveOne(state, schedule, i, step);
-  }
-  if (improved)
-    schedule.UpdateDistance(state);
-  return improved;
-}
 
 void WojtekThrottleScheduler::PrintSchedule(const game::CarState& state, const Sched& schedule, int len) {
   for (int i=0; i<len; ++i)

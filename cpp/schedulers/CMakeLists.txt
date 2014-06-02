@@ -8,6 +8,7 @@ set(SCHEDULERS_SOURCES
   bump_scheduler.cpp
   schedule.cpp
   bb.cpp
+  local_improver.cpp
 )
 
 set(SCHEDULERS_HEADERS
@@ -24,6 +25,7 @@ set(SCHEDULERS_HEADERS
   bump_scheduler.h
   schedule.h
   bb.h
+  local_improver.h
 )
 
 add_library(schedulers ${SCHEDULERS_SOURCES})

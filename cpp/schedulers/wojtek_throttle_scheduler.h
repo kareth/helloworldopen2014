@@ -12,6 +12,7 @@
 #include "schedulers/throttle_scheduler.h"
 #include "schedulers/schedule.h"
 #include "schedulers/bb.h"
+#include "schedulers/local_improver.h"
 
 namespace schedulers {
 
@@ -41,8 +42,6 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   const std::vector<double>& full_schedule() const override { return best_schedule_.throttles_; }
 
  private:
-  bool Improve(const game::CarState& state, Sched& schedule, double step);
-  bool ImproveOne(const game::CarState& state, Sched& schedule, int idx, double step);
   void Log(const game::CarState& state);
   void PrintSchedule(const game::CarState& state, const Sched& schedule, int len);
 
@@ -50,6 +49,7 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   const game::Race& race_;
   Sched best_schedule_;
   BranchAndBound bb_;
+  LocalImprover local_improver_;
   std::ofstream log_file_;
   double last_schedule_time_; // ms
   int tick_;
