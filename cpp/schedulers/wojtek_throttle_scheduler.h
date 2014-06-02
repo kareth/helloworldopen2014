@@ -44,6 +44,7 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   bool Improve(const game::CarState& state, Sched& schedule, double step);
   bool ImproveOne(const game::CarState& state, Sched& schedule, int idx, double step);
   void Log(const game::CarState& state);
+  void PrintSchedule(const game::CarState& state, const Sched& schedule, int len);
 
   game::CarTracker* car_tracker_;
   const game::Race* race_;
@@ -52,6 +53,7 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   BranchAndBound bb_;
   std::ofstream log_file_;
   double last_schedule_time_; // ms
+  int tick_;
 };
 
 }  // namespace schedulers

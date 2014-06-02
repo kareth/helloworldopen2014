@@ -6,6 +6,7 @@ WojtekThrottleScheduler
         - Use stopwatch class. Check from time to time if exceeded
     - Shift accordingly if missed tick (for LB)
     - In case initial LB is not safe provide a greedy one
+    - Try modifying the schedule by putting 0's to the end one by one
 * Performance:
     - gprof bottlenecks
     - how many cuts?
