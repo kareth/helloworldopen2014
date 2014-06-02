@@ -5,7 +5,7 @@ import os
 
 schedulers = (
     "WojtekThrottleScheduler",
-#    "BinaryThrottleScheduler",
+    "BinaryThrottleScheduler",
 #    "MagicThrottleScheduler",
 )
 
@@ -22,10 +22,10 @@ maps = (
 
 with open("results.csv", "w") as f:
     f.write('map,scheduler,best_lap,total_ticks,total_dist,max_tick_time,avg_tick_time,crash\n')
-    os.chdir('../bin')
+    os.chdir('..')
     for map in maps:
         for scheduler in schedulers:
-            res = !./throttle_tester --throttle_scheduler=$scheduler --nocheck_if_safe_ahead --track=$map
+            res = !bin/throttle_tester --throttle_scheduler=$scheduler --nocheck_if_safe_ahead --track=$map
             name = scheduler + "-" + map + ".csv"
             !cp data.csv $name
 
