@@ -163,8 +163,8 @@ void DriftModel::Train() {
   }
 }
 
-DriftModel::DriftModel() : error_tracker_("drift") {
-  x_ = {1.9, -0.9, -0.00125, 0.00125 * sqrt(180000), 0.3};
+DriftModel::DriftModel(const DriftModelParams& params) : error_tracker_("drift") {
+  x_ = params.model;
 }
 
 DriftModel::~DriftModel() {

@@ -43,6 +43,8 @@ class Simulator {
 
     int max_ticks_to_simulate = 10000;
     int max_laps_to_simulate = 3;
+
+    PhysicsParams physics_params;
   };
 
   const string kCarColor = "red";
@@ -53,7 +55,7 @@ class Simulator {
     Race race;
     race.ParseFromJson(race_json);
 
-    CarTracker car_tracker(&race);
+    CarTracker car_tracker(&race, options.physics_params);
     CarState state = car_tracker.current_state();
 
     raw_bot->React(YourCar(kCarColor));

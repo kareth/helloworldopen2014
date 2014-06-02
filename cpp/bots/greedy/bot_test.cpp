@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "game/physics_params.h"
 #include "game/car_tracker.h"
 #include "game/command.h"
 #include "game/race.h"
@@ -25,7 +26,7 @@ class BotTest : public testing::Test {
     const auto& race_json = game_init_json["data"]["race"];
 
     race_.ParseFromJson(race_json);
-    car_tracker_.reset(new CarTracker(&race_));
+    car_tracker_.reset(new CarTracker(&race_, game::PhysicsParams()));
   }
 
   Race race_;

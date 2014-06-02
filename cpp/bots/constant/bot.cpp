@@ -3,6 +3,7 @@
 #include <cstring>
 #include <limits>
 
+#include "game/physics_params.h"
 #include "gflags/gflags.h"
 
 using game::Position;
@@ -10,6 +11,7 @@ using game::CarTracker;
 using game::Race;
 using game::Command;
 using game::Switch;
+using game::PhysicsParams;
 
 DEFINE_double(constant_throttle, 0.5, "Throttle to use in constant bot");
 DECLARE_bool(always_switch);
@@ -55,7 +57,7 @@ void Bot::YourCar(const std::string& color) {
 
 void Bot::NewRace(const Race& race) {
   race_ = race;
-  car_tracker_.reset(new CarTracker(&race_));
+  car_tracker_.reset(new CarTracker(&race_, PhysicsParams::Load()));
 }
 
 void Bot::CarCrashed(const std::string& color)  {

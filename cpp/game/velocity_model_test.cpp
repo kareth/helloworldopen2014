@@ -7,6 +7,8 @@ namespace game {
 
 class VelocityModelTest : public testing::Test {
  protected:
+  VelocityModelTest() : velocity_model_(VelocityModelParams()) {}
+
   VelocityModel velocity_model_;
 };
 
@@ -47,6 +49,8 @@ TEST_F(VelocityModelTest, PredictThrottle) {
 
 class BoundaryThrottleTest : public testing::Test {
  protected:
+  BoundaryThrottleTest() : velocity_model_(VelocityModelParams()) {}
+
   double throttle_;
   VelocityModel velocity_model_;
 };

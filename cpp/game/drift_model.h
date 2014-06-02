@@ -8,6 +8,7 @@
 #include <vector>
 #include <algorithm>
 
+#include "game/physics_params.h"
 #include "game/error_tracker.h"
 #include "game/gauss.h"
 #include "game/position.h"
@@ -26,7 +27,7 @@ namespace game {
 //                                  x4 * velocity)
 class DriftModel {
  public:
-  DriftModel();
+  DriftModel(const DriftModelParams& params);
 
   ~DriftModel();
 
