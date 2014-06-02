@@ -44,6 +44,9 @@ void SwitchLengthParams::Load() {
 }
 
 void SwitchLengthParams::Save() const {
+  // Just in case some other bot already written new data.
+  Load();
+
   std::ofstream file("data/switch-straight-lengths.csv");
   file << "length,width,switch_length" << std::endl;
   for (const auto& it : switch_on_straight_length) {
@@ -97,15 +100,18 @@ void SwitchRadiusParams::Load() {
   jsoncons::json radiuses = LoadCSV("data/switch-radiuses.csv");
   for (auto it = radiuses.begin_elements(); it != radiuses.end_elements(); ++it) {
     const auto& data = *it;
-    model[std::make_tuple<double, double, double, int>(
+    model.insert({std::make_tuple<double, double, double, int>(
                          ToDouble(data["start_radius"]),
                          ToDouble(data["end_radius"]),
                          ToDouble(data["angle"]),
-                         static_cast<int>(ToDouble(data["percent"])))] = ToDouble(data["switch_radius"]);
+                         static_cast<int>(ToDouble(data["percent"]))), ToDouble(data["switch_radius"])});
   }
 }
 
 void SwitchRadiusParams::Save() const {
+  // Just in case some other bot already written new data.
+  Load();
+
   std::ofstream file("data/switch-radiuses.csv");
   file << "start_radius,end_radius,angle,percent,switch_radius" << std::endl;
   for (const auto& it : model) {
