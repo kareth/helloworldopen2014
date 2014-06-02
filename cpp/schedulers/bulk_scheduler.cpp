@@ -7,7 +7,6 @@
 #include "gflags/gflags.h"
 
 DECLARE_bool(check_if_safe_ahead);
-DEFINE_bool(always_switch, false, "");
 
 DECLARE_string(throttle_scheduler);
 DECLARE_string(switch_scheduler);

@@ -93,4 +93,30 @@ void SwitchLengthParams::LogMissingData(const Track& track) const {
   }
 }
 
+void SwitchRadiusParams::Load() {
+  jsoncons::json radiuses = LoadCSV("data/switch-radiuses.csv");
+  for (auto it = radiuses.begin_elements(); it != radiuses.end_elements(); ++it) {
+    const auto& data = *it;
+    model[std::make_tuple<double, double, double, int>(
+                         ToDouble(data["start_radius"]),
+                         ToDouble(data["end_radius"]),
+                         ToDouble(data["angle"]),
+                         data["percent"].as_int())] = ToDouble(data["switch_radius"]);
+  }
+}
+
+void SwitchRadiusParams::Save() const {
+  std::ofstream file("data/switch-radiuses.csv");
+  file << "start_radius,end_radius,angle,percent,switch_radius" << std::endl;
+  for (const auto& it : model) {
+    file << std::setprecision(20)
+         << std::get<0>(it.first) << ","
+         << std::get<1>(it.first) << ","
+         << std::get<2>(it.first) << ","
+         << std::get<3>(it.first) << ","
+         << it.second << std::endl;
+  }
+  file.close();
+}
+
 }  // namespace game

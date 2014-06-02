@@ -15,6 +15,7 @@
 #include "game/position.h"
 #include "game/race.h"
 #include "game/simplex.h"
+#include "game/physics_params.h"
 #include "gflags/gflags.h"
 
 DECLARE_string(race_id);
@@ -45,10 +46,35 @@ class SwitchRadiusModel {
 
   void Record(double piece_distance, double radius);
 
+  void MergeWith(SwitchRadiusParams* params) const {
+    if (!HasLength()) return;
+
+    for (int i = 1; i < percent_to_radius_.size(); ++i) {
+      if (percent_to_radius_[i] != -1) {
+        params->model.insert(
+            {std::make_tuple(start_radius_, end_radius_, angle_, i), percent_to_radius_[i]});
+      }
+    }
+  }
+
+  void Add(int percent, double radius) {
+    if (percent_to_radius_[percent] != -1 && fabs(radius - percent_to_radius_[percent]) > 1e-5) {
+      std::cerr << "Known radius and recorded one are different."
+                << " start_radius: " << start_radius
+                << " end_radius: " << end_radius
+                << " angle: " << angle
+                << " percent: " << percent
+                << " known radius: " << percent_to_radius_[percent]
+                << " new radius: " << radius << std::endl;
+      return;
+    }
+    percent_to_radius_[percent] = radius;
+  }
+
  private:
   void MaybeUpdateLength();
 
-  bool HasLength() {
+  bool HasLength() const {
     return length_ != -1;
   }
 
@@ -70,14 +96,22 @@ class SwitchRadiusModel {
 
 class RadiusModel {
  public:
-  RadiusModel(const Track* track, const LaneLengthModel* lane_length_model)
-      : track_(track), lane_length_model_(lane_length_model) {
-  }
+  RadiusModel(const Track* track,
+              const LaneLengthModel* lane_length_model,
+              const SwitchRadiusParams& params);
 
   void Record(const Position& position, double radius);
 
   // Returns 0 for straight line.
   double Radius(const Position& position);
+
+  SwitchRadiusParams CreateParams() {
+    SwitchRadiusParams params;
+    for (const auto& it : models_) {
+      it.second->MergeWith(&params);
+    }
+    return params;
+  }
 
  private:
   SwitchRadiusModel* GetModel(const Position& position) {

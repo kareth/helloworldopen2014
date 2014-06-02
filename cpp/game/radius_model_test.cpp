@@ -17,7 +17,7 @@ class RadiusModelTest : public testing::Test {
 
     lane_length_model_.reset(new LaneLengthModel(&track_, SwitchLengthParams()));
     track_.ParseFromJson(track_json);
-    model_.reset(new RadiusModel(&track_, lane_length_model_.get()));
+    model_.reset(new RadiusModel(&track_, lane_length_model_.get(), SwitchRadiusParams()));
   }
 
   Position position_;

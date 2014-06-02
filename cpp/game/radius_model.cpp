@@ -9,6 +9,27 @@
 
 namespace game {
 
+RadiusModel::RadiusModel(const Track* track,
+                         const LaneLengthModel* lane_length_model,
+                         const SwitchRadiusParams& params)
+    : track_(track), lane_length_model_(lane_length_model) {
+  for (const auto& it : params.model) {
+    double start_radius = std::get<0>(it.first);
+    double end_radius = std::get<1>(it.first);
+    double angle = std::get<2>(it.first);
+    int percent = std::get<3>(it.first);
+    double switch_radius = it.second;
+
+    if (models_[std::make_tuple(start_radius, end_radius, angle)] == nullptr) {
+      models_[std::make_tuple(start_radius, end_radius, angle)].reset(
+          new SwitchRadiusModel(start_radius, end_radius, angle, lane_length_model_));
+    }
+    auto* model = models_[std::make_tuple(start_radius, end_radius, angle)].get();
+
+    model->Add(percent, switch_radius);
+  }
+}
+
 double RadiusModel::Radius(const Position& position) {
   const auto& piece = track_->pieces()[position.piece()];
 

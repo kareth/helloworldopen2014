@@ -47,7 +47,12 @@ class SwitchLengthParams {
 
 // TODO
 class SwitchRadiusParams {
+ public:
+  // {start_radius, end_radius, angle, percent} => radius
+  std::map<std::tuple<double, double, double, int>, double> model;
 
+  void Load();
+  void Save() const;
 };
 
 class PhysicsParams {
@@ -55,15 +60,18 @@ class PhysicsParams {
   VelocityModelParams velocity_model_params;
   DriftModelParams drift_model_params;
   SwitchLengthParams switch_length_params;
+  SwitchRadiusParams switch_radius_params;
 
   static PhysicsParams Load() {
     PhysicsParams params;
     params.switch_length_params.Load();
+    params.switch_radius_params.Load();
     return params;
   }
 
   void Save() const {
     switch_length_params.Save();
+    switch_radius_params.Save();
   }
 };
 
