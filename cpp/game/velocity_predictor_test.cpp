@@ -74,7 +74,7 @@ TEST_F(VelocityPredictorTest, ShouldNotOverwriteHigherSpeed) {
   EXPECT_NEAR(7.5, velocity_predictor_->Velocity(BuildPosition(1, 10)), kEps);
   EXPECT_NEAR(17.5, velocity_predictor_->Velocity(BuildPosition(1, 40)), kEps);
 
-  velocity_predictor_->Record(BuildState(1, 10, 5));
+  velocity_predictor_->Reset(BuildState(1, 10, 5));
   velocity_predictor_->Record(BuildState(1, 20, 10));
   velocity_predictor_->Record(BuildState(1, 35, 15));
   velocity_predictor_->Record(BuildState(1, 45, 20));
@@ -85,7 +85,7 @@ TEST_F(VelocityPredictorTest, ShouldNotOverwriteHigherSpeed) {
 
 
 TEST_F(VelocityPredictorTest, ShouldSaveFasterPoints) {
-  /*velocity_predictor_->Record(BuildState(2, 5, 5));
+  velocity_predictor_->Record(BuildState(2, 5, 5));
   velocity_predictor_->Record(BuildState(2, 15, 10));
   velocity_predictor_->Record(BuildState(2, 30, 15));
   velocity_predictor_->Record(BuildState(2, 50, 20));
@@ -94,19 +94,29 @@ TEST_F(VelocityPredictorTest, ShouldSaveFasterPoints) {
   EXPECT_NEAR(11, velocity_predictor_->Velocity(BuildPosition(2, 18)), kEps);
   EXPECT_NEAR(17.5, velocity_predictor_->Velocity(BuildPosition(2, 40)), kEps);
 
-  velocity_predictor_->Record(BuildState(2, 2, 0));
+  velocity_predictor_->Reset(BuildState(2, 2, 0));
   velocity_predictor_->Record(BuildState(2, 12, 10));
   velocity_predictor_->Record(BuildState(2, 28, 16));
   velocity_predictor_->Record(BuildState(2, 30, 2));
 
   //Now points should be (2,0) (5,5) (12,10) (28,16) (30,15) (50,20)
 
-  EXPECT_NEAR(, velocity_predictor_->Velocity(BuildPosition(2, 3)), kEps);
-  EXPECT_NEAR(, velocity_predictor_->Velocity(BuildPosition(2, 10)), kEps);
-  EXPECT_NEAR(, velocity_predictor_->Velocity(BuildPosition(2, 10)), kEps);
-  EXPECT_NEAR(, velocity_predictor_->Velocity(BuildPosition(2, 10)), kEps);
-  EXPECT_NEAR(, velocity_predictor_->Velocity(BuildPosition(2, 10)), kEps);
-  EXPECT_NEAR(, velocity_predictor_->Velocity(BuildPosition(2, 10)), kEps);*/
+  EXPECT_NEAR(5.0/3.0, velocity_predictor_->Velocity(BuildPosition(2, 3)), kEps);
+  EXPECT_NEAR(65.0/7.0, velocity_predictor_->Velocity(BuildPosition(2, 11)), kEps);
+  EXPECT_NEAR(13.0, velocity_predictor_->Velocity(BuildPosition(2, 20)), kEps);
+  EXPECT_NEAR(15.5, velocity_predictor_->Velocity(BuildPosition(2, 29)), kEps);
+  EXPECT_NEAR(17.5, velocity_predictor_->Velocity(BuildPosition(2, 40)), kEps);
+}
+
+
+TEST_F(VelocityPredictorTest, ExactSamePoints) {
+  velocity_predictor_->Record(BuildState(2, 5, 5));
+  velocity_predictor_->Record(BuildState(2, 15, 10));
+  velocity_predictor_->Record(BuildState(2, 30, 15));
+  velocity_predictor_->Record(BuildState(2, 50, 20));
+
+  EXPECT_NEAR(10, velocity_predictor_->Velocity(BuildPosition(2, 15)), kEps);
+  EXPECT_NEAR(15, velocity_predictor_->Velocity(BuildPosition(2, 30)), kEps);
 }
 
 }  // namespace game
