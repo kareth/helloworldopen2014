@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <chrono>
+#include "utils/stopwatch.h"
 
 using jsoncons::json;
 
@@ -10,23 +11,7 @@ namespace {
   template <typename T> int sgn(T val) {
     return (T(0) < val) - (val < T(0));
   }
-
-  typedef std::chrono::high_resolution_clock clock;
-  typedef std::chrono::microseconds microseconds;
- 
-  clock::time_point now(){return clock::now();}
- 
-  class StopWatch
-  {
-    clock::time_point start_;
-   public:
-    StopWatch() : start_(clock::now()) {}
-    double elapsed() { 
-      return std::chrono::duration_cast<microseconds>(now() - start_).count() / 1000.0;
-    }
-  };
- 
-} // whatever
+}
 
 namespace game {
 
@@ -104,7 +89,7 @@ class Simulator {
       total_ticks++;
 
 
-      StopWatch stopwatch;
+      utils::StopWatch stopwatch;
       auto response = raw_bot->React(CarPositionsFromState(state, i));
       double current_tick_time_ms = stopwatch.elapsed();
       max_tick_time_ms = fmax(max_tick_time_ms, current_tick_time_ms);

@@ -8,6 +8,7 @@ set(UTILS_HEADERS
   protocol.h
   connection.h
   game_visualizer.h
+  stopwatch.h
 )
 
 add_library(utils ${UTILS_SOURCES})
