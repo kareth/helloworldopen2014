@@ -58,14 +58,16 @@ class SwitchRadiusModel {
   }
 
   void Add(int percent, double radius) {
-    if (percent_to_radius_[percent] != -1 && fabs(radius - percent_to_radius_[percent]) > 1e-5) {
-      std::cerr << "Known radius and recorded one are different."
-                << " start_radius: " << start_radius
-                << " end_radius: " << end_radius
-                << " angle: " << angle
-                << " percent: " << percent
-                << " known radius: " << percent_to_radius_[percent]
-                << " new radius: " << radius << std::endl;
+    if (percent_to_radius_[percent] != -1) {
+      if (fabs(radius - percent_to_radius_[percent]) > 1e-5) {
+        std::cerr << "Known radius and recorded one are different."
+                  << " start_radius: " << start_radius_
+                  << " end_radius: " << end_radius_
+                  << " angle: " << angle_
+                  << " percent: " << percent
+                  << " known radius: " << percent_to_radius_[percent]
+                  << " new radius: " << radius << std::endl;
+      }
       return;
     }
     percent_to_radius_[percent] = radius;

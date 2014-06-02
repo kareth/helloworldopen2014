@@ -101,7 +101,7 @@ void SwitchRadiusParams::Load() {
                          ToDouble(data["start_radius"]),
                          ToDouble(data["end_radius"]),
                          ToDouble(data["angle"]),
-                         data["percent"].as_int())] = ToDouble(data["switch_radius"]);
+                         static_cast<int>(ToDouble(data["percent"])))] = ToDouble(data["switch_radius"]);
   }
 }
 

@@ -76,7 +76,7 @@ void SwitchRadiusModel::Record(double piece_distance, double radius) {
     return;
   }
   int percent = static_cast<int>(100.0 * piece_distance / length_);
-  percent_to_radius_[percent] = radius;
+  Add(percent, radius);
 }
 
 void SwitchRadiusModel::MaybeUpdateLength() {
@@ -94,7 +94,7 @@ void SwitchRadiusModel::MaybeUpdateLength() {
     double radius = p.second;
 
     int percent = static_cast<int>(100.0 * piece_distance / length_);
-    percent_to_radius_[percent] = radius;
+    Add(percent, radius);
   }
 
   raw_data_.clear();
