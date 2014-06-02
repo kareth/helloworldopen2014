@@ -16,7 +16,7 @@ class VelocityPredictorTest : public testing::Test {
     const auto& race_json = game_init_json["data"]["race"];
 
     race_.ParseFromJson(race_json);
-    car_tracker_.reset(new CarTracker(&race_));
+    car_tracker_.reset(new CarTracker(&race_, PhysicsParams()));
 
     velocity_predictor_.reset(new VelocityPredictor(*car_tracker_, race_));
   }
@@ -90,16 +90,23 @@ TEST_F(VelocityPredictorTest, ShouldSaveFasterPoints) {
   velocity_predictor_->Record(BuildState(2, 30, 15));
   velocity_predictor_->Record(BuildState(2, 50, 20));
 
-  EXPECT_NEAR(7.5, velocity_predictor_->Velocity(BuildPosition(1, 10)), kEps);
-  EXPECT_NEAR(17.5, velocity_predictor_->Velocity(BuildPosition(1, 40)), kEps);
+  EXPECT_NEAR(7.5, velocity_predictor_->Velocity(BuildPosition(2, 10)), kEps);
+  EXPECT_NEAR(11, velocity_predictor_->Velocity(BuildPosition(2, 18)), kEps);
+  EXPECT_NEAR(17.5, velocity_predictor_->Velocity(BuildPosition(2, 40)), kEps);
 
   velocity_predictor_->Record(BuildState(2, 2, 0));
   velocity_predictor_->Record(BuildState(2, 12, 10));
   velocity_predictor_->Record(BuildState(2, 28, 16));
   velocity_predictor_->Record(BuildState(2, 30, 2));
 
-  EXPECT_NEAR(7.5, velocity_predictor_->Velocity(BuildPosition(1, 10)), kEps);
-  EXPECT_NEAR(17.5, velocity_predictor_->Velocity(BuildPosition(1, 40)), kEps);*/
+  //Now points should be (2,0) (5,5) (12,10) (28,16) (30,15) (50,20)
+
+  EXPECT_NEAR(, velocity_predictor_->Velocity(BuildPosition(2, 3)), kEps);
+  EXPECT_NEAR(, velocity_predictor_->Velocity(BuildPosition(2, 10)), kEps);
+  EXPECT_NEAR(, velocity_predictor_->Velocity(BuildPosition(2, 10)), kEps);
+  EXPECT_NEAR(, velocity_predictor_->Velocity(BuildPosition(2, 10)), kEps);
+  EXPECT_NEAR(, velocity_predictor_->Velocity(BuildPosition(2, 10)), kEps);
+  EXPECT_NEAR(, velocity_predictor_->Velocity(BuildPosition(2, 10)), kEps);*/
 }
 
 }  // namespace game
