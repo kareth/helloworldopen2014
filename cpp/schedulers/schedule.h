@@ -11,7 +11,7 @@ namespace schedulers {
 class Sched {
  public:
   Sched(game::CarTracker* car_tracker_, int horizon);
-  size_t size() const { return throttles_.size(); }
+  int size() const { return throttles_.size(); }
   double distance() const { return distance_; }
   vector<double> throttles() const { return throttles_; }
   void set_distance(double distance) { distance_ = distance; }
@@ -24,8 +24,6 @@ class Sched {
   void ShiftRight(const game::CarState& state, double throttle0);
   void Reset(const game::CarState& state);
   void Print();
-  void Widen(const game::CarState& state, int num_values);
-  void Shorten(const game::CarState& state, int num_values);
 
   double& operator[](std::size_t idx) {
     return throttles_[idx];
