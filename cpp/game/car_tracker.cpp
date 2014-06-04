@@ -178,10 +178,7 @@ bool CarTracker::IsSafe(const CarState& state, const Command& command) {
   return IsSafe(Predict(state, command));
 }
 
-bool CarTracker::IsSafe(const CarState& state) {
-  // TODO hardcoded
-  double safe_speed = 3;
-
+bool CarTracker::IsSafe(const CarState& state, double safe_speed) {
   auto s = state;
   while (s.velocity() > safe_speed) {
     if (!crash_model_.IsSafe(s.position().angle())) {
