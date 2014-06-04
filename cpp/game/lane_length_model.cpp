@@ -95,22 +95,12 @@ void LaneLengthModel::Record(const Position& previous, const Position& current, 
   return;
 }
 
-static double ComputeSwitchOnTurnLength(double r1, double r2, double angle) {
-  Point from = Point(-r1, 0);
-  Point to = Point(-r2, 0).RotateOrigin(angle);
-
-  Point center = Point(-(r1 + r2) / 2.0, 0).RotateOrigin(angle / 2.0);
-  center = center * 2.0 - (from + to) * 0.5;
-
-  return QuadraticBezierCurve(from, center, to).Length(10000);
-}
-
 double LaneLengthModel::SwitchOnTurnLength(double r1, double r2, double angle) const {
   auto it = switch_on_turn_length_.find(std::make_tuple(r1, r2, angle));
   if (it != switch_on_turn_length_.end()) {
     return it->second;
   }
-  double length = ComputeSwitchOnTurnLength(r1, r2, angle);
+  double length = QuadraticBezierCurve::CreateForSwitch(r1, r2, angle).Length();
   switch_on_turn_length_.insert({std::make_tuple(r1, r2, angle), length});
   return length;
 }

@@ -3,6 +3,7 @@ set(GAME_SOURCES
   car.cpp
   car_tracker.cpp
   command.cpp
+  geometry.cpp
   drift_model.cpp
   gauss.cpp
   lane_length_model.cpp
@@ -32,6 +33,7 @@ set(GAME_HEADERS
   crash_model.h
   drift_model.h
   error_tracker.h
+  geometry.h
   gauss.h
   lane.h
   lane_length_model.h

@@ -1,8 +1,11 @@
 #include "game/physics_params.h"
 #include "game/track.h"
 #include "jsoncons_ext/csv/csv_reader.hpp"
+#include "gflags/gflags.h"
 
 using jsoncons_ext::csv::csv_reader;
+
+DEFINE_string(data_dir, "data", "");
 
 namespace game {
 
@@ -30,7 +33,7 @@ double ToDouble(jsoncons::json data) {
 }  // namespace
 
 void SwitchLengthParams::Load() {
-  jsoncons::json straight_lengths = LoadCSV("data/switch-straight-lengths.csv");
+  jsoncons::json straight_lengths = LoadCSV(FLAGS_data_dir + "/switch-straight-lengths.csv");
   for (auto it = straight_lengths.begin_elements(); it != straight_lengths.end_elements(); ++it) {
     const auto& data = *it;
     switch_on_straight_length[{ToDouble(data["length"]), ToDouble(data["width"])}] = ToDouble(data["switch_length"]);
@@ -41,7 +44,7 @@ void SwitchLengthParams::Save() {
   // Just in case some other bot already written new data.
   Load();
 
-  std::ofstream file("data/switch-straight-lengths.csv");
+  std::ofstream file(FLAGS_data_dir + "/switch-straight-lengths.csv");
   file << "length,width,switch_length" << std::endl;
   for (const auto& it : switch_on_straight_length) {
     file << std::setprecision(20) << it.first.first << "," << it.first.second << "," << it.second << std::endl;
@@ -70,7 +73,7 @@ void SwitchLengthParams::LogMissingData(const Track& track) const {
 }
 
 void SwitchRadiusParams::Load() {
-  jsoncons::json radiuses = LoadCSV("data/switch-radiuses.csv");
+  jsoncons::json radiuses = LoadCSV(FLAGS_data_dir + "/switch-radiuses.csv");
   for (auto it = radiuses.begin_elements(); it != radiuses.end_elements(); ++it) {
     const auto& data = *it;
     model.insert({std::make_tuple<double, double, double, int>(
@@ -85,7 +88,7 @@ void SwitchRadiusParams::Save() {
   // Just in case some other bot already written new data.
   Load();
 
-  std::ofstream file("data/switch-radiuses.csv");
+  std::ofstream file(FLAGS_data_dir + "/switch-radiuses.csv");
   file << "start_radius,end_radius,angle,percent,switch_radius" << std::endl;
   for (const auto& it : model) {
     file << std::setprecision(20)

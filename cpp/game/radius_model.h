@@ -17,6 +17,7 @@
 #include "game/simplex.h"
 #include "game/physics_params.h"
 #include "gflags/gflags.h"
+#include "game/geometry.h"
 
 DECLARE_string(race_id);
 DECLARE_bool(print_models);
@@ -25,6 +26,8 @@ namespace game {
 
 class SwitchRadiusModel {
  public:
+  static constexpr double kSafetyMargin = 0.15;
+
   SwitchRadiusModel(double start_radius, double end_radius,
                     double angle, const LaneLengthModel* lane_length_model)
     : start_radius_(start_radius),
@@ -34,6 +37,9 @@ class SwitchRadiusModel {
     percent_to_radius_.assign(100, -1);
     // For some strange reason, the first percent is always a straight.
     percent_to_radius_[0] = 0;
+
+    percent_to_estimated_radius_ = QuadraticBezierCurve::CreateForSwitch(
+        start_radius, end_radius, angle).EstimateRadiuses();
   }
 
   ~SwitchRadiusModel() {
@@ -78,6 +84,7 @@ class SwitchRadiusModel {
   // If radius is -1, then it is unknown.
   vector<double> percent_to_radius_;
 
+  vector<double> percent_to_estimated_radius_;
 };
 
 class RadiusModel {

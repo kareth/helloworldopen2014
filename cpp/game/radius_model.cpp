@@ -60,8 +60,7 @@ double SwitchRadiusModel::Radius(double piece_distance) {
     return radius;
   }
 
-  // TODO improve this
-  return 0.9 * min(start_radius_, end_radius_);
+  return percent_to_estimated_radius_[percent] - kSafetyMargin;
 }
 
 void SwitchRadiusModel::Record(double piece_distance, double radius) {
