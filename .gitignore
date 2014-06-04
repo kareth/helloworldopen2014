@@ -3,3 +3,4 @@ bot.pid
 cpp/bin/*
 cpp/tools/results.csv
 cpp/data.csv
+cpp/wojtek_data_log.csv
