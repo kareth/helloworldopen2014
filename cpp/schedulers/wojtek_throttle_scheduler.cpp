@@ -27,7 +27,7 @@ WojtekThrottleScheduler::WojtekThrottleScheduler(const game::Race& race,
   : race_(race), car_tracker_(car_tracker), best_schedule_(&car_tracker, HORIZON), branch_and_bound_(&car_tracker, HORIZON, GROUPS, values), log_file_("wojtek_data_log.csv", std::ofstream::out), tick_(0), time_limit_(time_limit)
 {
    //Watchout: executing two WojtekThrottleSchedulers in pararell could be risky becase of log file (TODO)
-   log_file_ << "tick," << "x," << "turbo," << "switch," << "a," << "v," << "dir," << "rad," << "piece_no," << "schedule_time," << "initial_schedule_safe," << "schedule" << std::endl;
+   log_file_ << "tick," << "x," << "turbo," << "switch," << "a," << "v," << "dir," << "rad," << "piece_no," << "schedule_time," << "initial_schedule_safe," << "nodes_visited," << "leafs_visited," << "unsafe_cuts," << "ub_cuts," << "solution_improvements," << "schedule" << std::endl;
 }
 
 WojtekThrottleScheduler::~WojtekThrottleScheduler() {
@@ -82,6 +82,11 @@ void WojtekThrottleScheduler::Log(const game::CarState& state) {
             << ',' << state.position().piece()
             << ',' << last_schedule_time_
             << ',' << initial_schedule_safe_
+            << ',' << branch_and_bound_.stats().nodes_visited
+            << ',' << branch_and_bound_.stats().leafs_visited
+            << ',' << branch_and_bound_.stats().unsafe_cuts
+            << ',' << branch_and_bound_.stats().ub_cuts
+            << ',' << branch_and_bound_.stats().solution_improvements
             << ',';
   for (int i = 0; i < best_schedule_.size(); ++i)
     log_file_ << std::setprecision (2) << best_schedule_[i] << " ";

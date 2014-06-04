@@ -5,7 +5,7 @@ import os
 
 schedulers = (
     "WojtekThrottleScheduler",
-    "BinaryThrottleScheduler",
+#    "BinaryThrottleScheduler",
 #    "MagicThrottleScheduler",
 )
 
@@ -27,7 +27,8 @@ with open("results.csv", "w") as f:
         for scheduler in schedulers:
             res = !bin/throttle_tester --throttle_scheduler=$scheduler --nocheck_if_safe_ahead --track=$map
             name = scheduler + "-" + map + ".csv"
-            !cp data.csv $name
+            #!cp data.csv $name
+            !cp wojtek_data_log.csv $name
 
             crash = "CRASHED" in res[-1]
             if crash:

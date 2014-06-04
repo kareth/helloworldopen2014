@@ -27,14 +27,10 @@ void BranchAndBound::Improve(const game::CarState& state, Sched& schedule) {
   lower_bound_ = LowerBound(best_);
   upper_bound_ = UpperBound(state, 0, best_, 0); 
 
-  //printf("Init: (d=%.1f): ", best_.distance()); best_.Print();
   schedule.Reset(state);
 
-  nodes_visited_ = 0;
-  nodes_prunned_ = 0;
+  stats_ = Stats();
   Branch(state, schedule, 0, 0, 0);
-
-  //printf("vis=%d, prun=%d", nodes_visited_, nodes_prunned_);
 
   schedule = best_;
 }
@@ -54,17 +50,15 @@ double BranchAndBound::UpperBound(const game::CarState& from_state, double from_
 }
 
 bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double curr_dist, int from, int from_group) {
-
-  nodes_visited_ += 1;
-
+  stats_.nodes_visited += 1;
 
   if (from >= horizon_) {
     bool better = (curr_dist > best_.distance());
-    //printf ("found dist = %.1f\n", curr_dist);
+    stats_.leafs_visited += 1;
 
     if (better) {
       if (car_tracker_->IsSafe(state)) {
-        //printf("Found better (d=%.1f):", curr_dist); schedule.Print();
+        stats_.solution_improvements += 1;
         best_ = schedule;
         best_.set_distance(curr_dist);  // For performance
         lower_bound_ = curr_dist;
@@ -84,21 +78,24 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
 
       // Cut fast
       if (!car_tracker_->crash_model().IsSafe(next.position().angle())) {
-        nodes_prunned_ += 1;
         fail = true;
         break;
       }
       schedule[from+i] = throttle;
     }
-    if (fail) continue;
+    if (fail) {
+        stats_.unsafe_cuts += 1;
+        continue;
+    }
 
-    double this_dist = car_tracker_->DistanceBetween(state.position(), next.position());
+    double this_dist = car_tracker_->DistanceBetween(state.position(), next.position()); //TODO: can I use just state.velocity?
+    //TODO Update here lower bound? Then we should first expand nodes, then go deeper
 
     double ub = UpperBound(next, curr_dist + this_dist, schedule, from + groups_[from_group]);
 
     // Prune
     if (ub - EGAP <= lower_bound_) {
-      nodes_prunned_ += 1;
+      stats_.ub_cuts += 1;
       continue;
     }
 
