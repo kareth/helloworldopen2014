@@ -7,6 +7,8 @@
 #include "gflags/gflags.h"
 #include "utils/stopwatch.h"
 
+DEFINE_bool(log_schedule, true, "");
+
 namespace {
   template <typename T> int sgn(T val) {
     return (T(0) < val) - (val < T(0));
@@ -68,7 +70,9 @@ void WojtekThrottleScheduler::PrintSchedule(const game::CarState& state, const S
 }
 
 void WojtekThrottleScheduler::Log(const game::CarState& state) {
-  PrintSchedule(state, best_schedule_, std::min(HORIZON, 20));
+  if (FLAGS_log_schedule) {
+    PrintSchedule(state, best_schedule_, std::min(HORIZON, 20));
+  }
 
   game::Piece piece = race_.track().pieces()[state.position().piece()];
   log_file_ << tick_

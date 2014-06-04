@@ -70,17 +70,17 @@ bool RaceTracker::WorthBumping(const std::string& color) {
 // TODO move?
 
 // Check if I can die by just going all out
-bool RaceTracker::IsSafeAttack(const Command& command, Command* safe_command) {
-  return IsSafe(command, safe_command, Command(1));
+bool RaceTracker::IsSafeAttack(const CarState& current_state, const Command& command, Command* safe_command) {
+  return IsSafe(current_state, command, safe_command, Command(1));
 }
 
 // Check if I can die if he brakes and me either
-bool RaceTracker::IsSafeInFront(const Command& command, Command* safe_command) {
-  return IsSafe(command, safe_command, Command(0));
+bool RaceTracker::IsSafeInFront(const CarState& current_state, const Command& command, Command* safe_command) {
+  return IsSafe(current_state, command, safe_command, Command(0));
 }
 
-bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Command& our_command) {
-  const auto& my_state = car_tracker_.current_state();
+bool RaceTracker::IsSafe(const CarState& current_state, const Command& command, Command* safe_command, const Command& our_command) {
+  const auto& my_state = current_state;
   bool attack = our_command.throttle() == 1.0;
 
   std::map<std::string, CarState> states;
@@ -198,8 +198,8 @@ bool RaceTracker::IsSafe(const Command& command, Command* safe_command, const Co
   return true;
 }
 
-bool RaceTracker::IsSafeBehind(const Command& command, Command* safe_command) {
-  const auto& my_state = car_tracker_.current_state();
+bool RaceTracker::IsSafeBehind(const CarState& current_state, const Command& command, Command* safe_command) {
+  const auto& my_state = current_state;
   const double kCarLength = race_.cars().at(0).length();
   const double kDangerousDistance = 20;
   const int kTicks = 10;

@@ -7,6 +7,7 @@ DECLARE_int32(answer_time);
 DECLARE_bool(bump_with_turbo);
 DECLARE_bool(defend_turbo_bump);
 DECLARE_bool(write_switch_models);
+DEFINE_bool(log_position, false, "");
 
 using std::string;
 using std::vector;
@@ -55,6 +56,9 @@ void Bot::NewRace(const Race& race) {
 game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick)  {
   game_tick_ = game_tick;
   const Position& position = positions.at(color_);
+  if (FLAGS_log_position) {
+    std::cout << position.ShortDebugString() << std::endl;
+  }
   car_tracker_->Record(position, car_tracker_->HasSomeoneMaybeBumpedMe(positions, color_));
   auto& state = car_tracker_->current_state();
 
@@ -72,18 +76,6 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
   SetStrategy(state);
   scheduler_->Schedule(state, game_tick);
   command = scheduler_->command();
-
-  if (FLAGS_defend_turbo_bump) {
-    Command safe_command;
-    if (!race_tracker_->IsSafeBehind(command, &safe_command)) {
-      command = safe_command;
-
-      Command safe_command;
-      if (FLAGS_check_if_safe_ahead && !race_tracker_->IsSafeInFront(command, &safe_command)) {
-        command = safe_command;
-      }
-    }
-  }
 
   scheduler_->IssuedCommand(command);
   car_tracker_->RecordCommand(command);

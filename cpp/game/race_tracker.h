@@ -31,11 +31,11 @@ class RaceTracker {
   // - if someone is much slower, and will take a switch just before us and
   //   we bump into him.
   // - if we ride on switch (or someone is on switch)
-  bool IsSafeInFront(const Command& command, Command* safe_command);
+  bool IsSafeInFront(const CarState& current_state, const Command& command, Command* safe_command);
 
-  bool IsSafeAttack(const Command& command, Command* safe_command);
+  bool IsSafeAttack(const CarState& current_state, const Command& command, Command* safe_command);
 
-  bool IsSafeBehind(const Command& command, Command* safe_command);
+  bool IsSafeBehind(const CarState& current_state, const Command& command, Command* safe_command);
 
 
   // Recording methods
@@ -68,7 +68,8 @@ class RaceTracker {
   bool BumpOccured(const std::string& color, const std::string& color2);
 
  private:
-  bool IsSafe(const Command& command, Command* safe_command, const Command& our_command);
+  bool IsSafe(const CarState& state, const Command& command,
+              Command* safe_command, const Command& our_command);
 
   void DetectBumps(const std::map<std::string, Position>& positions);
 

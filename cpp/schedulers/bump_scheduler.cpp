@@ -51,7 +51,7 @@ void BumpScheduler::Schedule(const game::CarState& state) {
       // TODO doesnt check if guy crashes
       if (bump_tracker_->CanBumpForSure(state, enemy.state()) &&
           !enemy.is_dead() &&
-          race_tracker_.IsSafeAttack(Command(1), &safe_command)) {
+          race_tracker_.IsSafeAttack(state, Command(1), &safe_command)) {
         printf("Safe bump coming! Target: %s\n", enemy.color().c_str());
         has_bump_target_ = true;
         bump_target_ = enemy.color();
@@ -72,7 +72,7 @@ void BumpScheduler::Schedule(const game::CarState& state) {
         Command safe_command;
         // TODO doesnt check if guy crashes
         if (bump_tracker_->CanBumpWithTurbo(state, enemy.state()) &&
-            race_tracker_.IsSafeAttack(Command::Turbo(), &safe_command) &&
+            race_tracker_.IsSafeAttack(state, Command::Turbo(), &safe_command) &&
             race_tracker_.WorthBumping(enemy.color()) ) {
           printf("Tuuuurbooo bump! Dieeeeeee ;P\n");
           has_bump_target_ = true;
@@ -93,10 +93,10 @@ game::Command BumpScheduler::BumpCommand(const game::CarState& state) {
   Command safe_command;
 
   for (double throttle = 1; throttle >= 0; throttle -= 0.2)
-    if (race_tracker_.IsSafeAttack(Command(throttle), &safe_command))
+    if (race_tracker_.IsSafeAttack(state, Command(throttle), &safe_command))
       return Command(throttle);
 
-  if (race_tracker_.IsSafeInFront(Command(1), &safe_command))
+  if (race_tracker_.IsSafeInFront(state, Command(1), &safe_command))
     return Command(1);
   return Command(0);
 }

@@ -55,8 +55,10 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick) {
 
   game::Command safe_command;
   if (FLAGS_check_if_safe_ahead &&
-      !race_tracker_.IsSafeInFront(command_, &safe_command))
+      !race_tracker_.IsSafeInFront(state_with_switch, command_, &safe_command)) {
     command_ = safe_command;
+    std::cout << "INFO: It is not safe in front. Slowing down." << std::endl;
+  }
 }
 
 void BulkScheduler::set_strategy(const Strategy& strategy) {
