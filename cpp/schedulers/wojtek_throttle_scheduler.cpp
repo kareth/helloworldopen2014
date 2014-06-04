@@ -17,14 +17,14 @@ namespace schedulers {
 
 using game::CarState;
 
-vector<int> groups {1,1,2,2,4,4,4,4,4,4,4,2,1};
+const vector<int> WojtekThrottleScheduler::GROUPS {1,1,2,2,4,4,4,4,4,4,4,2,1};
 
-const int WojtekThrottleScheduler::HORIZON = std::accumulate(groups.begin(),groups.end(),0);
+const int WojtekThrottleScheduler::HORIZON = std::accumulate(GROUPS.begin(),GROUPS.end(),0);
 const vector<double> WojtekThrottleScheduler::values{0.0, 1.0};
 
 WojtekThrottleScheduler::WojtekThrottleScheduler(const game::Race& race,
     game::CarTracker& car_tracker, int time_limit)
-  : race_(race), car_tracker_(car_tracker), best_schedule_(&car_tracker, HORIZON), branch_and_bound_(&car_tracker, HORIZON, groups, values), log_file_("wojtek_data_log.csv", std::ofstream::out), tick_(0), time_limit_(time_limit)
+  : race_(race), car_tracker_(car_tracker), best_schedule_(&car_tracker, HORIZON), branch_and_bound_(&car_tracker, HORIZON, GROUPS, values), log_file_("wojtek_data_log.csv", std::ofstream::out), tick_(0), time_limit_(time_limit)
 {
    //Watchout: executing two WojtekThrottleSchedulers in pararell could be risky becase of log file (TODO)
    log_file_ << "tick," << "x," << "turbo," << "switch," << "a," << "v," << "dir," << "rad," << "piece_no," << "schedule_time," << "initial_schedule_safe," << "schedule" << std::endl;
