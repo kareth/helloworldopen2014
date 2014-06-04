@@ -21,7 +21,7 @@ class BulkScheduler : public Scheduler {
                 game::CarTracker& car_tracker,
                 int time_limit);
 
-  void Schedule(const game::CarState& state) override;
+  void Schedule(const game::CarState& state, int game_tick) override;
 
   void Overtake(const string& color) override;
 

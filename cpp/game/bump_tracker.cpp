@@ -19,7 +19,7 @@ bool BumpTracker::CanBumpOptimalEnemy(const CarState& bumping_state, const CarSt
   if (race_.track().IsFirstInFront(bumping_state.position(), bumped_state.position()))
     return false;
 
-  throttle_scheduler_->Schedule(bumped_state);
+  throttle_scheduler_->Schedule(bumped_state, 0);
   auto& schedule = throttle_scheduler_->full_schedule();
 
   auto bumping = bumping_state;

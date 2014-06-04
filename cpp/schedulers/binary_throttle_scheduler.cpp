@@ -45,7 +45,7 @@ void BinaryThrottleScheduler::Overtake(const string& color) {
   printf("Feature not implemented.\n");
 }
 
-void BinaryThrottleScheduler::Schedule(const game::CarState& state) {
+void BinaryThrottleScheduler::Schedule(const game::CarState& state, int game_tick) {
   // TODO(kareth) strategies
   if (strategy_ == Strategy::kOptimizeCurrentLap &&
       race_.track().IsLastStraight(state.position())) {

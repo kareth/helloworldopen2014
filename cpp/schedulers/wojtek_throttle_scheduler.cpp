@@ -34,7 +34,7 @@ WojtekThrottleScheduler::~WojtekThrottleScheduler() {
     log_file_.close();
 }
 
-void WojtekThrottleScheduler::Schedule(const game::CarState& state) {
+void WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tick) {
   tick_ += 1; //FIXME: get it as parameter
 
   utils::StopWatch stopwatch;

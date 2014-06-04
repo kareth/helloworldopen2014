@@ -29,7 +29,7 @@ class BinaryThrottleScheduler : public ThrottleScheduler {
   void set_strategy(const Strategy& strategy) override { strategy_ = strategy; }
 
   // Updates the state and calculates next state
-  void Schedule(const game::CarState& state) override;
+  void Schedule(const game::CarState& state, int game_tick) override;
 
   const std::vector<double>& full_schedule() const override { return schedule_; }
 

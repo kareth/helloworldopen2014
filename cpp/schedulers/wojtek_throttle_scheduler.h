@@ -38,7 +38,7 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   void set_strategy(const Strategy& strategy) override {  }
 
   // Updates the state and calculates next state
-  void Schedule(const game::CarState& state) override;
+  void Schedule(const game::CarState& state, int game_tick) override;
 
   const std::vector<double>& full_schedule() const override { return best_schedule_.throttles_; }
 
@@ -55,7 +55,7 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   double last_schedule_time_; // ms
   int tick_;
   int time_limit_; // ms
-  bool initial_schedule_safe_; 
+  bool initial_schedule_safe_;
 };
 
 }  // namespace schedulers

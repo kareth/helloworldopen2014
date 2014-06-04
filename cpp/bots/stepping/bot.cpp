@@ -70,7 +70,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 
   Command command;
   SetStrategy(state);
-  scheduler_->Schedule(state);
+  scheduler_->Schedule(state, game_tick);
   command = scheduler_->command();
 
   if (FLAGS_defend_turbo_bump) {
