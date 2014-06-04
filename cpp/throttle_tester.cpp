@@ -23,6 +23,7 @@ DECLARE_string(race_id);
 DECLARE_string(throttle_scheduler);
 DECLARE_string(switch_scheduler);
 DEFINE_string(track, "keimola", "The track to run simulator on.");
+DEFINE_int32(physics, 0, "The physics to use");
 
 std::string random_race_id() {
   char buffer[80];
@@ -30,7 +31,19 @@ std::string random_race_id() {
   return std::string(buffer);
 }
 
+
 int main(int argc, char** argv) {
+  std::vector<std::pair<std::vector<double>, std::vector<double> > > physics;
+  physics = {
+    {{0.98, 0.2     }, {1.9, -0.9, -0.00125, 0.00125 * sqrt(180000), 0.3}},
+    {{0.98, 0.168896}, {1.9, -0.9, -0.00118604, 0.483757, 0.284649}},
+    {{0.98, 0.233986}, {1.9, -0.9, -0.00120513, 0.497467, 0.289232}},
+    {{0.98, 0.214027}, {1.9, -0.9, -0.00127153, 0.546417, 0.305167}},
+    {{0.98, 0.17629 }, {1.9, -0.9, -0.00130643, 0.572936, 0.313544}},
+    {{0.98, 0.198433}, {1.9, -0.9, -0.00129546, 0.56454 , 0.31091 }},
+    {{0.98, 0.210197}, {1.9, -0.9, -0.00121806, 0.506844, 0.292334}},
+  };
+
   // FLAGS_throttle_scheduler = "BinaryThrottleScheduler";
   // FLAGS_switch_scheduler = "NeverSwitchScheduler";
 
@@ -49,6 +62,9 @@ int main(int argc, char** argv) {
 
     game::Simulator::Options options;
     options.physics_params = game::PhysicsParams::Load();
+    options.physics_params.velocity_model_params.model = physics[FLAGS_physics].first;
+    options.physics_params.drift_model_params.model = physics[FLAGS_physics].second;
+
     options.track_name = FLAGS_track;
     result = simulator->Run(bot.get(), options);
   }
