@@ -18,6 +18,7 @@ DECLARE_bool(print_models);
 
 namespace game {
 
+
 // We assume following velocity model
 //
 // velocity = x0 * previous_velocity + x1 * throttle
@@ -77,14 +78,16 @@ class VelocityModel {
   // Return distance when starting from initial velocity and using throttles how_many times
   // (For performance)
   double PredictDistance(double initial_velocity, int how_many, double throttle) const {
-    /* The following is correct (magic!), but I am not sure if this quicker than the iteration
-    double powx = std::pow(x_[0], how_many);
+    // The following is correct (magic!), and a little bit faster than the commented one, 
+    // but this does not seem a bottleneck any longer
+    /*    
+    double powx = powers_x0[how_many]; //std::pow(x_[0], how_many);
     double onex = 1 - x_[0];
     double left = x_[0] * (1 - powx) / onex * initial_velocity;
     double right = x_[1] * throttle * (how_many * onex - x_[0] * (1 - powx)) / (onex * onex);
     return left + right;
     */
-      
+
     double distance = 0;
     double velocity = initial_velocity;
     for (int i = 0; i < how_many; ++i) {
