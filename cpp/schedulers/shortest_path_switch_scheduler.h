@@ -43,7 +43,7 @@ class ShortestPathSwitchScheduler : public SwitchScheduler {
    void set_strategy(const Strategy& strategy) { strategy_ = strategy; }
 
  private:
-   const static int kInf = 1000000000;
+  bool WaitingToReachIssuedSwitch(const game::CarState& state);
 
    // True if we plan to issue command before next switch
    bool should_switch_now_;

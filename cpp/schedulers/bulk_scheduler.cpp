@@ -39,6 +39,11 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick) {
   turbo_scheduler_->Schedule(state);
   switch_scheduler_->Schedule(state);
 
+  // TODO IMPORTANT!
+  // Passing expected switch is dangerous.
+  // If we schedule for that event, and fail to switch in time
+  // our schedule is invalidated and causes crashes
+  //
   // If we want to switch, schedule throttle for target lane bent
   auto state_with_switch = state;
   if (switch_scheduler_->ExpectedSwitch() != game::Switch::kStay)

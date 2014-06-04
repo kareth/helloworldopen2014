@@ -19,74 +19,54 @@ ShortestPathSwitchScheduler::ShortestPathSwitchScheduler(
   path_optimizer_.reset(new game::GreedyPathOptimizer(race, car_tracker_));
 }
 
-// Updates and calculates next state
-void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
-  // We missed recently scheduled switch
+bool ShortestPathSwitchScheduler::WaitingToReachIssuedSwitch(const game::CarState& state) {
   if (state.position().piece() == target_switch_) {
     waiting_for_switch_ = false;
     target_switch_ = -1;
   }
+  return waiting_for_switch_;
+}
 
-  // If we already issued command
-  if (waiting_for_switch_)
+// TODO IMPORTANT
+// If we switch our decision last second, throttle scheduler may not
+// be able to slow down to match switch curvature. We should check it!
+//
+// Updates and calculates next state
+void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
+  if (WaitingToReachIssuedSwitch(state))
     return;
 
-  auto time_scores = path_optimizer_->Score(state.position());
-  /*auto obstacle_scores = race_tracker_.ScoreLanes(state);
+  // [0 - inf] = time loss for each decision compared to optimum
+  auto time_loss = path_optimizer_->Score(state.position());
 
-  Switch best_decision = Switch::kStay;
-  int best_score = 0;
+  // [-10 - 10] = (-)overtake, (0)neutral, (+) bump competitive
+  auto obstacle_scores = race_tracker_.ScoreLanes(state);
 
-  for (auto& el : time_scores) {
-    auto decision = el.first;
+  Switch best_direction = Switch::kStay;
+  int best_score = -10000000;
 
-  }*/
+  for (auto& el : time_loss) {
+    Switch dir = el.first;
 
-  double left = kInf, current = kInf, right = kInf;
-  if (time_scores.find(Switch::kSwitchLeft) != time_scores.end())
-    left = time_scores[Switch::kSwitchLeft];
-  if (time_scores.find(Switch::kStay) != time_scores.end())
-    current = time_scores[Switch::kStay];
-  if (time_scores.find(Switch::kSwitchRight) != time_scores.end())
-    right = time_scores[Switch::kSwitchRight];
+    // TODO improve weights on scores
+    int score =
+      - time_loss[dir]                       // ticks
+      - std::min(0, obstacle_scores[dir]) * 1000  // overtaking strictly more important
+      + std::max(0, obstacle_scores[dir]) * 1;    // bumping just a bit better
 
-  const Position& position = state.position();
-  int from = race_.track().NextSwitch(position.piece());
-  int to = race_.track().NextSwitch(from);
-
-  // Overtaking
-  if (FLAGS_overtake) {
-    int left_score = race_tracker_.ScoreLane(from, to, position.end_lane() - 1);
-    int right_score = race_tracker_.ScoreLane(from, to, position.end_lane() + 1);
-    int current_score = race_tracker_.ScoreLane(from, to, position.end_lane());
-
-    if (left_score < 0) left = kInf;
-    if (right_score < 0) right = kInf;
-    if (current_score < 0) current = kInf;
-
-    // Score is <-10, 0), 0 is best
-    // Nest part of algorithm chooses smallest so we need to reverse it temporarily
-    if (left_score < 0 && current_score < 0 && right_score < 0) {
-      left = -left_score;
-      current = -current_score;
-      right = -current_score;
+    if (score > best_score) {
+      best_score = score;
+      best_direction = dir;
     }
   }
 
-  if (FLAGS_log_overtaking)
-    printf("Lane scores (l c r): %lf %lf %lf\n",left, current, right);
-
-  if (left < current && left < right) {
-    direction_ = Switch::kSwitchLeft;
-    target_switch_ = from;
-    should_switch_now_ = true;
-  } else if (right < current && right <= left) {
-    direction_ = Switch::kSwitchRight;
-    target_switch_ = from;
-    should_switch_now_ = true;
-  } else {
+  if (best_direction == Switch::kStay) {
     should_switch_now_ = false;
     target_switch_ = -1;
+  } else {
+    should_switch_now_ = true;
+    target_switch_ = race_.track().NextSwitch(state.position().piece());
+    direction_ = best_direction;
   }
 }
 

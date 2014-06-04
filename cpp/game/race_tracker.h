@@ -50,8 +50,8 @@ class RaceTracker {
   void DNF(const std::string& color);
   void ResurrectCars();
 
-  // Score lane based on who is there
-  LaneScore ScoreLane(int from, int to, int lane);
+  // Lane scores based on who is there
+  std::map<Switch, int> ScoreLanes(const CarState& state);
 
   // Move to enemy?
   bool WorthBumping(const std::string& color);

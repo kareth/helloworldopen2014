@@ -28,8 +28,18 @@ bool RaceTracker::BumpOccured(const std::string& color, const std::string& color
   return bump_detector_.BumpOccured(color, color2);
 }
 
-LaneScore RaceTracker::ScoreLane(int from, int to, int lane) {
-  return lane_scorer_.ScoreLane(from, to, lane);
+std::map<Switch, int> RaceTracker::ScoreLanes(const CarState& state) {
+  int from = race_.track().NextSwitch(state.position().piece());
+  int to = race_.track().NextSwitch(from);
+  int lane = state.position().end_lane();
+
+  std::map<Switch, int> scores;
+  for (int offset = -1; offset <= 1; offset++) {
+    int new_lane = state.position().end_lane() + offset;
+    if (race_.track().IsLaneCorrect(new_lane))
+      scores[Switch(offset+1)] = lane_scorer_.ScoreLane(from, to, new_lane);
+  }
+  return scores;
 }
 
 // TODO OBSOLETE
