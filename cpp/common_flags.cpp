@@ -11,7 +11,7 @@ DEFINE_bool(bump_with_turbo, true, "kamikazebumps");
 DEFINE_bool(defend_turbo_bump, false, "Defend against people that have bump_with_turbo");
 
 DEFINE_string(switch_scheduler, "ShortestPathSwitchScheduler", "");
-DEFINE_string(throttle_scheduler, "BinaryThrottleScheduler", "");
+DEFINE_string(throttle_scheduler, "WojtekThrottleScheduler", "");
 
 DEFINE_bool(print_models, false, "If true, all models will print summary at destruction");
 DEFINE_bool(continuous_integration, true, "");
