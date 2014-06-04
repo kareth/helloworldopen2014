@@ -23,11 +23,14 @@ BranchAndBound::BranchAndBound(game::CarTracker* car_tracker, int horizon, const
 
 void BranchAndBound::Improve(const game::CarState& state, Sched& schedule) {
   best_ = schedule;
-  //TODO: improve schedule by LS first? Last throttle 1?
+
   lower_bound_ = LowerBound(best_);
   upper_bound_ = UpperBound(state, 0, best_, 0); 
 
   schedule.Reset(state);
+
+  //printf("upper bound distance = %.1f, lower_bound = %.1f\n", upper_bound_, lower_bound_);
+  //best_.Print();
 
   stats_ = Stats();
   Branch(state, schedule, 0, 0, 0);
@@ -51,15 +54,16 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
   stats_.nodes_visited += 1;
 
   if (from >= horizon_) {
-    bool better = (curr_dist > best_.distance());
     stats_.leafs_visited += 1;
+    schedule.set_distance(curr_dist);
+    //schedule.Print();
 
+    bool better = (schedule.distance() > best_.distance());
     if (better) {
       if (car_tracker_->IsSafe(state)) {
         stats_.solution_improvements += 1;
         best_ = schedule;
-        best_.set_distance(curr_dist);  // For performance
-        lower_bound_ = curr_dist;
+        lower_bound_ = schedule.distance();
         if (upper_bound_ - lower_bound_ <= EGAP)
           return true;
       }
@@ -80,7 +84,9 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
       // Cut fast
       if (!car_tracker_->crash_model().IsSafe(next.position().angle())) {
         fail = true;
-        break; // It is still possible to not crash when using a higher throttle, so we cannot return here
+        break; 
+        // It is still possible to not crash when using a higher throttle,
+        // so we should not return false here (it does not improve performance, but make the results worse)
       }
       schedule[from+j] = throttle;
     }
@@ -98,6 +104,12 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
       stats_.ub_cuts += 1;
       continue;
     }
+
+    // This is an heuristic, but it slightly improves performance
+    // It tries to cut leaves that probably will be still cut by IsSafe earlier
+    if (horizon_ - from < 10)
+        if (!car_tracker_->IsSafe(next, 4.0))
+            return false;
 
     if (Branch(next, schedule, curr_dist + this_dist, from + groups_[from_group], from_group + 1)) {
       return true;
