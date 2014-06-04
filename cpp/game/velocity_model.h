@@ -61,6 +61,18 @@ class VelocityModel {
     return x_[0] * velocity + x_[1] * throttle;
   }
 
+  // Return distance when starting from initial velocity and using throttles
+  double PredictDistance(double initial_velocity, const vector<double>& throttles) const {
+    double distance = 0;
+    double velocity = initial_velocity;
+    for (int i = 0; i < throttles.size(); ++i) {
+        velocity = Predict(velocity, throttles[i]);
+        distance += velocity;
+    }
+    //TODO(Wojtek): We can improve performance by summing up geometric sequence
+    return distance;
+  }
+
   double PredictThrottle(double velocity_to_maintain) const {
     return (velocity_to_maintain - velocity_to_maintain * x_[0]) / x_[1];
   }

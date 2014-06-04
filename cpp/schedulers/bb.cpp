@@ -40,13 +40,10 @@ double BranchAndBound::LowerBound(const Sched& schedule) {
 }
 
 double BranchAndBound::UpperBound(const game::CarState& from_state, double from_dist, const Sched& schedule, int from) {
-  // Try all 1.0 without taking care of safety
-  CarState next = from_state;
-  for (int i = from; i < horizon_; ++i) {
-    next = car_tracker_->Predict(next, game::Command(1.0));
-  }
-  return from_dist + car_tracker_->DistanceBetween(from_state.position(), 
-        next.position());
+  // From the given state upper bound is when we try throttle 1.0 from now on to the end 
+  // (without taking care of safety)
+
+  return from_dist + car_tracker_->velocity_model().PredictDistance(from_state.velocity(), vector<double>(horizon_ - from, 1.0));
 }
 
 bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double curr_dist, int from, int from_group) {
@@ -88,7 +85,7 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
         continue;
     }
 
-    double this_dist = car_tracker_->DistanceBetween(state.position(), next.position()); //TODO: can I use just state.velocity?
+    double this_dist = car_tracker_->DistanceBetween(state.position(), next.position());
     //TODO Update here lower bound? Then we should first expand nodes, then go deeper
 
     double ub = UpperBound(next, curr_dist + this_dist, schedule, from + groups_[from_group]);
