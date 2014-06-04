@@ -8,11 +8,13 @@ WojtekThrottleScheduler
         - All maps simulated + live analyse any case where initial_schedule is not safe. Are there any serious?
         - In case initial LB is not safe provide a greedy one
         - Try modifying the schedule by putting 0's to the end one by one
+
 * Performance:
     - gprof bottlenecks
     - how many cuts?
     - analyse what cased max tick time
     - provide also in-tree LB (in case the initial did not work)
+
 * Ideas:
     - idea: only 4/5 changes
     - first node can change with step 0.1
@@ -28,7 +30,6 @@ WojtekThrottleScheduler
 * Use Tomek's code for fractional throttle
 
 * Minor: Compare data.csv of Magic and Wojtek. Where Wojtek loses.
-    - are results2.csv 3.csv still valid? Rather yes
 
 Performance measure
 -------------------

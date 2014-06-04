@@ -18,8 +18,7 @@ game::CarState schedulers::Sched::Predict(const game::CarState& state) {
 }
 
 void schedulers::Sched::UpdateDistance(const game::CarState& state) {
-  game::CarState last = Predict(state);
-  distance_ = car_tracker_->DistanceBetween(state.position(), last.position());
+  distance_ = car_tracker_->velocity_model().PredictDistance(state.velocity(), throttles_);
 }
 
 // Whether schedule is safe
@@ -75,7 +74,7 @@ void schedulers::Sched::Print() {
   for (int i = 0; i < size(); ++i) {
     printf("%.1f ", throttles_[i]);
   }
-  printf("\n");
+  printf(" [%.1f]\n", distance_);
 }
 
 } // namespace

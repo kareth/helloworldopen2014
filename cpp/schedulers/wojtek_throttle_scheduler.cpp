@@ -19,17 +19,17 @@ namespace schedulers {
 
 using game::CarState;
 
-const vector<int> WojtekThrottleScheduler::GROUPS {1,1,2,2,4,4,4,4,4,4,4,2,1};
+const vector<int> WojtekThrottleScheduler::GROUPS {1,1,2,2,2,2,4,4,4,8,4,4,4,2,1};
 
 const int WojtekThrottleScheduler::HORIZON = std::accumulate(GROUPS.begin(),GROUPS.end(),0);
-const vector<double> WojtekThrottleScheduler::values{0.0, 1.0};
+const vector<double> WojtekThrottleScheduler::values{0.0, 1.0}; // Values must be increasing
 
 WojtekThrottleScheduler::WojtekThrottleScheduler(const game::Race& race,
     game::CarTracker& car_tracker, int time_limit)
   : race_(race), car_tracker_(car_tracker), best_schedule_(&car_tracker, HORIZON), branch_and_bound_(&car_tracker, HORIZON, GROUPS, values), log_file_("wojtek_data_log.csv", std::ofstream::out), tick_(0), time_limit_(time_limit)
 {
    //Watchout: executing two WojtekThrottleSchedulers in pararell could be risky becase of log file (TODO)
-   log_file_ << "tick," << "x," << "turbo," << "switch," << "a," << "v," << "dir," << "rad," << "piece_no," << "schedule_time," << "initial_schedule_safe," << "schedule" << std::endl;
+   log_file_ << "tick," << "x," << "turbo," << "switch," << "a," << "v," << "dir," << "rad," << "piece_no," << "schedule_time," << "initial_schedule_safe," << "nodes_visited," << "leafs_visited," << "unsafe_cuts," << "ub_cuts," << "solution_improvements," << "schedule" << std::endl;
 }
 
 WojtekThrottleScheduler::~WojtekThrottleScheduler() {
@@ -86,6 +86,11 @@ void WojtekThrottleScheduler::Log(const game::CarState& state) {
             << ',' << state.position().piece()
             << ',' << last_schedule_time_
             << ',' << initial_schedule_safe_
+            << ',' << branch_and_bound_.stats().nodes_visited
+            << ',' << branch_and_bound_.stats().leafs_visited
+            << ',' << branch_and_bound_.stats().unsafe_cuts
+            << ',' << branch_and_bound_.stats().ub_cuts
+            << ',' << branch_and_bound_.stats().solution_improvements
             << ',';
   for (int i = 0; i < best_schedule_.size(); ++i)
     log_file_ << std::setprecision (2) << best_schedule_[i] << " ";
