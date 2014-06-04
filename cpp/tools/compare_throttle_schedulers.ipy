@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import os
+import os.path
 from __future__ import division
 
 schedulers = (
     "WojtekThrottleScheduler",
-#    "BinaryThrottleScheduler",
+    "BinaryThrottleScheduler",
 #    "MagicThrottleScheduler",
 )
 
@@ -21,35 +22,41 @@ maps = (
     "usa",
 )
 
+physics = range(0,7)
+
 NO_LAPS = 3
 
 def avg(x):
     return sum(x)/len(x)
 
 with open("results.csv", "w") as f:
-    f.write('map,scheduler,best_lap,total_ticks,total_dist,max_tick_time,avg_tick_time,crash\n')
+    f.write('scheduler,map,physics,best_lap,total_ticks,total_dist,max_tick_time,avg_tick_time,crash\n')
     os.chdir('..')
     lines = []
-    for map in maps:
-        for scheduler in schedulers:
-            res = !bin/throttle_tester --throttle_scheduler=$scheduler --nocheck_if_safe_ahead --track=$map
-            name = scheduler + "-" + map + ".csv"
-            #!cp data.csv $name
-            !cp wojtek_data_log.csv $name
+    for scheduler in schedulers:
+        for map in maps:
+            for physic in physics:
+                res = !bin/throttle_tester --throttle_scheduler=$scheduler --nocheck_if_safe_ahead --track=$map --physics=$physic
+                if scheduler == 'WojtekThrottleScheduler':
+                    name = os.path.join('results', "wojtek-" + map + "-" + str(physic) + ".csv")
+                    !mv wojtek_data_log.csv $name
+                name = os.path.join('results', scheduler + "-" + map + "-" + str(physic) + ".csv")
+                !mv data.csv $name
 
-            crash = "CRASHED" in res[-1]
-            if crash:
-                res = res[:-1]
+                crash = "CRASHED" in res[-1]
+                if crash:
+                    res = res[:-1]
 
-            line = ",".join([line.split(':')[1].replace('ms','').strip() for line in res[-5:]])
+                line = ",".join([line.split(':')[1].replace('ms','').strip() for line in res[-5:]])
 
-            line = map + "," + scheduler + "," + line + "," + str(crash)
-            lines.append(line)
-            print(line)
-            f.write(line + '\n')
+                line = ','.join([scheduler, map, str(physic), line, str(crash)])
+                lines.append(line)
+                print(line)
+                f.write(line + '\n')
 
-    print()
-    print('total_avg_ticks_per_lap = {}'.format(sum(float(line.split(',')[3])/NO_LAPS for line in lines)))
-    print('max_tick_time           = {}'.format(max([float(line.split(',')[5]) for line in lines])))
-    print('avg_tick_time           = {}'.format(avg([float(line.split(',')[6]) for line in lines])))
+        print('summary for {}'.format(scheduler))
+        print('total_avg_ticks_per_lap = {}'.format(sum(float(line.split(',')[3])/NO_LAPS for line in lines)))
+        print('max_tick_time           = {}'.format(max([float(line.split(',')[5]) for line in lines])))
+        print('avg_tick_time           = {}'.format(avg([float(line.split(',')[6]) for line in lines])))
+        print()
         
