@@ -40,8 +40,6 @@ class SwitchLengthParams {
  public:
   // {length, width} => switch_length
   std::map<std::pair<double, double>, double> switch_on_straight_length;
-  // {start_radius, end_radius, angle} => switch_length
-  std::map<std::tuple<double, double, double>, double> switch_on_turn_length;
 
   // Loads the params from file.
   void Load();

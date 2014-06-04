@@ -36,7 +36,10 @@ class CarTrackerTest : public testing::Test {
   std::unique_ptr<CarTracker> car_tracker_;
 };
 
-TEST_F(CarTrackerTest, DistanceBetweenTheSamePiece) {
+class DistanceBetweenTest : public CarTrackerTest {
+};
+
+TEST_F(DistanceBetweenTest, TheSamePiece) {
   Position position1;
   position1.set_piece_distance(25.0);
 
@@ -45,7 +48,7 @@ TEST_F(CarTrackerTest, DistanceBetweenTheSamePiece) {
   EXPECT_NEAR(50.0, car_tracker_->DistanceBetween(position1, position2), kEps);
 }
 
-TEST_F(CarTrackerTest, DistanceBetweenTheOtherPiece) {
+TEST_F(DistanceBetweenTest, TheNextPiece) {
   Position position1;
   position1.set_piece_distance(25.0);
 
@@ -55,7 +58,7 @@ TEST_F(CarTrackerTest, DistanceBetweenTheOtherPiece) {
   EXPECT_NEAR(250.0, car_tracker_->DistanceBetween(position1, position2), kEps);
 }
 
-TEST_F(CarTrackerTest, AroundTheTrack) {
+TEST_F(DistanceBetweenTest, AroundTheTrack) {
   const double kTrackLength = 3399.7874452256719;
   Position position1;
   position1.set_piece_distance(75.0);
@@ -65,7 +68,7 @@ TEST_F(CarTrackerTest, AroundTheTrack) {
   EXPECT_NEAR(kTrackLength + 50, car_tracker_->DistanceBetween(position1, position2), kEps);
 }
 
-TEST_F(CarTrackerTest, WeCanSwitchTheLane) {
+TEST_F(DistanceBetweenTest, WeCanSwitchTheLane) {
   Position position1;
   position1.set_piece_distance(0.0);
 
@@ -77,7 +80,7 @@ TEST_F(CarTrackerTest, WeCanSwitchTheLane) {
   EXPECT_NEAR(401.9803902718557, car_tracker_->DistanceBetween(position1, position2), kEps);
 }
 
-TEST_F(CarTrackerTest, BothOnTheSameSwitch) {
+TEST_F(DistanceBetweenTest, BothOnTheSameSwitch) {
   Position position1;
   position1.set_piece(3);
   position1.set_start_lane(0);
@@ -93,7 +96,7 @@ TEST_F(CarTrackerTest, BothOnTheSameSwitch) {
   EXPECT_NEAR(5.0, car_tracker_->DistanceBetween(position1, position2), kEps);
 }
 
-TEST_F(CarTrackerTest, BothOnTheSameSwitchDifferentLanes) {
+TEST_F(DistanceBetweenTest, BothOnTheSameSwitchDifferentLanes) {
   Position position1;
   position1.set_piece(3);
   position1.set_start_lane(0);
@@ -106,10 +109,10 @@ TEST_F(CarTrackerTest, BothOnTheSameSwitchDifferentLanes) {
   position2.set_start_lane(0);
   position2.set_end_lane(0);
   position2.set_piece_distance(10.0);
-  EXPECT_NEAR(3440.0089916087445, car_tracker_->DistanceBetween(position1, position2), kEps);
+  EXPECT_NEAR(3442.5238274753829, car_tracker_->DistanceBetween(position1, position2), kEps);
 }
 
-TEST_F(CarTrackerTest, TwoOtherSwitches) {
+TEST_F(DistanceBetweenTest, TwoOtherSwitches) {
   Position position1;
   position1.set_piece(3);
   position1.set_start_lane(0);

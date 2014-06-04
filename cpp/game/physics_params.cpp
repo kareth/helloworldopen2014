@@ -35,12 +35,6 @@ void SwitchLengthParams::Load() {
     const auto& data = *it;
     switch_on_straight_length[{ToDouble(data["length"]), ToDouble(data["width"])}] = ToDouble(data["switch_length"]);
   }
-
-  jsoncons::json turn_lengths = LoadCSV("data/switch-turn-lengths.csv");
-  for (auto it = turn_lengths.begin_elements(); it != turn_lengths.end_elements(); ++it) {
-    const auto& data = *it;
-    switch_on_turn_length[std::make_tuple(ToDouble(data["start_radius"]), ToDouble(data["end_radius"]), ToDouble(data["angle"]))] = ToDouble(data["switch_length"]);
-  }
 }
 
 void SwitchLengthParams::Save() {
@@ -53,13 +47,6 @@ void SwitchLengthParams::Save() {
     file << std::setprecision(20) << it.first.first << "," << it.first.second << "," << it.second << std::endl;
   }
   file.close();
-
-  file.open("data/switch-turn-lengths.csv");
-  file << "start_radius,end_radius,angle,switch_length" << std::endl;
-  for (const auto& it : switch_on_turn_length) {
-    file << std::setprecision(20) << std::get<0>(it.first) << "," << std::get<1>(it.first) << "," << std::get<2>(it.first) << "," << it.second << std::endl;
-  }
-  file.close();
 }
 
 void SwitchLengthParams::LogMissingData(const Track& track) const {
@@ -67,27 +54,13 @@ void SwitchLengthParams::LogMissingData(const Track& track) const {
   bool has_all = true;
   for (const auto& piece : track.pieces()) {
     if (!piece.has_switch()) continue;
+    if (piece.type() != PieceType::kStraight) continue;
 
-    if (piece.type() == PieceType::kStraight) {
-      for (int i = 1; i < track.lanes().size(); ++i) {
-        double width = fabs(track.lanes()[i].distance_from_center() - track.lanes()[i - 1].distance_from_center());
-        if (switch_on_straight_length.count({piece.length(), width}) == 0) {
-          has_all = false;
-          std::cout << "WARNING: Missing length for switch on straight with length " << piece.length() << " and width " << width << std::endl;
-        }
-      }
-    } else {
-      for (int i = 1; i < track.lanes().size(); ++i) {
-        double start_radius = piece.radius() + track.lanes()[i - 1].distance_from_center();
-        double end_radius = piece.radius() + track.lanes()[i].distance_from_center();
-        if (switch_on_turn_length.count(std::make_tuple(start_radius, end_radius, fabs(piece.angle()))) == 0) {
-          has_all = false;
-          std::cout << "WARNING: Missing length for switch on turn start_radius: " << start_radius << " end_radius: " << end_radius << " angle: " << fabs(piece.angle()) << std::endl;
-        }
-        if (switch_on_turn_length.count(std::make_tuple(end_radius, start_radius, fabs(piece.angle()))) == 0) {
-          has_all = false;
-          std::cout << "WARNING: Missing length for switch on turn start_radius: " << end_radius << " end_radius: " << start_radius << " angle: " << fabs(piece.angle()) << std::endl;
-        }
+    for (int i = 1; i < track.lanes().size(); ++i) {
+      double width = fabs(track.lanes()[i].distance_from_center() - track.lanes()[i - 1].distance_from_center());
+      if (switch_on_straight_length.count({piece.length(), width}) == 0) {
+        has_all = false;
+        std::cout << "WARNING: Missing length for switch on straight with length " << piece.length() << " and width " << width << std::endl;
       }
     }
   }

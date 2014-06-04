@@ -65,73 +65,6 @@ TEST_F(LaneLengthModelTest, TurnOuterLane) {
   EXPECT_TRUE(perfect_);
 }
 
-TEST_F(LaneLengthModelTest, TurnSwitchLane1) {
-  Position position;
-  position.set_piece(29);
-  position.set_start_lane(1);
-  position.set_end_lane(0);
-  EXPECT_NEAR(81.028059516719, model_->Length(position, &perfect_), 3);
-  EXPECT_FALSE(perfect_);
-}
-
-// NOTE: There is difference when switching from 0 -> 1 and 1 -> 0.
-TEST_F(LaneLengthModelTest, TurnSwitchLane2) {
-  Position position;
-  position.set_piece(29);
-  position.set_start_lane(0);
-  position.set_end_lane(1);
-  EXPECT_NEAR(81.029484142008, model_->Length(position, &perfect_), 3);
-  EXPECT_FALSE(perfect_);
-}
-
-TEST_F(LaneLengthModelTest, TurnSwitchLane3) {
-  Position position;
-  position.set_piece(8);
-  position.set_start_lane(0);
-  position.set_end_lane(1);
-  EXPECT_NEAR(81.053904159305, model_->Length(position, &perfect_), 3);
-  EXPECT_FALSE(perfect_);
-}
-
-TEST_F(LaneLengthModelTest, TurnSwitchLane4) {
-  Position position;
-  position.set_piece(8);
-  position.set_start_lane(1);
-  position.set_end_lane(0);
-  EXPECT_NEAR(81.054652206375, model_->Length(position, &perfect_), 3);
-  EXPECT_FALSE(perfect_);
-}
-
-TEST_F(LaneLengthModelTest, LearnTurnSwitchLength) {
-  const double piece_length = 81.028059516719;
-
-  Position previous;
-  previous.set_piece(29);
-  previous.set_start_lane(1);
-  previous.set_end_lane(0);
-  previous.set_piece_distance(80);
-
-  Position current;
-  current.set_piece(30);
-  current.set_start_lane(0);
-  current.set_end_lane(0);
-  current.set_piece_distance(4 - 1.028059516719);
-
-  model_->Record(previous, current, 4);
-
-  Position position;
-  position.set_piece(29);
-  position.set_start_lane(1);
-  position.set_end_lane(0);
-  EXPECT_NEAR(piece_length, model_->Length(position, &perfect_), kEps);
-  EXPECT_TRUE(perfect_);
-
-  position.set_start_lane(0);
-  position.set_end_lane(1);
-  EXPECT_NEAR(piece_length, model_->Length(position, &perfect_), kEps);
-  EXPECT_FALSE(perfect_);
-}
-
 TEST_F(LaneLengthModelTest, LearnStraightSwitchLength) {
   const double piece_length = 102.060274992934;
 
@@ -161,6 +94,37 @@ TEST_F(LaneLengthModelTest, LearnStraightSwitchLength) {
   position.set_end_lane(0);
   EXPECT_NEAR(piece_length, model_->Length(position, &perfect_), kEps);
   EXPECT_TRUE(perfect_);
+}
+
+TEST_F(LaneLengthModelTest, SwitchOnTurn) {
+  // Golden data
+  vector<vector<double>> lengths = {
+    {30,50,80,59.139983419378722829},
+    {35,55,90,73.062075659429268626},
+    {50,70,80,85.834968382374768225},
+    {55,35,90,73.059669917775721615},
+    {60,80,45,58.503066752223162439},
+    {70,50,60,65.880506105711560849},
+    {70,50,80,85.832707586219100904},
+    {70,90,60,86.042955492246292692},
+    {80,60,45,58.501693202337413879},
+    {80,100,45,73.448262456320378533},
+    {90,70,60,86.041132975104332559},
+    {90,110,45,81.029484142008129766},
+    {100,80,45,73.446849781627022935},
+    {100,120,45,88.658173653634833045},
+    {110,90,45,81.028059516718599298},
+    {120,100,45,88.656740012435193421},
+    {180,200,22.5,77.255183366417071511},
+    {190,210,22.5,81.054652206374470325},
+    {200,180,22.5,77.25443789318353538},
+    {210,190,22.5,81.053904159305176336},
+  };
+
+  for (int i = 0; i < lengths.size(); ++i) {
+    double length = model_->SwitchOnTurnLength(lengths[i][0], lengths[i][1], lengths[i][2]);
+    EXPECT_NEAR(lengths[i][3], length, 1e-10);
+  }
 }
 
 }  // anonymous namespace

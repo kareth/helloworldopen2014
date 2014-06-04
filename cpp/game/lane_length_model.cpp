@@ -1,6 +1,7 @@
 #include <cstdlib>
 
 #include "game/lane_length_model.h"
+#include "game/geometry.h"
 #include "gflags/gflags.h"
 
 DECLARE_string(race_id);
@@ -10,7 +11,8 @@ namespace game {
 
 LaneLengthModel::LaneLengthModel(const Track* track, const SwitchLengthParams& params) : track_(track) {
   switch_on_straight_length_ = params.switch_on_straight_length;
-  switch_on_turn_length_ = params.switch_on_turn_length;
+
+  // TODO precompute switches on the track
 }
 
 LaneLengthModel::~LaneLengthModel() {
@@ -19,10 +21,6 @@ LaneLengthModel::~LaneLengthModel() {
     std::cout << "Straight:" << std::endl;
     for (const auto& p : switch_on_straight_length_) {
       std::cout << "(" << p.first.first << "," << p.first.second << ") => " << p.second << std::endl;
-    }
-    std::cout << "Turn:" << std::endl;
-    for (const auto& p : switch_on_turn_length_) {
-      std::cout << "(" << std::get<0>(p.first) << "," << std::get<1>(p.first) << "," << std::get<2>(p.first) << ") => " << p.second << std::endl;
     }
   }
 }
@@ -60,16 +58,7 @@ double LaneLengthModel::Length(const Position& position, bool* perfect) const {
 
   double radius1 = track_->LaneRadius(position.piece(), position.start_lane());
   double radius2 = track_->LaneRadius(position.piece(), position.end_lane());
-
-  if (switch_on_turn_length_.count(std::make_tuple(radius1, radius2, fabs(piece.angle()))) > 0) {
-    return switch_on_turn_length_.at(std::make_tuple(radius1, radius2, fabs(piece.angle())));
-  }
-  if (perfect) *perfect = false;
-  // The opposite switch is much better predictor if available
-  if (switch_on_turn_length_.count(std::make_tuple(radius2, radius1, fabs(piece.angle()))) > 0) {
-    return switch_on_turn_length_.at(std::make_tuple(radius2, radius1, fabs(piece.angle())));
-  }
-  return M_PI * radius1 * (fabs(piece.angle()) / 360.0) + M_PI * radius2 * (fabs(piece.angle()) / 360.0);
+  return SwitchOnTurnLength(radius1, radius2, fabs(piece.angle()));
 }
 
 void LaneLengthModel::Record(const Position& previous, const Position& current, double predicted_velocity) {
@@ -79,46 +68,43 @@ void LaneLengthModel::Record(const Position& previous, const Position& current, 
     return;
 
   const auto& piece = track_->pieces()[previous.piece()];
+  if (piece.type() != PieceType::kStraight)
+    return;
 
   double switch_length = previous.piece_distance() + predicted_velocity - current.piece_distance();
 
-  if (piece.type() == PieceType::kStraight) {
-    const double width = fabs(track_->lanes()[previous.start_lane()].distance_from_center() - track_->lanes()[previous.end_lane()].distance_from_center());
-    auto it = switch_on_straight_length_.insert({{piece.length(), width}, switch_length});
-    if (fabs(it.first->second - switch_length) > 1e-6) {
-      std::cerr << std::setprecision(8) << "ERROR: Memorized switch length (" << it.first->second
-                << ") is different that calculated one (" << switch_length << ") for straight switch "
-                << piece.length() << " " << width << std::endl;
-    }
-    return;
-  }
-
-  double radius1 = track_->LaneRadius(previous.piece(), previous.start_lane());
-  double radius2 = track_->LaneRadius(previous.piece(), previous.end_lane());
-  auto it = switch_on_turn_length_.insert(
-      {std::make_tuple(radius1, radius2, fabs(piece.angle())), switch_length});
-
+  const double width = fabs(track_->lanes()[previous.start_lane()].distance_from_center() - track_->lanes()[previous.end_lane()].distance_from_center());
+  auto it = switch_on_straight_length_.insert({{piece.length(), width}, switch_length});
   if (fabs(it.first->second - switch_length) > 1e-6) {
     std::cerr << std::setprecision(8) << "ERROR: Memorized switch length (" << it.first->second
-              << ") is different that calculated one (" << switch_length << ") for turn switch "
-              << radius1 << " " << radius2 << std::endl;
+              << ") is different that calculated one (" << switch_length << ") for straight switch "
+              << piece.length() << " " << width << std::endl;
   }
+  return;
 }
 
-double LaneLengthModel::SwitchOnTurnLength(
-    double start_radius,
-    double end_radius,
-    double angle) const {
-  auto it = switch_on_turn_length_.find(std::make_tuple(start_radius, end_radius, angle));
-  if (it == switch_on_turn_length_.end()) {
-    return -1;
+static double ComputeSwitchOnTurnLength(double r1, double r2, double angle) {
+  Point from = Point(-r1, 0);
+  Point to = Point(-r2, 0).RotateOrigin(angle);
+
+  Point center = Point(-(r1 + r2) / 2.0, 0).RotateOrigin(angle / 2.0);
+  center = center * 2.0 - (from + to) * 0.5;
+
+  return QuadraticBezierCurve(from, center, to).Length(10000);
+}
+
+double LaneLengthModel::SwitchOnTurnLength(double r1, double r2, double angle) const {
+  auto it = switch_on_turn_length_.find(std::make_tuple(r1, r2, angle));
+  if (it != switch_on_turn_length_.end()) {
+    return it->second;
   }
-  return it->second;
+  double length = ComputeSwitchOnTurnLength(r1, r2, angle);
+  switch_on_turn_length_.insert({std::make_tuple(r1, r2, angle), length});
+  return length;
 }
 
 SwitchLengthParams LaneLengthModel::CreateParams() {
   SwitchLengthParams params;
-  params.switch_on_turn_length = switch_on_turn_length_;
   params.switch_on_straight_length = switch_on_straight_length_;
   return params;
 }

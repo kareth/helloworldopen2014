@@ -39,7 +39,7 @@ class LaneLengthModel {
   // {length, width} => switch_length
   std::map<std::pair<double, double>, double> switch_on_straight_length_;
   // {start_radius, end_radius, angle} => switch_length
-  std::map<std::tuple<double, double, double>, double> switch_on_turn_length_;
+  mutable std::map<std::tuple<double, double, double>, double> switch_on_turn_length_;
 };
 
 }  // namespace game
