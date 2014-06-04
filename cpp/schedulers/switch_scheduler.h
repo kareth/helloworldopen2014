@@ -15,9 +15,6 @@ class SwitchScheduler {
    virtual game::Switch SwitchDirection() = 0;
    virtual game::Switch ExpectedSwitch() = 0;
 
-   // Prepares for overtake
-   virtual void Overtake(const string& color) = 0;
-
    // Sets lap speed strategy
    virtual void set_strategy(const Strategy& strategy) = 0;
 

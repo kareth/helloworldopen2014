@@ -22,6 +22,7 @@ set(GAME_SOURCES
   lane_scorer.cpp
   velocity_predictor.cpp
   physics_params.cpp
+  greedy_path_optimizer.cpp
 )
 
 set(GAME_HEADERS
@@ -53,6 +54,8 @@ set(GAME_HEADERS
   lane_scorer.h
   velocity_predictor.h
   physics_params.h
+  greedy_path_optimizer.h
+  path_optimizer_interface.h
 )
 
 set(GAME_TESTS

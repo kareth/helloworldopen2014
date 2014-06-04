@@ -23,9 +23,6 @@ class NeverSwitchScheduler : public SwitchScheduler {
     return switch_;
   }
 
-  // Prepares for overtake
-  void Overtake(const string& color) override { }
-
   // Sets lap strategy
   void set_strategy(const Strategy& strategy) override { }
 
