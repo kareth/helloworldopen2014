@@ -1,3 +1,4 @@
 *log
 bot.pid
 cpp/bin/*
+cpp/tools/results.csv
