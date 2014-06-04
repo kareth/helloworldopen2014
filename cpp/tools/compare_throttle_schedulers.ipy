@@ -29,7 +29,7 @@ with open("results.csv", "w") as f:
     lines = []
     for map in maps:
         for scheduler in schedulers:
-            res = !bin/throttle_tester --throttle_scheduler=$scheduler --nocheck_if_safe_ahead --track=$map
+            res = !sudo nice -n -20 bin/throttle_tester --throttle_scheduler=$scheduler --nocheck_if_safe_ahead --track=$map
             name = scheduler + "-" + map + ".csv"
             #!cp data.csv $name
             !cp wojtek_data_log.csv $name
@@ -48,4 +48,5 @@ with open("results.csv", "w") as f:
     print()
     print('total_avg_ticks_per_lap = {}'.format(sum(float(line.split(',')[3])/NO_LAPS for line in lines)))
     print('max_tick_time           = {}'.format(sum(float(line.split(',')[5])/NO_LAPS for line in lines)))
+    print('avg_tick_time           = {}'.format(sum(float(line.split(',')[6])/NO_LAPS for line in lines)))
         

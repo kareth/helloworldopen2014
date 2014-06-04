@@ -43,7 +43,7 @@ double BranchAndBound::UpperBound(const game::CarState& from_state, double from_
   // From the given state upper bound is when we try throttle 1.0 from now on to the end 
   // (without taking care of safety)
 
-  return from_dist + car_tracker_->velocity_model().PredictDistance(from_state.velocity(), vector<double>(horizon_ - from, 1.0));
+  return from_dist + car_tracker_->velocity_model().PredictDistance(from_state.velocity(), horizon_ - from, 1.0);
 }
 
 bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double curr_dist, int from, int from_group) {
@@ -66,11 +66,14 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
     return false;
   }
 
+  int group_size = groups_[from_group];
   for (int i = 0; i < values_.size(); ++i) {
     double throttle = values_[i];
+    int group_size = groups_[from_group];
+
     CarState next = state;
     bool fail = false;
-    for (int i=0; i<groups_[from_group]; ++i) {
+    for (int j=0; j<group_size; ++j) {
       next = car_tracker_->Predict(next, game::Command(throttle));
 
       // Cut fast
@@ -78,17 +81,16 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
         fail = true;
         break;
       }
-      schedule[from+i] = throttle;
+      schedule[from+j] = throttle;
     }
     if (fail) {
         stats_.unsafe_cuts += 1;
         continue;
     }
 
-    double this_dist = car_tracker_->DistanceBetween(state.position(), next.position());
+    double this_dist = car_tracker_->velocity_model().PredictDistance(state.velocity(), group_size, throttle);
     //TODO Update here lower bound? Then we should first expand nodes, then go deeper
-
-    double ub = UpperBound(next, curr_dist + this_dist, schedule, from + groups_[from_group]);
+    double ub = UpperBound(next, curr_dist + this_dist, schedule, from + group_size);
 
     // Prune
     if (ub - EGAP <= lower_bound_) {
