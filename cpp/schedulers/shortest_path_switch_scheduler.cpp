@@ -51,7 +51,7 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
     // TODO improve weights on scores
     int score =
       - time_loss[dir]                       // ticks
-      - std::min(0, obstacle_scores[dir]) * 1000  // overtaking strictly more important
+      + std::min(0, obstacle_scores[dir]) * 1000  // overtaking strictly more important
       + std::max(0, obstacle_scores[dir]) * 1;    // bumping just a bit better
 
     if (score > best_score) {
