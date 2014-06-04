@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+from __future__ import division
 
 schedulers = (
     "WojtekThrottleScheduler",
@@ -20,9 +21,12 @@ maps = (
     "usa",
 )
 
+NO_LAPS = 3
+
 with open("results.csv", "w") as f:
     f.write('map,scheduler,best_lap,total_ticks,total_dist,max_tick_time,avg_tick_time,crash\n')
     os.chdir('..')
+    lines = []
     for map in maps:
         for scheduler in schedulers:
             res = !bin/throttle_tester --throttle_scheduler=$scheduler --nocheck_if_safe_ahead --track=$map
@@ -37,6 +41,11 @@ with open("results.csv", "w") as f:
             line = ",".join([line.split(':')[1].replace('ms','').strip() for line in res[-5:]])
 
             line = map + "," + scheduler + "," + line + "," + str(crash)
+            lines.append(line)
             print(line)
             f.write(line + '\n')
+
+    print()
+    print('total_avg_ticks_per_lap = {}'.format(sum(float(line.split(',')[3])/NO_LAPS for line in lines)))
+    print('max_tick_time           = {}'.format(sum(float(line.split(',')[5])/NO_LAPS for line in lines)))
         
