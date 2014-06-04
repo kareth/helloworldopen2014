@@ -30,12 +30,10 @@ class SwitchRadiusModel {
     : start_radius_(start_radius),
       end_radius_(end_radius),
       angle_(angle),
-      lane_length_model_(lane_length_model) {
+      length_(lane_length_model->SwitchOnTurnLength(start_radius, end_radius, angle)) {
     percent_to_radius_.assign(100, -1);
     // For some strange reason, the first percent is always a straight.
     percent_to_radius_[0] = 0;
-    // Will return -1 if unknown.
-    length_ = lane_length_model_->SwitchOnTurnLength(start_radius_, end_radius_, angle_);
   }
 
   ~SwitchRadiusModel() {
@@ -47,8 +45,6 @@ class SwitchRadiusModel {
   void Record(double piece_distance, double radius);
 
   void MergeWith(SwitchRadiusParams* params) const {
-    if (!HasLength()) return;
-
     for (int i = 1; i < percent_to_radius_.size(); ++i) {
       if (percent_to_radius_[i] != -1) {
         params->model.insert(
@@ -74,26 +70,14 @@ class SwitchRadiusModel {
   }
 
  private:
-  void MaybeUpdateLength();
-
-  bool HasLength() const {
-    return length_ != -1;
-  }
-
   double start_radius_;
   double end_radius_;
   double angle_;
-  const LaneLengthModel* lane_length_model_;
-
-  // (piece_distance, radius)
-  // Used only to record points when length is not known yet.
-  vector<std::pair<double, double>> raw_data_;
+  double length_;
 
   // If radius is -1, then it is unknown.
   vector<double> percent_to_radius_;
 
-  // -1 if unknown;
-  double length_ = -1;
 };
 
 class RadiusModel {

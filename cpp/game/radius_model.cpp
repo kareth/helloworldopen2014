@@ -53,12 +53,6 @@ void RadiusModel::Record(const Position& position, double radius) {
 }
 
 double SwitchRadiusModel::Radius(double piece_distance) {
-  MaybeUpdateLength();
-
-  if (!HasLength()) {
-    return 0.9 * min(start_radius_, end_radius_);
-  }
-
   int percent = static_cast<int>(100.0 * piece_distance / length_);
 
   double radius = percent_to_radius_[percent];
@@ -71,33 +65,8 @@ double SwitchRadiusModel::Radius(double piece_distance) {
 }
 
 void SwitchRadiusModel::Record(double piece_distance, double radius) {
-  if (length_ == -1) {
-    raw_data_.push_back({piece_distance, radius});
-    return;
-  }
   int percent = static_cast<int>(100.0 * piece_distance / length_);
   Add(percent, radius);
-}
-
-void SwitchRadiusModel::MaybeUpdateLength() {
-  if (HasLength())
-    return;
-
-  length_ = lane_length_model_->SwitchOnTurnLength(start_radius_, end_radius_, angle_);
-
-  // Is length still unknown?
-  if (!HasLength())
-    return;
-
-  for (const auto& p : raw_data_) {
-    double piece_distance = p.first;
-    double radius = p.second;
-
-    int percent = static_cast<int>(100.0 * piece_distance / length_);
-    Add(percent, radius);
-  }
-
-  raw_data_.clear();
 }
 
 }  // namespace game
