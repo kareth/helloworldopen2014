@@ -32,7 +32,7 @@ LaneScore RaceTracker::ScoreLane(int from, int to, int lane) {
   return lane_scorer_.ScoreLane(from, to, lane);
 }
 
-
+// TODO OBSOLETE
 // Is the car slow enough to overtake ?
 bool RaceTracker::ShouldOvertake(const std::string& color, int from, int to) {
  if (enemy(color).is_dead()) {
@@ -51,7 +51,7 @@ bool RaceTracker::ShouldOvertake(const std::string& color, int from, int to) {
   return enemy(color_).CanOvertake(enemy(color), from, to);
 }
 
-// Is it worth bumping?
+// Is it worth turbo bumping?
 bool RaceTracker::WorthBumping(const std::string& color) {
   if (enemy(color).is_dead())
     return false;
