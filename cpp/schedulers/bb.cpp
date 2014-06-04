@@ -46,6 +46,7 @@ double BranchAndBound::UpperBound(const game::CarState& from_state, double from_
   return from_dist + car_tracker_->velocity_model().PredictDistance(from_state.velocity(), horizon_ - from, 1.0);
 }
 
+// Returning true if optimum found
 bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double curr_dist, int from, int from_group) {
   stats_.nodes_visited += 1;
 
@@ -79,7 +80,7 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
       // Cut fast
       if (!car_tracker_->crash_model().IsSafe(next.position().angle())) {
         fail = true;
-        break;
+        break; // It is still possible to not crash when using a higher throttle, so we cannot return here
       }
       schedule[from+j] = throttle;
     }
