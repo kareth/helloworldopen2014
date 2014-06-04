@@ -9,7 +9,7 @@
 
 #include "schedulers/greedy_turbo_scheduler.h"
 #include "schedulers/shortest_path_switch_scheduler.h"
-#include "schedulers/binary_throttle_scheduler.h"
+#include "schedulers/wojtek_throttle_scheduler.h"
 #include "schedulers/bump_scheduler.h"
 
 namespace schedulers {

@@ -11,6 +11,8 @@ class ThrottleScheduler {
   // Returns scheduled throttle
   virtual double throttle() = 0;
 
+  virtual ~ThrottleScheduler() {};
+
   // Prepares for overtake
   virtual void Overtake(const string& color) = 0;
 

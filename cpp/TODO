@@ -1,0 +1,57 @@
+WojtekThrottleScheduler
+-----------------------
+* For live:
+    - Implement timelimit. Return currently best:
+        - Use stopwatch class. Check from time to time if exceeded
+    - Shift accordingly if missed tick (for LB)
+    - Initial LB:
+        - All maps simulated + live analyse any case where initial_schedule is not safe. Are there any serious?
+        - In case initial LB is not safe provide a greedy one
+        - Try modifying the schedule by putting 0's to the end one by one
+* Performance:
+    - gprof bottlenecks
+    - how many cuts?
+    - analyse what cased max tick time
+    - provide also in-tree LB (in case the initial did not work)
+* Ideas:
+    - idea: only 4/5 changes
+    - first node can change with step 0.1
+    - idea: 111111000 is always better than some other combination of 7 1' and 3 0'
+        - could this be used as upper bound?
+    - in each node consider 0, 1. If 1 is too much than consider something less than 1, maximizing future angle (with all other throttles set to 0; binary search for feasibility).
+    - if initial best was found best than also use the best from bb trying to local search on it, if there is time
+* Optimize groups (vide perf. measure)
+    - idea: choose among a set of different groups?
+    - idea: different groups for different circumstances (e.g. switch)? Some ML based on curves ahead?
+    - 0.01 step improves things a bit on some maps. Verify it live and explore it.
+* Improve local search: Improve on edges.
+* Use Tomek's code for fractional throttle
+
+* Minor: Compare data.csv of Magic and Wojtek. Where Wojtek loses.
+    - are results2.csv 3.csv still valid? Rather yes
+
+Performance measure
+-------------------
+Simulator:
+    - all maps, 3 laps, perf: total time | grep "Lap Finished"
+    [consider different physics]
+Live:
+    - all maps, 10 laps, prost, perf total time
+
+
+Solver
+------
+* why magical is sometimes a little bit worse than wojtek? e.g. England?
+* accept turbo
+* set an exception for switches... heuristic
+* rradius = last rradius instead of 10 hardcoded in curves
+
+* Performance:
+    - add initial solution
+    - add bounds on the result
+    - add max. time 
+    - better handle after-horizon safety
+    - check whether directly computing d improves performance
+    - tuner 
+
+    - DONE: make it do not treat a as variable [Probably could not be done, because it is in constraints. Check it]

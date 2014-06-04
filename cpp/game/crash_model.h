@@ -56,6 +56,15 @@ class CrashModel {
     return ready_;
   }
 
+  double GetModel() const {
+    if (IsReady()) {
+      // I don't accept safe_angle of zero
+      return fmax(1, safe_angle_);
+    } else {
+      return fmax(1, fmax(guess_safe_angle_, safe_angle_));
+    }
+  }
+
  private:
 
   // True if the model is ready (there was at least one crash.

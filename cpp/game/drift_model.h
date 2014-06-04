@@ -55,7 +55,7 @@ class DriftModel {
     return ready_;
   }
 
-  DriftModelParams CreateParams() {
+  DriftModelParams CreateParams() const {
     DriftModelParams params;
     params.model = x_;
     return params;

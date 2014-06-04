@@ -1,7 +1,17 @@
 #ifndef CPP_GAME_SIMULATOR_H_
 #define CPP_GAME_SIMULATOR_H_
 
+#include <fstream>
+#include <chrono>
+#include "utils/stopwatch.h"
+
 using jsoncons::json;
+
+namespace {
+  template <typename T> int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+  }
+}
 
 namespace game {
 
@@ -22,9 +32,12 @@ class Simulator {
 
     // The maximum time in ms it took to compute the next command.
     double max_tick_time_ms = 0;
+    double avg_tick_time_ms = 0;
+    int total_ticks = 0;
 
     // True if car crashed during simulation.
     bool crashed = false;
+    double total_distance = 0; // total distance drived
   };
 
   struct Options {
@@ -64,20 +77,37 @@ class Simulator {
     Result result;
     int current_lap = 0;
     int current_lap_ticks = 0;
+    int total_ticks = 0;
 
     double max_tick_time_ms = 0;
+    double sum_tick_time_ms = 0;
 
+    std::ofstream ofs("data.csv", std::ofstream::out);
+    ofs << "tick," << "lap," << "x," << "turbo," << "a," << "v," << "d," << "dir," << "rad," << "tick_time" << std::endl;
     for (int i = 0; i < options.max_ticks_to_simulate; ++i) {
       current_lap_ticks++;
+      total_ticks++;
 
-      const clock_t begin_time = clock();
+
+      utils::StopWatch stopwatch;
       auto response = raw_bot->React(CarPositionsFromState(state, i));
-      const double current_tick_time_ms = double(clock() - begin_time) /  CLOCKS_PER_SEC * 1000;
+      double current_tick_time_ms = stopwatch.elapsed();
       max_tick_time_ms = fmax(max_tick_time_ms, current_tick_time_ms);
+      sum_tick_time_ms += current_tick_time_ms;
 
       Command command = CommandFromJson(response);
       CarState previous_state = state;
-      state = car_tracker.Predict(state, command);
+
+      Piece piece = race.track().pieces()[state.position().piece()];
+      ofs << total_ticks << ',' << current_lap << ',' << command.throttle() << ',' << command.TurboSet() << ','
+          << state.position().angle() << ',' << state.velocity()  << ','
+          << result.total_distance << ',' << -sgn(piece.angle()) << ','
+          << piece.radius() << ',' << current_tick_time_ms << std::endl;
+      ofs.flush();
+
+      CarState next_state = car_tracker.Predict(state, command);
+      result.total_distance += car_tracker.DistanceBetween(state.position(), next_state.position());
+      state = next_state;
 
       if (fabs(state.position().angle()) > 60.0) {
         result.crashed = true;
@@ -102,7 +132,11 @@ class Simulator {
       }
     }
 
+    ofs.close();
+
     result.max_tick_time_ms = max_tick_time_ms;
+    result.avg_tick_time_ms = sum_tick_time_ms / total_ticks;
+    result.total_ticks = total_ticks;
 
     return result;
   }

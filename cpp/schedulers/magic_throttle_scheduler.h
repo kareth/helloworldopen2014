@@ -1,31 +1,26 @@
-#ifndef CPP_SCHEDULERS_WOJTEK_THROTTLE_SCHEDULER_H_
-#define CPP_SCHEDULERS_WOJTEK_THROTTLE_SCHEDULER_H_
+#ifndef CPP_SCHEDULERS_MAGIC_THROTTLE_SCHEDULER_H_
+#define CPP_SCHEDULERS_MAGIC_THROTTLE_SCHEDULER_H_
 
 #include <vector>
 #include <array>
 #include <cmath>
 #include <random>
-#include <fstream>
-
 #include "game/car_tracker.h"
 #include "schedulers/strategy.h"
 #include "schedulers/throttle_scheduler.h"
 #include "schedulers/schedule.h"
 #include "schedulers/bb.h"
-#include "schedulers/local_improver.h"
 
 namespace schedulers {
 
-class WojtekThrottleScheduler : public ThrottleScheduler {
+class MagicThrottleScheduler : public ThrottleScheduler {
  public:
   static const int HORIZON;
-  static const vector<double> values; // possible throttle values to check
+  static const int N;
 
   // Expected time limit in miliseconds
-  WojtekThrottleScheduler(const game::Race& race,
-                          game::CarTracker& car_tracker, int time_limit);
-
-  ~WojtekThrottleScheduler() override;
+  MagicThrottleScheduler(const game::Race& race,
+                         game::CarTracker& car_tracker, int time_limit);
 
   // Returns scheduled throttle
   double throttle() override { return best_schedule_[0]; };
@@ -39,24 +34,22 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   // Updates the state and calculates next state
   void Schedule(const game::CarState& state) override;
 
+
   const std::vector<double>& full_schedule() const override { return best_schedule_.throttles_; }
 
  private:
-  void Log(const game::CarState& state);
-  void PrintSchedule(const game::CarState& state, const Sched& schedule, int len);
-
   game::CarTracker& car_tracker_;
   const game::Race& race_;
+  const int time_limit_;
   Sched best_schedule_;
-  BranchAndBound branch_and_bound_;
-  LocalImprover local_improver_;
-  std::ofstream log_file_;
-  double last_schedule_time_; // ms
-  int tick_;
-  int time_limit_; // ms
-  bool initial_schedule_safe_; 
+
+  int tick_ = 0; //TODO: This is bad here. Should be somewhere globally
+
+  void Log(const game::CarState& state);
+  void ImproveByMagic(const game::CarState& state, Sched& schedule);
 };
 
 }  // namespace schedulers
 
-#endif  // CPP_SCHEDULERS_WOJTEK_THROTTLE_SCHEDULER_H_
+#endif  // CPP_SCHEDULERS_MAGIC_THROTTLE_SCHEDULER_H_
+
