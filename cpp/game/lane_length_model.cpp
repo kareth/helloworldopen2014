@@ -12,7 +12,19 @@ namespace game {
 LaneLengthModel::LaneLengthModel(const Track* track, const SwitchLengthParams& params) : track_(track) {
   switch_on_straight_length_ = params.switch_on_straight_length;
 
-  // TODO precompute switches on the track
+  for (const auto& piece : track->pieces()) {
+    if (!piece.has_switch()) continue;
+    if (piece.type() == PieceType::kStraight) continue;
+
+    for (int i = 1; i < track->lanes().size(); ++i) {
+      double start_radius = piece.radius() + track->lanes()[i - 1].distance_from_center();
+      double end_radius = piece.radius() + track->lanes()[i].distance_from_center();
+      double angle = fabs(piece.angle());
+
+      SwitchOnTurnLength(start_radius, end_radius, angle);
+      SwitchOnTurnLength(end_radius, start_radius, angle);
+    }
+  }
 }
 
 LaneLengthModel::~LaneLengthModel() {
