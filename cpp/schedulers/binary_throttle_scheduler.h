@@ -5,7 +5,7 @@
 #include "game/car_tracker.h"
 #include "schedulers/strategy.h"
 #include "schedulers/throttle_scheduler.h"
-#include "utils/Deadline.h"
+#include "utils/deadline.h"
 
 namespace schedulers {
 
