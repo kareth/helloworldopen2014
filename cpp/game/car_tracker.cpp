@@ -274,22 +274,39 @@ double CarTracker::DistanceBetween(const Position& position1, const Position& po
   return distance;
 }
 
-Position CarTracker::PredictPosition(const Position& position, double distance) {
-  double piece_distance = position.piece_distance() + distance;
-  double lane_length = lane_length_model_.Length(position);
-  int piece = position.piece();
-
-  if (piece_distance > lane_length) {
-    piece_distance = piece_distance - lane_length;
-    piece++;
-    if (piece >= race_->track().pieces().size()) {
-      piece = 0;
-    }
-  }
+Position CarTracker::PredictPosition(const Position& position, double distance, int target_lane) {
+  if (target_lane == -1) target_lane = position.end_lane();
 
   Position result = position;
-  result.set_piece_distance(piece_distance);
-  result.set_piece(piece);
+  result.set_piece_distance(result.piece_distance() + distance);
+
+  // Note: We should use while(true) here, but it is safer to
+  // iterate const times.
+  for (int i = 0; i < race_->track().pieces().size() + 1; ++i) {
+    double lane_length = lane_length_model_.Length(result);
+
+    if (result.piece_distance() < lane_length) {
+      break;
+    }
+
+    result.set_piece_distance(result.piece_distance() - lane_length);
+    result.set_piece(result.piece() + 1);
+    if (result.piece() >= race_->track().pieces().size()) {
+      result.set_piece(0);
+      result.set_lap(result.lap() + 1);
+    }
+
+    result.set_start_lane(result.end_lane());
+
+    if (race_->track().pieces()[result.piece()].has_switch() &&
+        result.end_lane() != target_lane) {
+      if (result.end_lane() < target_lane) {
+        result.set_end_lane(result.end_lane() + 1);
+      } else {
+        result.set_end_lane(result.end_lane() - 1);
+      }
+    }
+  }
   return result;
 }
 

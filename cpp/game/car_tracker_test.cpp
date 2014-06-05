@@ -365,4 +365,126 @@ TEST_F(GetCurvesTest, Basic) {
   EXPECT_NEAR(433.04199905160931, curves[3].distance, 1e-9);
 }
 
+class PredictPositionTest : public ::testing::Test {
+ protected:
+  const double kEps = 1e-9;
+
+  void SetUp() {
+    json race_json;
+    race_json["cars"] = json(json::an_array);
+    race_json["raceSession"] = json();
+    race_json["track"] = json::parse_file("data/maps/suzuka.json");
+
+    race_.ParseFromJson(race_json);
+    car_tracker_.reset(new CarTracker(&race_, PhysicsParams()));
+  }
+
+  Race race_;
+  std::unique_ptr<CarTracker> car_tracker_;
+};
+
+TEST_F(PredictPositionTest, Basic) {
+  Position position;
+
+  Position result = car_tracker_->PredictPosition(position, 10.0);
+
+  EXPECT_EQ(0, result.piece());
+  EXPECT_EQ(10.0, result.piece_distance());
+}
+
+TEST_F(PredictPositionTest, SkipPiece) {
+  // Track
+  // piece=0 length=100
+  // piece=1 length=100
+  // piece=2 length=32
+  // piece=3 length=?
+  Position position;
+  position.set_piece_distance(20);
+
+  Position result = car_tracker_->PredictPosition(position, 213.0);
+
+  EXPECT_EQ(3, result.piece());
+  EXPECT_EQ(1.0, result.piece_distance());
+}
+
+TEST_F(PredictPositionTest, IncreaseLap) {
+  ASSERT_EQ(65, race_.track().pieces().size());
+  // Track
+  // piece=64 length=33
+  // piece=0 length=100
+  Position position;
+  position.set_piece(64);
+  position.set_piece_distance(0);
+
+  Position result = car_tracker_->PredictPosition(position, 40.0);
+
+  EXPECT_EQ(0, result.piece());
+  EXPECT_EQ(7.0, result.piece_distance());
+  EXPECT_EQ(1, result.lap());
+}
+
+TEST_F(PredictPositionTest, OnSwitch) {
+  ASSERT_NEAR(81.028059516725861,
+              car_tracker_->lane_length_model().SwitchOnTurnLength(110, 90, 45),
+              1e-5);
+
+  // Track
+  // piece=3 length=81.028059516725861 (switch 110, 90, 45)
+  // piece=4 length=...
+  Position position;
+  position.set_piece(3);
+  position.set_start_lane(0);
+  position.set_end_lane(1);
+  position.set_piece_distance(80.028059516725861045);
+
+  Position result = car_tracker_->PredictPosition(position, 5);
+
+  EXPECT_EQ(4, result.piece());
+  EXPECT_EQ(4.0, result.piece_distance());
+  EXPECT_EQ(1, result.start_lane());
+  EXPECT_EQ(1, result.end_lane());
+}
+
+TEST_F(PredictPositionTest, TargetLine) {
+  // Track
+  // piece=2 length=32
+  // piece=3 length=81.028059516725861 (switch 110, 90, 45)
+  // piece=4 length=...
+  Position position;
+  position.set_piece(2);
+  position.set_start_lane(0);
+  position.set_end_lane(0);
+  position.set_piece_distance(0);
+
+  Position result = car_tracker_->PredictPosition(position, 35, 1);
+
+  EXPECT_EQ(3, result.piece());
+  EXPECT_EQ(3.0, result.piece_distance());
+  EXPECT_EQ(0, result.start_lane());
+  EXPECT_EQ(1, result.end_lane());
+}
+
+TEST_F(PredictPositionTest, SkipSwitchWithTargetLine) {
+  ASSERT_NEAR(81.028059516725861,
+              car_tracker_->lane_length_model().SwitchOnTurnLength(110, 90, 45),
+              1e-5);
+
+  // Track
+  // piece=2 length=32
+  // piece=3 length=81.028059516725861 (switch 110, 90, 45)
+  // piece=4 length=...
+  Position position;
+  position.set_piece(2);
+  position.set_start_lane(0);
+  position.set_end_lane(0);
+  position.set_piece_distance(31);
+
+  Position result = car_tracker_->PredictPosition(position, 83.028059516725861, 1);
+
+  EXPECT_EQ(4, result.piece());
+  EXPECT_EQ(1.0, result.piece_distance());
+  EXPECT_EQ(1, result.start_lane());
+  EXPECT_EQ(1, result.end_lane());
+}
+
 }  // namespace game

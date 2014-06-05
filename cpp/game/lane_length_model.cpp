@@ -46,7 +46,7 @@ double LaneLengthModel::Length(const Position& position, bool* perfect) const {
       return piece.length();
     }
     if (!piece.has_switch()) {
-      std::cerr << "Changing lane on non switch piece?" << std::endl;
+      std::cerr << "Changing lane on non switch piece? " << piece.DebugString() << std::endl;
     }
 
     const double width = fabs(track_->lanes()[position.start_lane()].distance_from_center() - track_->lanes()[position.end_lane()].distance_from_center());
@@ -65,7 +65,7 @@ double LaneLengthModel::Length(const Position& position, bool* perfect) const {
   }
 
   if (!piece.has_switch()) {
-    std::cerr << "Changing lane on non switch piece?" << std::endl;
+    std::cerr << "Changing lane on non switch piece? " << position.ShortDebugString() << std::endl;
   }
 
   double radius1 = track_->LaneRadius(position.piece(), position.start_lane());

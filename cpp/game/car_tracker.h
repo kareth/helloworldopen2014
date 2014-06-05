@@ -103,9 +103,9 @@ class CarTracker : public CarPredictor {
   // off. The reason for incorrect distance are switches (we didn't come up with
   // the perfect model for them so we need to drive through them first).
   //
-  // Note: We only iterate over const number of  pieces to compute the
+  // WARNING: We only iterate over const number of  pieces to compute the
   // distance, so if we need to travel more to get to position2, the returned
-  // distance can bee too small. But because we use it mainly to compute small
+  // distance can be too small. But because we use it mainly to compute small
   // distances (someone just ahead of use or someone just behind us), it
   // shouldn't matter.
   double DistanceBetween(const Position& position1, const Position& position2,
@@ -125,14 +125,19 @@ class CarTracker : public CarPredictor {
   // - it is only lower bound (it is possible such min_velocity cannot be achieved.
   bool MinVelocity(const CarState& car_state, int ticks, const Position& target, double* min_velocity, int* full_throttle_ticks);
 
-  // Returns position that is "distance" units farther.
+  // Returns position that is "distance" units farther. In case we encounter
+  // switches, we assume we are trying to reach target_lane.
   //
-  // We assume distance > 0
+  // If target_lane is -1, then we assume target_lane=position.end_lane().
   //
-  // TODO
-  // - how switches are handled?
-  // - add is_perfect output parameter
-  Position PredictPosition(const Position& position, double distance);
+  // We assume distance > 0.
+  //
+  // WARNING: We only iterate over const number of  pieces to compute the
+  // position, so if we need to travel more to get to position2, the returned
+  // position can be incorrect. But because we use it mainly to compute small
+  // distances (someone just ahead of use or someone just behind us), it
+  // shouldn't matter.
+  Position PredictPosition(const Position& position, double distance, int target_lane=-1);
 
   // Returns true, if there is high probability that there was a bump.
   bool HasSomeoneMaybeBumpedMe(const map<string, Position>& positions, const std::string& color);
