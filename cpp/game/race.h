@@ -32,6 +32,8 @@ class Race {
   bool qualification_phase() const { return duration_ != 0; }
   bool race_phase() const { return duration_ == 0; }
 
+  jsoncons::json ToJson() { return data_; }
+
  private:
   int laps_ = 0;
   int max_lap_time_ms_ = 0;
@@ -41,6 +43,9 @@ class Race {
 
   Track track_;
   std::vector<Car> cars_;
+
+  // JSON representation for simulator.
+  jsoncons::json data_;
 };
 
 }  // namespace game

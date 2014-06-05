@@ -45,6 +45,8 @@ class Simulator {
 
   struct Options {
     // The track name used that simulation will take place on.
+    // If set to empty string, then 'race' parameter will be
+    // used.
     //
     // Possible values are files inside game/data/maps/*.json:
     // - elaeintarha
@@ -55,12 +57,18 @@ class Simulator {
     // - keimola
     // - suzuka
     // - usa
-    string track_name = "keimola";
+    string track_name = "";
+
+    // Used when 'track_name' is empty.
+    Race race;
 
     int max_ticks_to_simulate = 10000;
     int max_laps_to_simulate = 3;
 
     PhysicsParams physics_params;
+
+    // The lane to start the race on.
+    int starting_lane = 0;
   };
 
   const string kCarColor = "red";
@@ -72,7 +80,11 @@ class Simulator {
     race.ParseFromJson(race_json);
 
     CarTracker car_tracker(&race, options.physics_params);
-    CarState state = car_tracker.current_state();
+
+    Position position;
+    position.set_start_lane(options.starting_lane);
+    position.set_end_lane(options.starting_lane);
+    CarState state = CarState(position);
 
     raw_bot->React(YourCar(kCarColor));
     raw_bot->React(game_init_json);
@@ -192,6 +204,15 @@ class Simulator {
   }
 
   jsoncons::json GameInitMessage(const Options& options) {
+    if (options.track_name == "") {
+      jsoncons::json data;
+      data["gameId"] = "83abef1f-e601-438b-ad80-7f6e2f7acdd7";
+      data["msgType"] = "gameInit";
+      data["data"] = jsoncons::json();
+      data["data"]["race"] = options.race.ToJson();
+      return data;
+    }
+
     auto track = json::parse_file("game/data/maps/" + options.track_name + ".json");
     jsoncons::json data;
     data["gameId"] = "83abef1f-e601-438b-ad80-7f6e2f7acdd7";

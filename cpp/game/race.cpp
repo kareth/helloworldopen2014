@@ -18,6 +18,8 @@ void Race::ParseFromJson(const json& data) {
     cars_.push_back(Car());
     cars_.back().ParseFromJson(*it);
   }
+
+  data_ = data;
 }
 
 }  // namespace game
