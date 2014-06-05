@@ -4,7 +4,7 @@
 
 DECLARE_int32(handicap);
 DECLARE_bool(check_if_safe_ahead);
-DECLARE_int32(answer_time);
+DECLARE_int32(answer_time); // in microseconds
 DECLARE_bool(bump_with_turbo);
 DECLARE_bool(defend_turbo_bump);
 DECLARE_bool(write_switch_models);
@@ -75,7 +75,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 
   Command command;
   SetStrategy(state);
-  scheduler_->Schedule(state, game_tick, utils::Deadline(std::chrono::milliseconds(FLAGS_answer_time)));
+  scheduler_->Schedule(state, game_tick, utils::Deadline(std::chrono::microseconds(FLAGS_answer_time)));
   command = scheduler_->command();
 
   scheduler_->IssuedCommand(command);

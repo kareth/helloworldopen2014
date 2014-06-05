@@ -18,21 +18,20 @@ const double BranchAndBound::EGAP = 0.0;
  */
 
 BranchAndBound::BranchAndBound(game::CarTracker* car_tracker, int horizon, const vector<int>& groups, const vector<double>& values) 
-  : horizon_(horizon), car_tracker_(car_tracker), best_(car_tracker, horizon), groups_(groups), values_(values)
+  : horizon_(horizon), car_tracker_(car_tracker), best_(car_tracker, horizon), groups_(groups), values_(values), deadline_()
 { }
 
-void BranchAndBound::Improve(const game::CarState& state, Sched& schedule) {
+void BranchAndBound::Improve(const game::CarState& state, Sched& schedule, const utils::Deadline& deadline) {
+  // "global" for B&B
   best_ = schedule;
-
   lower_bound_ = LowerBound(best_);
   upper_bound_ = UpperBound(state, 0, best_, 0); 
+  deadline_ = deadline;
 
   schedule.Reset(state);
 
-  //printf("upper bound distance = %.1f, lower_bound = %.1f\n", upper_bound_, lower_bound_);
-  //best_.Print();
-
   stats_ = Stats();
+
   Branch(state, schedule, 0, 0, 0);
 
   schedule = best_;
@@ -52,6 +51,11 @@ double BranchAndBound::UpperBound(const game::CarState& from_state, double from_
 // Returning true if optimum found
 bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double curr_dist, int from, int from_group) {
   stats_.nodes_visited += 1;
+  
+  if (deadline_.HasExpired()) {
+      // Pretend we have found optimum
+      return true;
+  }
 
   if (from >= horizon_) {
     stats_.leafs_visited += 1;
@@ -96,7 +100,6 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
     }
 
     double this_dist = car_tracker_->velocity_model().PredictDistance(state.velocity(), group_size, throttle);
-    //TODO Update here lower bound? Then we should first expand nodes, then go deeper
     double ub = UpperBound(next, curr_dist + this_dist, schedule, from + group_size);
 
     // Prune

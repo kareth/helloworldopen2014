@@ -22,9 +22,12 @@ maps = (
     "usa",
 )
 
-physics = range(0,7)
+physics = range(0,6)
+#physics = range(0,7)
 
 NO_LAPS = 3
+
+MAX_TIME_TO_MOVE_MS = 3.0
 
 def avg(x):
     return sum(x)/len(x)
@@ -36,7 +39,8 @@ with open("results.csv", "w") as f:
         lines = []
         for map in maps:
             for physic in physics:
-                res = !bin/throttle_tester --throttle_scheduler=$scheduler --nocheck_if_safe_ahead --track=$map --physics=$physic
+                answer_time = int(MAX_TIME_TO_MOVE_MS * 1000)
+                res = !bin/throttle_tester --throttle_scheduler=$scheduler --nocheck_if_safe_ahead --track=$map --physics=$physic --answer_time=$answer_time
                 if scheduler == 'WojtekThrottleScheduler':
                     name = os.path.join('results', "wojtek-" + map + "-" + str(physic) + ".csv")
                     !mv wojtek_data_log.csv $name

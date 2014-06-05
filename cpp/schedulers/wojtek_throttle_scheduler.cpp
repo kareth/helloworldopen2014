@@ -49,8 +49,9 @@ void WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tic
   // (for some unknown reason) this is not the case
   int tick_diff = game_tick - last_game_tick_;
   if (1 <= tick_diff && tick_diff <= 4) {
-    for (int i = 0; i < tick_diff; ++i)
+    for (int i = 0; i < tick_diff; ++i) {
       best_schedule_.ShiftLeftFillSafe(state);
+    }
   } else {
     // We will still try to use the old schedule, but, it could be not safe.
     // This will be checked subsequently
@@ -65,12 +66,11 @@ void WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tic
     best_schedule_.Reset(state);
   }
 
-  branch_and_bound_.Improve(state, best_schedule_);
-  local_improver_.Improve(state, best_schedule_, 0.1);
+  branch_and_bound_.Improve(state, best_schedule_, deadline);
+  local_improver_.Improve(state, best_schedule_, 0.1, deadline);
 
   // Once again, just to be 200% sure check for safety
   if (!best_schedule_.IsSafe(state)) {
-    // This should never happen
     std::cerr << "Schedule is not safe. This should not happen" << std::endl;
     best_schedule_.Reset(state);
   }

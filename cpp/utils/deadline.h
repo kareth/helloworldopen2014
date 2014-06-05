@@ -42,7 +42,7 @@ class Deadline {
   Seconds GetDurationToExpire() const;
 
  private:
-  const TimePoint time_to_expire_;
+  TimePoint time_to_expire_; // Actually, this should be const, but the compiler complains, no idea why
 };
 
 } // namespace

@@ -16,9 +16,11 @@ bool LocalImprover::ImproveOne(const game::CarState& state, Sched& schedule, int
   return improved;
 }
 
-bool LocalImprover::Improve(const game::CarState& state, Sched& schedule, double step) {
+bool LocalImprover::Improve(const game::CarState& state, Sched& schedule, double step, const utils::Deadline& deadline) {
   bool improved = false;
   for (int i=0; i<schedule.size(); ++i) {
+    if (deadline.HasExpired())
+      break;
     improved = ImproveOne(state, schedule, i, step);
   }
   if (improved)
