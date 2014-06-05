@@ -13,7 +13,7 @@ class Position {
  public:
   Position();
   Position(int piece, double piece_distance)
-    : piece_(piece), piece_distance_(piece_distance) {}
+    : piece_index_(piece), piece_distance_(piece_distance) {}
 
   double angle() const { return angle_; }
   int piece() const { return piece_index_; }
