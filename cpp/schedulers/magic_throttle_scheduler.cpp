@@ -18,8 +18,8 @@ const int MagicThrottleScheduler::HORIZON = 40;
 const int MagicThrottleScheduler::N = 60;
 
 MagicThrottleScheduler::MagicThrottleScheduler(const game::Race& race,
-    game::CarTracker& car_tracker, int time_limit)
-  : race_(race), car_tracker_(car_tracker), best_schedule_(&car_tracker, HORIZON), time_limit_(time_limit)
+    game::CarTracker& car_tracker)
+  : race_(race), car_tracker_(car_tracker), best_schedule_(&car_tracker, HORIZON)
 {
 }
 

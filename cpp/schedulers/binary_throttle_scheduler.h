@@ -13,8 +13,7 @@ class BinaryThrottleScheduler : public ThrottleScheduler {
  public:
   // Expected time limit in miliseconds
   BinaryThrottleScheduler(const game::Race& race,
-                          game::CarTracker& car_tracker,
-                          int time_limit);
+                          game::CarTracker& car_tracker);
 
   BinaryThrottleScheduler(const game::Race& race,
                           game::CarTracker& car_tracker,

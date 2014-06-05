@@ -17,9 +17,8 @@ namespace schedulers {
 
 BulkScheduler::BulkScheduler(const game::Race& race,
                game::RaceTracker& race_tracker,
-               game::CarTracker& car_tracker,
-               int time_limit)
-    : race_(race), car_tracker_(car_tracker), race_tracker_(race_tracker), time_limit_(time_limit) {
+               game::CarTracker& car_tracker)
+    : race_(race), car_tracker_(car_tracker), race_tracker_(race_tracker) {
   turbo_scheduler_.reset(new GreedyTurboScheduler(race_, car_tracker_));
   throttle_scheduler_.reset(CreateThrottleScheduler());
   switch_scheduler_.reset(CreateSwitchScheduler());
@@ -93,17 +92,17 @@ void BulkScheduler::IssuedCommand(const game::Command& command) {
 ThrottleScheduler* BulkScheduler::CreateThrottleScheduler() {
   if (FLAGS_throttle_scheduler == "BinaryThrottleScheduler") {
     std::cout << "Using BinaryThrottleScheduler" << std::endl;
-    return new BinaryThrottleScheduler(race_, car_tracker_, time_limit_);
+    return new BinaryThrottleScheduler(race_, car_tracker_);
   } else if (FLAGS_throttle_scheduler == "WojtekThrottleScheduler") {
     std::cout << "Using WojtekThrottleScheduler" << std::endl;
-    return new WojtekThrottleScheduler(race_, car_tracker_, time_limit_);
+    return new WojtekThrottleScheduler(race_, car_tracker_);
   } else if (FLAGS_throttle_scheduler == "MagicThrottleScheduler") {
     std::cout << "Using " << FLAGS_throttle_scheduler << std::endl;
-    return new MagicThrottleScheduler(race_, car_tracker_, time_limit_);
+    return new MagicThrottleScheduler(race_, car_tracker_);
   }
 
   std::cerr << "UNKNOWN throttle scheduler: " << FLAGS_throttle_scheduler << std::endl;
-  return new BinaryThrottleScheduler(race_, car_tracker_, time_limit_);
+  return new WojtekThrottleScheduler(race_, car_tracker_);
 }
 
 SwitchScheduler* BulkScheduler::CreateSwitchScheduler() {

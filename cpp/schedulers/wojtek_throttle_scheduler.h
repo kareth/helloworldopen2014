@@ -27,7 +27,7 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
 
   // Expected time limit in miliseconds
   WojtekThrottleScheduler(const game::Race& race,
-                          game::CarTracker& car_tracker, int time_limit,
+                          game::CarTracker& car_tracker,
                           const vector<int>& groups = DEFAULT_GROUPS);
 
   ~WojtekThrottleScheduler() override;
@@ -70,7 +70,6 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   int last_game_tick_ = -1000;
 
   std::ofstream log_file_;
-  int time_limit_; // ms
 };
 
 }  // namespace schedulers

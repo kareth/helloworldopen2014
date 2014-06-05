@@ -12,13 +12,14 @@ namespace schedulers {
 using game::CarState;
 
 BinaryThrottleScheduler::BinaryThrottleScheduler(const game::Race& race,
-    game::CarTracker& car_tracker, int time_limit)
+    game::CarTracker& car_tracker)
   : race_(race), car_tracker_(car_tracker), groups_() {
  // State with 16 groups, takes average 150ms, never exceeding 300ms
  // Each decrease reduces that time 2 times
  // Size = 16 seems quite optimal (1x1 + 15x2)
 
  int size = 17;
+ int time_limit = 10;
 
   for (; time_limit / 2 > 300 && size < 20; time_limit /= 2)
     size++;

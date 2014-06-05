@@ -41,7 +41,7 @@ void Bot::NewRace(const Race& race) {
 
   scheduler_.reset(
       new schedulers::BulkScheduler(
-        race_, *race_tracker_.get(), *car_tracker_.get(), FLAGS_answer_time));
+        race_, *race_tracker_.get(), *car_tracker_.get()));
 }
 
 std::map<string, CarState> tmp_states;
