@@ -42,9 +42,9 @@ with open(os.path.join('results',"results.csv"), "w") as f:
                 res = !bin/throttle_tester --throttle_scheduler=$scheduler --nocheck_if_safe_ahead --track=$map --physics=$physic --answer_time=$answer_time
                 if scheduler == 'WojtekThrottleScheduler':
                     name = os.path.join('results', "wojtek-" + map + "-" + str(physic) + ".csv")
-                    !mv wojtek_data_log.csv $name
+                    !mv wojtek_data_log.csv $name 2>/dev/null
                 name = os.path.join('results', scheduler + "-" + map + "-" + str(physic) + ".csv")
-                !mv data.csv $name
+                !mv data.csv $name 2>/dev/null
 
                 crash = "CRASHED" in res[-1]
                 if crash:
