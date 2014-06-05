@@ -97,6 +97,7 @@ int EnemyTracker::TimeToPosition(const Position& target, vector<Position>* steps
       for (int i = 1; i <= time_to_spawn(); i++)
         steps->push_back(position);
     time = time_to_spawn();
+    velocity = 0;
   }
 
   const int kCarLength = race_.cars()[0].length();
