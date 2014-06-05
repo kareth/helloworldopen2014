@@ -4,6 +4,7 @@
 #include "utils/stopwatch.h"
 
 DECLARE_bool(log_overtaking);
+DECLARE_bool(continuous_integration);
 
 namespace game {
 
@@ -49,6 +50,8 @@ int LaneScorer::ScoreLane(int from, int to, int lane) {
     if (score > 0 && lane_score >= 0)  // If there is s1 worth bumping
       lane_score = max(lane_score, score);
   }
+  if (FLAGS_continuous_integration)
+    printf("Lane %d scored in %lf ms\n", lane, timer.elapsed());
 
   longest_calculation_time_ = max(longest_calculation_time_, timer.elapsed());
   return lane_score;
