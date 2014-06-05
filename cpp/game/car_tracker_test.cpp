@@ -68,6 +68,17 @@ TEST_F(DistanceBetweenTest, AroundTheTrack) {
   EXPECT_NEAR(kTrackLength + 50, car_tracker_->DistanceBetween(position1, position2), kEps);
 }
 
+TEST_F(DistanceBetweenTest, AroundTheTrackWithMaxDistance) {
+  const double kTrackLength = 3399.7874452256719;
+  Position position1;
+  position1.set_piece_distance(75.0);
+
+  Position position2;
+  position2.set_piece_distance(25.0);
+  EXPECT_GE(car_tracker_->DistanceBetween(position1, position2, nullptr, 100), 100);
+  EXPECT_LT(car_tracker_->DistanceBetween(position1, position2, nullptr, 100), 200);
+}
+
 TEST_F(DistanceBetweenTest, WeCanSwitchTheLane) {
   Position position1;
   position1.set_piece_distance(0.0);

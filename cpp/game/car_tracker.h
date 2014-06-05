@@ -103,13 +103,17 @@ class CarTracker : public CarPredictor {
   // off. The reason for incorrect distance are switches (we didn't come up with
   // the perfect model for them so we need to drive through them first).
   //
+  // 'max_distance' is optional parameter used to limit number of operations
+  // and stop computing the distance if it is higher. It does NOT mean we will
+  // always return smaller value.
+  //
   // WARNING: We only iterate over const number of  pieces to compute the
   // distance, so if we need to travel more to get to position2, the returned
   // distance can be too small. But because we use it mainly to compute small
   // distances (someone just ahead of use or someone just behind us), it
   // shouldn't matter.
   double DistanceBetween(const Position& position1, const Position& position2,
-                         bool* is_perfect=nullptr);
+                         bool* is_perfect=nullptr, double max_distance=10000000);
 
 
   // Returns true if the car starting from "car_state" can reach "target" using

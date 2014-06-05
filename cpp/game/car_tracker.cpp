@@ -237,13 +237,14 @@ CarState CarTracker::CreateCarState(const CarState& prev, const Position& positi
   return CarState(position, velocity, prev.position().angle(), Switch::kStay, 0.0, turbo_state);
 }
 
-double CarTracker::DistanceBetween(const Position& position1, const Position& position2, bool* is_perfect) {
+double CarTracker::DistanceBetween(const Position& position1, const Position& position2, bool* is_perfect, double max_distance) {
   bool tmp_perfect = true;
   if (is_perfect != nullptr) *is_perfect = true;
   double distance = 0.0;
   Position position = position1;
   // We could add while(true) but for safety we use const number of iterations.
   for (int i = 0; i < kDistanceBetweenIter; ++i) {
+    if (distance >= max_distance) break;
     if (position.piece() == position2.piece() &&
         position.piece_distance() <= position2.piece_distance() &&
         position.start_lane() == position2.start_lane()) {
