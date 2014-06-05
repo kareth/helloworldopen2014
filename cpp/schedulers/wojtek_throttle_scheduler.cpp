@@ -29,7 +29,7 @@ WojtekThrottleScheduler::WojtekThrottleScheduler(const game::Race& race,
   : race_(race), car_tracker_(car_tracker), best_schedule_(&car_tracker, HORIZON), branch_and_bound_(&car_tracker, HORIZON, GROUPS, values), log_file_("wojtek_data_log.csv", std::ofstream::out), tick_(0), time_limit_(time_limit)
 {
    //Watchout: executing two WojtekThrottleSchedulers in pararell could be risky becase of log file (TODO)
-   log_file_ << "tick," << "x," << "turbo," << "switch," << "a," << "v," << "dir," << "rad," << "piece_no," << "schedule_time," << "initial_schedule_safe," << "nodes_visited," << "leafs_visited," << "unsafe_cuts," << "ub_cuts," << "solution_improvements," << "schedule," << "predicted_angles," << "0_throttle_predictions" << std::endl;
+   log_file_ << "tick," << "x," << "turbo," << "switch," << "a," << "v," << "dir," << "rad," << "piece_no," << "start_lane," << "end_land," << "schedule_time," << "initial_schedule_safe," << "nodes_visited," << "leafs_visited," << "unsafe_cuts," << "ub_cuts," << "solution_improvements," << "schedule," << "predicted_angles," << "0_throttle_predictions" << std::endl;
 }
 
 WojtekThrottleScheduler::~WojtekThrottleScheduler() {
@@ -84,6 +84,8 @@ void WojtekThrottleScheduler::Log(const game::CarState& state) {
             << ',' << -sgn(piece.angle())
             << ',' << piece.radius() 
             << ',' << state.position().piece()
+            << ',' << state.position().start_lane()
+            << ',' << state.position().end_lane()
             << ',' << last_schedule_time_
             << ',' << initial_schedule_safe_
             << ',' << branch_and_bound_.stats().nodes_visited

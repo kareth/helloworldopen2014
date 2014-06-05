@@ -7,7 +7,7 @@ from __future__ import division
 
 schedulers = (
     "WojtekThrottleScheduler",
-    "BinaryThrottleScheduler",
+#    "BinaryThrottleScheduler",
 #    "MagicThrottleScheduler",
 )
 
