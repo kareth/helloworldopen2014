@@ -136,7 +136,7 @@ bool LaneScorer::BumpPosition(const EnemyTracker& me, const EnemyTracker& enemy,
     return false;
 
   // TODO can make binsearch here, worth it?
-  for (int i = 0; i < min(my_prediction().size(), enemy_prediction().size()); i++) {
+  for (int i = 0; i < min(my_prediction.size(), enemy_prediction.size()); i++) {
     auto my_position = my_prediction[i];
     auto enemy_position = enemy_prediction[i];
 
