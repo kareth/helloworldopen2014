@@ -1,5 +1,6 @@
 #include "bots/stepping/bot.h"
 #include "game/physics_params.h"
+#include "utils/deadline.h"
 
 DECLARE_int32(handicap);
 DECLARE_bool(check_if_safe_ahead);
@@ -74,7 +75,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 
   Command command;
   SetStrategy(state);
-  scheduler_->Schedule(state, game_tick);
+  scheduler_->Schedule(state, game_tick, utils::Deadline());
   command = scheduler_->command();
 
   scheduler_->IssuedCommand(command);

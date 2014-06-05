@@ -13,6 +13,7 @@
 #include "schedulers/schedule.h"
 #include "schedulers/bb.h"
 #include "schedulers/local_improver.h"
+#include "utils/deadline.h"
 
 namespace schedulers {
 
@@ -41,7 +42,8 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   void set_strategy(const Strategy& strategy) override {  }
 
   // Updates the state and calculates next state
-  void Schedule(const game::CarState& state, int game_tick) override;
+  void Schedule(const game::CarState& state, int game_tick, 
+                const utils::Deadline& deadline) override;
 
   const std::vector<double>& full_schedule() const override { return best_schedule_.throttles_; }
 

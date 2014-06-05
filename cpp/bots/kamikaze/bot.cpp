@@ -1,5 +1,8 @@
+#include <chrono>
+
 #include "bots/kamikaze/bot.h"
 #include "game/physics_params.h"
+#include "utils/deadline.h"
 
 DECLARE_int32(handicap);
 DECLARE_int32(answer_time);
@@ -68,7 +71,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
   Command command;
   SetStrategy(state);
 
-  scheduler_->Schedule(state, game_tick);
+  scheduler_->Schedule(state, game_tick, utils::Deadline());
   command = scheduler_->command();
 
   for (auto& p : positions) {

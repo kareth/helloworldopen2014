@@ -12,11 +12,12 @@ typedef std::chrono::time_point<std::chrono::system_clock, Seconds> TimePoint;
 class Deadline {
  public:
   /** Creates a new deadline which will expire in durationToExpire.
+   * No deadline on default
    * Examples: 
    *   Deadline(std::chrono::seconds(3));
    *   Deadline(std::chrono::milliseconds(3000));
    */
-  explicit Deadline(const Seconds& durationToExpire);
+  explicit Deadline(const Seconds& durationToExpire = Seconds::max());
 
   /** Checks whether the deadline has expired */
   bool HasExpired() const;

@@ -40,7 +40,7 @@ WojtekThrottleScheduler::~WojtekThrottleScheduler() {
     log_file_.close();
 }
 
-void WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tick) {
+void WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline) {
   utils::StopWatch stopwatch;
 
   // We want to use the last best_schedule_ if possible. Generally always 

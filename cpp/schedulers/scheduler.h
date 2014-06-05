@@ -5,12 +5,13 @@
 #include "game/command.h"
 #include "game/car_tracker.h"
 #include "schedulers/strategy.h"
+#include "utils/deadline.h"
 
 namespace schedulers {
 
 class Scheduler {
  public:
-   virtual void Schedule(const game::CarState& state, int game_tick) = 0;
+   virtual void Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline) = 0;
 
    virtual void Overtake(const string& color) = 0;
 

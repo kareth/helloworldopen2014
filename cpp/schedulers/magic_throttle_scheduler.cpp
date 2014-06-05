@@ -23,7 +23,7 @@ MagicThrottleScheduler::MagicThrottleScheduler(const game::Race& race,
 {
 }
 
-void MagicThrottleScheduler::Schedule(const game::CarState& state, int game_tick) {
+void MagicThrottleScheduler::Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline) {
   best_schedule_.ShiftLeftFillSafe(state);
   best_schedule_.UpdateDistance(state);      // This is spurious, but just in case...
 

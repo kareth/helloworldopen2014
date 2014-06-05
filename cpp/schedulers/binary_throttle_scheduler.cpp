@@ -1,4 +1,5 @@
 #include "schedulers/binary_throttle_scheduler.h"
+#include "utils/deadline.h"
 
 #include <chrono>
 
@@ -45,7 +46,7 @@ void BinaryThrottleScheduler::Overtake(const string& color) {
   printf("Feature not implemented.\n");
 }
 
-void BinaryThrottleScheduler::Schedule(const game::CarState& state, int game_tick) {
+void BinaryThrottleScheduler::Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline) {
   // TODO(kareth) strategies
   if (strategy_ == Strategy::kOptimizeCurrentLap &&
       race_.track().IsLastStraight(state.position())) {

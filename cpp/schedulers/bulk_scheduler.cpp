@@ -4,6 +4,7 @@
 #include "schedulers/binary_throttle_scheduler.h"
 #include "schedulers/wojtek_throttle_scheduler.h"
 #include "schedulers/magic_throttle_scheduler.h"
+#include "utils/deadline.h"
 
 #include "gflags/gflags.h"
 
@@ -27,7 +28,7 @@ BulkScheduler::BulkScheduler(const game::Race& race,
       new BumpScheduler(race_, race_tracker_, car_tracker_));
 }
 
-void BulkScheduler::Schedule(const game::CarState& state, int game_tick) {
+void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline) {
   bump_scheduler_->Schedule(state);
 
   if (bump_scheduler_->HasTarget()) {
@@ -48,7 +49,8 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick) {
   auto state_with_switch = state;
   if (switch_scheduler_->ExpectedSwitch() != game::Switch::kStay)
     state_with_switch.set_switch_state(switch_scheduler_->ExpectedSwitch());
-  throttle_scheduler_->Schedule(state_with_switch, game_tick);
+  throttle_scheduler_->Schedule(state_with_switch, game_tick, deadline);
+  // I assume that after throttle_scheduler, there is nothing computationally intensive, so that throttle_scheduler can take all remaining time (deadline)
 
   if (turbo_scheduler_->ShouldFireTurbo()) {
     command_ = game::Command(game::TurboToggle::kToggleOn);
