@@ -18,13 +18,16 @@ namespace schedulers {
 
 class WojtekThrottleScheduler : public ThrottleScheduler {
  public:
-  static const vector<int> GROUPS;
+  static const vector<int> DEFAULT_GROUPS;
+  static const vector<int> QUICK_GROUPS;
+
   static const int HORIZON;
   static const vector<double> values; // possible throttle values to check
 
   // Expected time limit in miliseconds
   WojtekThrottleScheduler(const game::Race& race,
-                          game::CarTracker& car_tracker, int time_limit);
+                          game::CarTracker& car_tracker, int time_limit,
+                          const vector<int>& groups = DEFAULT_GROUPS);
 
   ~WojtekThrottleScheduler() override;
 
@@ -45,17 +48,26 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
  private:
   void Log(const game::CarState& state);
   void PrintSchedule(const game::CarState& state, const Sched& schedule, int len);
+  int horizon() const { return horizon_; }
 
-  game::CarTracker& car_tracker_;
   const game::Race& race_;
+  game::CarTracker& car_tracker_;
+
+  const vector<int> groups_;
+  const int horizon_;
+
   Sched best_schedule_;
+
   BranchAndBound branch_and_bound_;
   LocalImprover local_improver_;
-  std::ofstream log_file_;
+ 
+  // Some stats
+  bool initial_schedule_safe_;
   double last_schedule_time_; // ms
   int last_game_tick_ = -1000;
+
+  std::ofstream log_file_;
   int time_limit_; // ms
-  bool initial_schedule_safe_;
 };
 
 }  // namespace schedulers
