@@ -32,9 +32,8 @@ MAX_TIME_TO_MOVE_MS = 3.0
 def avg(x):
     return sum(x)/len(x)
 
-with open("results.csv", "w") as f:
+with open(os.path.join('results',"results.csv"), "w") as f:
     f.write('scheduler,map,physics,best_lap,total_ticks,total_dist,max_tick_time,avg_tick_time,crash\n')
-    os.chdir('..')
     for scheduler in schedulers:
         lines = []
         for map in maps:
