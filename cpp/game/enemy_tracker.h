@@ -30,7 +30,7 @@ class EnemyTracker {
   Position PositionAfterTime(int time, int target_lane = -1) const;
   int TimeToPosition(const Position& p) const;
 
-  int ExpectedSpeed(const Position& p) const { return Velocity(p); }
+  int ExpectedVelocity(const Position& p) const { return Velocity(p); }
 
   // Approximation-wise
   bool CanOvertake(const EnemyTracker& noobek, int from, int to);
