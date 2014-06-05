@@ -145,7 +145,7 @@ bool LaneScorer::BumpPosition(const EnemyTracker& me, const EnemyTracker& enemy,
     auto my_position = my_prediction[i];
     auto enemy_position = enemy_prediction[i];
 
-    if (car_tracker_.DistanceBetween(my_position, enemy_position, nullptr, kCarlength) < kCarLength) {
+    if (car_tracker_.DistanceBetween(my_position, enemy_position, nullptr, kCarLength) < kCarLength) {
       *bump_position = enemy_position;
       return true;
     }

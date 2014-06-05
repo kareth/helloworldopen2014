@@ -117,7 +117,7 @@ int EnemyTracker::TimeToPosition(const Position& target, vector<Position>* steps
     if (steps != nullptr)
       steps->push_back(position);
 
-    if (car_tracker_.DistanceBetween(target_position, nullptr, velocity) < velocity)
+    if (car_tracker_.DistanceBetween(target, position, nullptr, velocity) < velocity)
       return time;
   }
 
