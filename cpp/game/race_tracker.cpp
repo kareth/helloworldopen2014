@@ -89,35 +89,24 @@ bool RaceTracker::IsSafeInFront(const CarState& current_state, const Command& co
   return IsSafe(current_state, command, safe_command, Command(0));
 }
 
-bool RaceTracker::IsSafe(const CarState& current_state, const Command& command, Command* safe_command, const Command& our_command) {
-  const auto& my_state = current_state;
+// command - the first command that we should issue to 'current_state'
+// our_command - the command that we should issue to 'current_state' after first tick
+// safe_command - if this method return false, safe_command will contain command that is safe.
+bool RaceTracker::IsSafe(const CarState& current_state, const Command& command,
+                         Command* safe_command, const Command& our_command) {
   bool attack = our_command.throttle() == 1.0;
-
-  std::map<std::string, CarState> states;
-  for (const auto& enemy : enemies_) {
-    if (enemy.color() == color_) {
-      states[color_] = my_state;
-      continue;
-    }
-
-    if (enemy.is_dead()) {
-      continue;
-    }
-
-    states[enemy.color()] = enemy.state();
-  }
   const double kCarLength = race_.cars().at(0).length();
 
   bool middle_state_not_safe = false;
   bool bump_inevitable = false;
   bool attack_not_successful = false;
   std::set<string> cars_bumped;
+
+  auto my_new = current_state;
   for (int ticks_after = 0; ticks_after < 100; ++ticks_after) {
-    CarState my_prev = states[color_];
-    Command c = our_command;
-    if (ticks_after == 0) c = command;
-    CarState my_new = car_tracker_.Predict(my_prev, c);
-    states[color_] = my_new;
+    CarState my_prev = my_new;
+    Command c = ticks_after == 0 ? command : our_command;
+    my_new = car_tracker_.Predict(my_prev, c);
 
     if (!car_tracker_.crash_model().IsSafe(my_new.position().angle())) {
       *safe_command = Command(0);
@@ -126,24 +115,25 @@ bool RaceTracker::IsSafe(const CarState& current_state, const Command& command, 
 
     bool bumped = false;
     double min_velocity = 100000.0;
-    for (const auto& p : states) {
-      if (p.first == color_) continue;
+    for (const auto& enemy : enemies_) {
+      if (enemy.color() == color_) continue;
+      if (enemy.is_dead()) continue;
 
       double velocity = 0.0;
       int full_throttle_ticks = 0;
       Position bump_position = car_tracker_.PredictPosition(my_new.position(), kCarLength);
-      if (car_tracker_.MinVelocity(p.second, ticks_after + 1, bump_position, &velocity, &full_throttle_ticks)) {
+      if (car_tracker_.MinVelocity(enemy.state(), ticks_after + 1, bump_position, &velocity, &full_throttle_ticks)) {
         // std::cout << "possible bump in " << i + 1 << " ticks" << std::endl;
         // std::cout << "min_velocity = " << velocity << std::endl;
         // If the velocity is higher than ours, he probably was behind us.
         if (velocity < my_new.velocity()) {
-          cars_bumped.insert(p.first);
+          cars_bumped.insert(enemy.color());
           bumped = true;
           min_velocity = fmin(min_velocity, velocity);
 
           // TODO make sure he actually will crash
           if (attack) {
-            CarState s = p.second;
+            CarState s = enemy.state();
             for (int i = 0; i < full_throttle_ticks; ++i) { s = car_tracker_.Predict(s, Command(1)); }
             for (int i = 0; i < ticks_after - full_throttle_ticks; ++i) { s = car_tracker_.Predict(s, Command(0)); }
             s.set_velocity(my_new.velocity() * 0.9);
@@ -155,7 +145,7 @@ bool RaceTracker::IsSafe(const CarState& current_state, const Command& command, 
       } else {
         // This means, he is not able to run away from us, so there is no point
         // in simulating more ticks.
-        if (cars_bumped.count(p.first) > 0) {
+        if (cars_bumped.count(enemy.color()) > 0) {
           bump_inevitable = true;
         }
       }
