@@ -20,7 +20,7 @@ namespace schedulers {
 using game::CarState;
 
 const vector<int> WojtekThrottleScheduler::DEFAULT_GROUPS {1,1,4,2,2,4,1,8,8,4,4,2};
-const vector<int> WojtekThrottleScheduler::QUICK_GROUPS {1,1,2,2,2,4};
+const vector<int> WojtekThrottleScheduler::QUICK_GROUPS {1,2,4,4,2};
 
 const vector<double> WojtekThrottleScheduler::values{0.0, 1.0}; // Values must be increasing
 
