@@ -26,20 +26,29 @@ class EnemyTracker {
   void TurboStarted();
   void NewTurbo(const Turbo& turbo);
 
-  // time = game_ticks
+  // Returns position after @time ticks
+  // target lane sets switch state of the car to that lane
   Position PositionAfterTime(int time, int target_lane = -1) const;
+
+  // Returns number of ticks to pass the position p
   int TimeToPosition(const Position& p) const;
 
+  // Returns predicted velocity at position p.
+  // Doesnt count the situation where we are dead
   int ExpectedVelocity(const Position& p) const { return Velocity(p); }
 
+  // OBSOLETE
   // Approximation-wise
   bool CanOvertake(const EnemyTracker& noobek, int from, int to);
 
-  // TODO Add worth overtaking, predicted speed score, whatever
-
   bool is_dead() const { return dead_; }
   bool is_accelerating() const { return accelerating_; }
+
+  // True means that we wont ever have to care about him
   bool has_finished() const { return disabled_ || finished_; }
+
+  // TODO is it necessary with new predictor?
+  // Means that we have enough data to predict velocity
   bool IsReady() const { return ready_; }
 
   // Returns number of ticks to car spawn
@@ -49,8 +58,13 @@ class EnemyTracker {
   int time_to_spawn() const {
     return std::max(0, car_tracker_.spawn_model().duration() - time_since_crash_ + 1); }
 
+  // Returns best lap time in ticks
   int best_lap() const { return best_lap_; }
+
+  // Current state
   const CarState& state() const { return state_; }
+
+  // Car color
   const std::string& color() const { return color_; }
 
  private:

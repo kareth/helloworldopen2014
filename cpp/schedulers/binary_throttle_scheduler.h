@@ -5,6 +5,7 @@
 #include "game/car_tracker.h"
 #include "schedulers/strategy.h"
 #include "schedulers/throttle_scheduler.h"
+#include "utils/deadline.h"
 
 namespace schedulers {
 
@@ -12,8 +13,7 @@ class BinaryThrottleScheduler : public ThrottleScheduler {
  public:
   // Expected time limit in miliseconds
   BinaryThrottleScheduler(const game::Race& race,
-                          game::CarTracker& car_tracker,
-                          int time_limit);
+                          game::CarTracker& car_tracker);
 
   BinaryThrottleScheduler(const game::Race& race,
                           game::CarTracker& car_tracker,
@@ -29,7 +29,8 @@ class BinaryThrottleScheduler : public ThrottleScheduler {
   void set_strategy(const Strategy& strategy) override { strategy_ = strategy; }
 
   // Updates the state and calculates next state
-  void Schedule(const game::CarState& state, int game_tick) override;
+  void Schedule(const game::CarState& state, int game_tick, 
+                const utils::Deadline& deadline) override;
 
   const std::vector<double>& full_schedule() const override { return schedule_; }
 

@@ -11,6 +11,7 @@
 #include "schedulers/shortest_path_switch_scheduler.h"
 #include "schedulers/wojtek_throttle_scheduler.h"
 #include "schedulers/bump_scheduler.h"
+#include "utils/deadline.h"
 
 namespace schedulers {
 
@@ -18,10 +19,9 @@ class BulkScheduler : public Scheduler {
  public:
   BulkScheduler(const game::Race& race,
                 game::RaceTracker& race_tracker,
-                game::CarTracker& car_tracker,
-                int time_limit);
+                game::CarTracker& car_tracker);
 
-  void Schedule(const game::CarState& state, int game_tick) override;
+  void Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline) override;
 
   void Overtake(const string& color) override;
 
@@ -41,7 +41,6 @@ class BulkScheduler : public Scheduler {
   game::CarTracker& car_tracker_;
   game::RaceTracker& race_tracker_;
   const game::Race& race_;
-  int time_limit_;
 
   std::unique_ptr<schedulers::ThrottleScheduler> throttle_scheduler_;
   std::unique_ptr<schedulers::SwitchScheduler> switch_scheduler_;

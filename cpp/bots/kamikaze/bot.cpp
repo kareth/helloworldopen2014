@@ -1,5 +1,8 @@
+#include <chrono>
+
 #include "bots/kamikaze/bot.h"
 #include "game/physics_params.h"
+#include "utils/deadline.h"
 
 DECLARE_int32(handicap);
 DECLARE_int32(answer_time);
@@ -38,7 +41,7 @@ void Bot::NewRace(const Race& race) {
 
   scheduler_.reset(
       new schedulers::BulkScheduler(
-        race_, *race_tracker_.get(), *car_tracker_.get(), FLAGS_answer_time));
+        race_, *race_tracker_.get(), *car_tracker_.get()));
 }
 
 std::map<string, CarState> tmp_states;
@@ -68,7 +71,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
   Command command;
   SetStrategy(state);
 
-  scheduler_->Schedule(state, game_tick);
+  scheduler_->Schedule(state, game_tick, utils::Deadline());
   command = scheduler_->command();
 
   for (auto& p : positions) {

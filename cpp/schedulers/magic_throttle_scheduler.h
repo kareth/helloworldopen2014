@@ -18,9 +18,8 @@ class MagicThrottleScheduler : public ThrottleScheduler {
   static const int HORIZON;
   static const int N;
 
-  // Expected time limit in miliseconds
   MagicThrottleScheduler(const game::Race& race,
-                         game::CarTracker& car_tracker, int time_limit);
+                         game::CarTracker& car_tracker);
 
   // Returns scheduled throttle
   double throttle() override { return best_schedule_[0]; };
@@ -32,15 +31,13 @@ class MagicThrottleScheduler : public ThrottleScheduler {
   void set_strategy(const Strategy& strategy) override {  }
 
   // Updates the state and calculates next state
-  void Schedule(const game::CarState& state, int game_tick) override;
-
+  void Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline) override;
 
   const std::vector<double>& full_schedule() const override { return best_schedule_.throttles_; }
 
  private:
   game::CarTracker& car_tracker_;
   const game::Race& race_;
-  const int time_limit_;
   Sched best_schedule_;
 
   int tick_ = 0; //TODO: This is bad here. Should be somewhere globally

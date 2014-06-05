@@ -3,6 +3,7 @@
 
 #include "schedulers/strategy.h"
 #include "game/car_predictor.h"
+#include "utils/deadline.h"
 
 namespace schedulers {
 
@@ -20,7 +21,7 @@ class ThrottleScheduler {
   virtual void set_strategy(const Strategy& strategy) = 0;
 
   // Updates the state and calculates next state
-  virtual void Schedule(const game::CarState& state, int game_tick) = 0;
+  virtual void Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline) = 0;
 
   virtual const std::vector<double>& full_schedule() const = 0;
 };

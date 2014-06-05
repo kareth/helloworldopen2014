@@ -4,6 +4,7 @@
 #include "schedulers/binary_throttle_scheduler.h"
 #include "schedulers/wojtek_throttle_scheduler.h"
 #include "schedulers/magic_throttle_scheduler.h"
+#include "utils/deadline.h"
 
 #include "gflags/gflags.h"
 
@@ -16,9 +17,8 @@ namespace schedulers {
 
 BulkScheduler::BulkScheduler(const game::Race& race,
                game::RaceTracker& race_tracker,
-               game::CarTracker& car_tracker,
-               int time_limit)
-    : race_(race), car_tracker_(car_tracker), race_tracker_(race_tracker), time_limit_(time_limit) {
+               game::CarTracker& car_tracker)
+    : race_(race), car_tracker_(car_tracker), race_tracker_(race_tracker) {
   turbo_scheduler_.reset(new GreedyTurboScheduler(race_, car_tracker_));
   throttle_scheduler_.reset(CreateThrottleScheduler());
   switch_scheduler_.reset(CreateSwitchScheduler());
@@ -27,7 +27,7 @@ BulkScheduler::BulkScheduler(const game::Race& race,
       new BumpScheduler(race_, race_tracker_, car_tracker_));
 }
 
-void BulkScheduler::Schedule(const game::CarState& state, int game_tick) {
+void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline) {
   bump_scheduler_->Schedule(state);
 
   if (bump_scheduler_->HasTarget()) {
@@ -48,7 +48,8 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick) {
   auto state_with_switch = state;
   if (switch_scheduler_->ExpectedSwitch() != game::Switch::kStay)
     state_with_switch.set_switch_state(switch_scheduler_->ExpectedSwitch());
-  throttle_scheduler_->Schedule(state_with_switch, game_tick);
+  throttle_scheduler_->Schedule(state_with_switch, game_tick, deadline);
+  // I assume that after throttle_scheduler, there is nothing computationally intensive, so that throttle_scheduler can take all remaining time (deadline)
 
   if (turbo_scheduler_->ShouldFireTurbo()) {
     command_ = game::Command(game::TurboToggle::kToggleOn);
@@ -91,17 +92,17 @@ void BulkScheduler::IssuedCommand(const game::Command& command) {
 ThrottleScheduler* BulkScheduler::CreateThrottleScheduler() {
   if (FLAGS_throttle_scheduler == "BinaryThrottleScheduler") {
     std::cout << "Using BinaryThrottleScheduler" << std::endl;
-    return new BinaryThrottleScheduler(race_, car_tracker_, time_limit_);
+    return new BinaryThrottleScheduler(race_, car_tracker_);
   } else if (FLAGS_throttle_scheduler == "WojtekThrottleScheduler") {
     std::cout << "Using WojtekThrottleScheduler" << std::endl;
-    return new WojtekThrottleScheduler(race_, car_tracker_, time_limit_);
+    return new WojtekThrottleScheduler(race_, car_tracker_);
   } else if (FLAGS_throttle_scheduler == "MagicThrottleScheduler") {
     std::cout << "Using " << FLAGS_throttle_scheduler << std::endl;
-    return new MagicThrottleScheduler(race_, car_tracker_, time_limit_);
+    return new MagicThrottleScheduler(race_, car_tracker_);
   }
 
   std::cerr << "UNKNOWN throttle scheduler: " << FLAGS_throttle_scheduler << std::endl;
-  return new BinaryThrottleScheduler(race_, car_tracker_, time_limit_);
+  return new WojtekThrottleScheduler(race_, car_tracker_);
 }
 
 SwitchScheduler* BulkScheduler::CreateSwitchScheduler() {

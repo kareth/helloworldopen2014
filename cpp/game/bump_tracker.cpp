@@ -6,6 +6,7 @@ BumpTracker::BumpTracker(game::CarTracker& car_tracker,
     const game::Race& race)
   : race_(race), car_tracker_(car_tracker) {
   // TODO hardcoded time limit
+  // TODO(kareth): This is too slow! Use WojtekThrottleScheduler instead, maybe with some quick groups.
   throttle_scheduler_.reset(
       new schedulers::BinaryThrottleScheduler(
         race_, car_tracker_, {1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3}));
@@ -19,7 +20,8 @@ bool BumpTracker::CanBumpOptimalEnemy(const CarState& bumping_state, const CarSt
   if (race_.track().IsFirstInFront(bumping_state.position(), bumped_state.position()))
     return false;
 
-  throttle_scheduler_->Schedule(bumped_state, 0);
+  //TODO(kareth?) FIXME: I need actuall deadline here
+  throttle_scheduler_->Schedule(bumped_state, 0, utils::Deadline());
   auto& schedule = throttle_scheduler_->full_schedule();
 
   auto bumping = bumping_state;

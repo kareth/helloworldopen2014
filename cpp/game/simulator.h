@@ -1,9 +1,12 @@
+
 #ifndef CPP_GAME_SIMULATOR_H_
 #define CPP_GAME_SIMULATOR_H_
 
 #include <fstream>
 #include <chrono>
 #include "utils/stopwatch.h"
+
+DEFINE_bool(log_simulator_csv, false, "Log in simulator to data.csv");
 
 using jsoncons::json;
 
@@ -82,8 +85,11 @@ class Simulator {
     double max_tick_time_ms = 0;
     double sum_tick_time_ms = 0;
 
-    std::ofstream ofs("data.csv", std::ofstream::out);
-    ofs << "tick," << "lap," << "x," << "turbo," << "a," << "v," << "d," << "dir," << "rad," << "tick_time" << std::endl;
+    std::ofstream ofs;
+    if (FLAGS_log_simulator_csv) {
+      ofs.open("data.csv", std::ofstream::out);
+      ofs << "tick," << "lap," << "x," << "turbo," << "a," << "v," << "d," << "dir," << "rad," << "tick_time" << std::endl;
+    }
     for (int i = 0; i < options.max_ticks_to_simulate; ++i) {
       current_lap_ticks++;
       total_ticks++;
@@ -98,12 +104,14 @@ class Simulator {
       Command command = CommandFromJson(response);
       CarState previous_state = state;
 
-      Piece piece = race.track().pieces()[state.position().piece()];
-      ofs << total_ticks << ',' << current_lap << ',' << command.throttle() << ',' << command.TurboSet() << ','
-          << state.position().angle() << ',' << state.velocity()  << ','
-          << result.total_distance << ',' << -sgn(piece.angle()) << ','
-          << piece.radius() << ',' << current_tick_time_ms << std::endl;
-      ofs.flush();
+      if (FLAGS_log_simulator_csv) {
+        Piece piece = race.track().pieces()[state.position().piece()];
+        ofs << total_ticks << ',' << current_lap << ',' << command.throttle() << ',' << command.TurboSet() << ','
+            << state.position().angle() << ',' << state.velocity()  << ','
+            << result.total_distance << ',' << -sgn(piece.angle()) << ','
+            << piece.radius() << ',' << current_tick_time_ms << std::endl;
+        ofs.flush();
+      }
 
       CarState next_state = car_tracker.Predict(state, command);
       result.total_distance += car_tracker.DistanceBetween(state.position(), next_state.position());
@@ -132,7 +140,9 @@ class Simulator {
       }
     }
 
-    ofs.close();
+    if (FLAGS_log_simulator_csv) {
+      ofs.close();
+    }
 
     result.max_tick_time_ms = max_tick_time_ms;
     result.avg_tick_time_ms = sum_tick_time_ms / total_ticks;
