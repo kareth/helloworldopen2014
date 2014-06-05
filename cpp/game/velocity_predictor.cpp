@@ -118,29 +118,17 @@ bool VelocityPredictor::IsOnExceedingSwitch(const CarState& state) {
 }
 
 
-// TODO lane_model
 Position VelocityPredictor::PositionOnAnotherLane(const Position& p, int lane) const {
-  Position a = p;
-  a.set_piece_distance(0);
-  a.set_start_lane(a.end_lane());
-  Position b = p;
-  b.set_piece((b.piece() + 1) % race_.track().pieces().size());
-  b.set_piece_distance(0);
-  b.set_start_lane(b.end_lane());
-  double unknown_lane_length = car_tracker_.DistanceBetween(a, b);
+  Position pos = p;
 
-  a.set_start_lane(lane);
-  b.set_start_lane(lane);
-  a.set_end_lane(lane);
-  b.set_end_lane(lane);
-  double data_lane_length = car_tracker_.DistanceBetween(a, b);
+  pos.set_start_lane(pos.end_lane());
+  double unknown_lane_length = car_tracker_.lane_length_model().Length(pos);
 
-  auto pos = p;
-  pos.set_piece_distance(
-      pos.piece_distance() / unknown_lane_length * data_lane_length);
   pos.set_start_lane(lane);
   pos.set_end_lane(lane);
+  double data_lane_length = car_tracker_.lane_length_model().Length(pos);
 
+  pos.set_piece_distance(pos.piece_distance() / unknown_lane_length * data_lane_length);
   return pos;
 }
 
