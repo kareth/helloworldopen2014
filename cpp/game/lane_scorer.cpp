@@ -135,6 +135,8 @@ bool LaneScorer::BumpPosition(const EnemyTracker& me, const EnemyTracker& enemy,
   int my_time = me.TimeToPosition(end_position, &my_prediction);
   int enemy_time = enemy.TimeToPosition(car_tracker_.PredictPosition(end_position, kCarLength * 1.1), &enemy_prediction);
 
+  printf("Predicting bump position, %d and %d steps done.\n", my_time, enemy_time);
+
   if (my_time > enemy_time)
     return false;
 
@@ -143,7 +145,7 @@ bool LaneScorer::BumpPosition(const EnemyTracker& me, const EnemyTracker& enemy,
     auto my_position = my_prediction[i];
     auto enemy_position = enemy_prediction[i];
 
-    if (car_tracker_.DistanceBetween(my_position, enemy_position) < kCarLength) {
+    if (car_tracker_.DistanceBetween(my_position, enemy_position, nullptr, kCarLength) < kCarLength) {
       *bump_position = enemy_position;
       return true;
     }

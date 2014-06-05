@@ -108,15 +108,16 @@ int EnemyTracker::TimeToPosition(const Position& target, vector<Position>* steps
     // TODO turbo
     if (target_velocity > reachable_velocity * 1.05) { // Acceleration from too low speed
       position = car_tracker_.PredictPosition(position, reachable_velocity, target.end_lane());
+      velocity = reachable_velocity;
     } else {
       position = car_tracker_.PredictPosition(position, target_velocity, target.end_lane());
+      velocity = target_velocity;
     }
 
     if (steps != nullptr)
       steps->push_back(position);
 
-    if (car_tracker_.DistanceBetween(position, target) >
-        car_tracker_.DistanceBetween(target, position))
+    if (car_tracker_.DistanceBetween(target, position, nullptr, velocity) < velocity)
       return time;
   }
 
