@@ -7,7 +7,8 @@
 #include "gflags/gflags.h"
 #include "utils/stopwatch.h"
 
-DEFINE_bool(log_schedule, true, "");
+DEFINE_bool(log_schedule, false, "Log schedule on stdout");
+DEFINE_bool(log_wojtek_to_file, false, "Log WojtekSchedulerData to csv file");
 
 namespace {
   template <typename T> int sgn(T val) {
@@ -32,13 +33,17 @@ WojtekThrottleScheduler::WojtekThrottleScheduler(const game::Race& race,
     best_schedule_(&car_tracker, horizon_),
     branch_and_bound_(&car_tracker, horizon_, groups_, values)
 {
-   log_file_ = std::ofstream("wojtek_data_log.csv", std::ofstream::out);
+  if (FLAGS_log_wojtek_to_file) {
+    log_file_ = std::ofstream("wojtek_data_log.csv", std::ofstream::out);
    //Watchout: executing two WojtekThrottleSchedulers in pararell could be risky becase of log file (TODO)
-   log_file_ << "tick," << "x," << "turbo," << "switch," << "a," << "v," << "dir," << "rad," << "piece_no," << "start_lane," << "end_land," << "schedule_time_limit," << "schedule_time," << "initial_schedule_safe," << "nodes_visited," << "leafs_visited," << "unsafe_cuts," << "ub_cuts," << "solution_improvements," << "schedule," << "predicted_angles," << "0_throttle_predictions" << std::endl;
+    log_file_ << "tick," << "x," << "turbo," << "switch," << "a," << "v," << "dir," << "rad," << "piece_no," << "start_lane," << "end_land," << "schedule_time_limit," << "schedule_time," << "initial_schedule_safe," << "nodes_visited," << "leafs_visited," << "unsafe_cuts," << "ub_cuts," << "solution_improvements," << "schedule," << "predicted_angles," << "0_throttle_predictions" << std::endl;
+  }
 }
 
 WojtekThrottleScheduler::~WojtekThrottleScheduler() {
+  if (FLAGS_log_wojtek_to_file) {
     log_file_.close();
+  }
 }
 
 void WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline) {
@@ -100,43 +105,44 @@ void WojtekThrottleScheduler::Log(const game::CarState& state) {
     PrintSchedule(state, best_schedule_, std::min(horizon_, 20));
   }
 
-  game::Piece piece = race_.track().pieces()[state.position().piece()];
-  log_file_ << last_game_tick_
-            << ',' << throttle()
-            << ',' << state.turbo_state().is_on() 
-            << ',' << (int)state.switch_state() 
-            << ',' << state.position().angle() 
-            << ',' << state.velocity()
-            << ',' << -sgn(piece.angle())
-            << ',' << piece.radius() 
-            << ',' << state.position().piece()
-            << ',' << state.position().start_lane()
-            << ',' << state.position().end_lane()
-            << ',' << last_time_limit_
-            << ',' << last_schedule_time_
-            << ',' << initial_schedule_safe_
-            << ',' << branch_and_bound_.stats().nodes_visited
-            << ',' << branch_and_bound_.stats().leafs_visited
-            << ',' << branch_and_bound_.stats().unsafe_cuts
-            << ',' << branch_and_bound_.stats().ub_cuts
-            << ',' << branch_and_bound_.stats().solution_improvements
-            << ',';
-  for (int i = 0; i < best_schedule_.size(); ++i)
-    log_file_ << std::setprecision (2) << best_schedule_[i] << " ";
-  log_file_ << ',';
-  CarState next = state;
-  for (int i = 0; i < best_schedule_.size(); ++i) {
-    next = car_tracker_.Predict(next, game::Command(best_schedule_[i]));
-    log_file_ << std::setprecision(2) << next.position().angle() << ' ';
+  if (FLAGS_log_wojtek_to_file) {
+    game::Piece piece = race_.track().pieces()[state.position().piece()];
+    log_file_ << last_game_tick_
+                << ',' << throttle()
+                << ',' << state.turbo_state().is_on() 
+                << ',' << (int)state.switch_state() 
+                << ',' << state.position().angle() 
+                << ',' << state.velocity()
+                << ',' << -sgn(piece.angle())
+                << ',' << piece.radius() 
+                << ',' << state.position().piece()
+                << ',' << state.position().start_lane()
+                << ',' << state.position().end_lane()
+                << ',' << last_time_limit_
+                << ',' << last_schedule_time_
+                << ',' << initial_schedule_safe_
+                << ',' << branch_and_bound_.stats().nodes_visited
+                << ',' << branch_and_bound_.stats().leafs_visited
+                << ',' << branch_and_bound_.stats().unsafe_cuts
+                << ',' << branch_and_bound_.stats().ub_cuts
+                << ',' << branch_and_bound_.stats().solution_improvements
+                << ',';
+    for (int i = 0; i < best_schedule_.size(); ++i)
+        log_file_ << std::setprecision (2) << best_schedule_[i] << " ";
+    log_file_ << ',';
+    CarState next = state;
+    for (int i = 0; i < best_schedule_.size(); ++i) {
+        next = car_tracker_.Predict(next, game::Command(best_schedule_[i]));
+        log_file_ << std::setprecision(2) << next.position().angle() << ' ';
+    }
+    log_file_ << ',';
+    next = state;
+    for (int i = 0; i < best_schedule_.size(); ++i) {
+        next = car_tracker_.Predict(next, game::Command(0));
+        log_file_ << std::setprecision(2) << next.position().angle() << ' ';
+    }
+    log_file_ << std::endl;
   }
-  log_file_ << ',';
-  next = state;
-  for (int i = 0; i < best_schedule_.size(); ++i) {
-    next = car_tracker_.Predict(next, game::Command(0));
-    log_file_ << std::setprecision(2) << next.position().angle() << ' ';
-  }
-  log_file_ << std::endl;
-  log_file_.flush();
 }
 
 }  // namespace schedulers
