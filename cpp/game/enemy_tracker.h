@@ -31,7 +31,7 @@ class EnemyTracker {
   Position PositionAfterTime(int time, int target_lane = -1) const;
 
   // Returns number of ticks to pass the position p
-  int TimeToPosition(const Position& p) const;
+  int TimeToPosition(const Position& p, vector<Position>* steps = nullptr) const;
 
   // Returns predicted velocity at position p.
   // Doesnt count the situation where we are dead

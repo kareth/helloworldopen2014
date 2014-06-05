@@ -128,17 +128,17 @@ int LaneScorer::EnemyBumpScore(const EnemyTracker& enemy, double my_speed, doubl
 }
 
 bool LaneScorer::BumpPosition(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position, Position* bump_position) {
-  int my_time = me.TimeToPosition(end_position);
-  int enemy_time = enemy.TimeToPosition(
-      car_tracker_.PredictPosition(end_position, kCarLength * 1.1));
+  vector<Position> my_prediction, enemy_prediction;
+  int my_time = me.TimeToPosition(end_position, &my_prediction);
+  int enemy_time = enemy.TimeToPosition(car_tracker_.PredictPosition(end_position, kCarLength * 1.1), &enemy_prediction);
 
   if (my_time > enemy_time)
     return false;
 
-  // OPTIMIZE - steps ^ 2
-  for (int i = 0; i < enemy_time; i++) {
-    auto my_position = me.PositionAfterTime(i, end_position.end_lane());
-    auto enemy_position = enemy.PositionAfterTime(i, end_position.end_lane());
+  // TODO can make binsearch here, worth it?
+  for (int i = 0; i < min(my_time, enemy_time); i++) {
+    auto my_position = my_prediction[i];
+    auto enemy_position = enemy_prediction[i];
 
     if (car_tracker_.DistanceBetween(my_position, enemy_position) < kCarLength) {
       *bump_position = enemy_position;

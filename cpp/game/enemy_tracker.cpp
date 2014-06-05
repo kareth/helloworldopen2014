@@ -52,6 +52,7 @@ void EnemyTracker::RecordPosition(const game::Position& position) {
   velocity_predictor_.Record(state_);
 }
 
+// TODO OBSOLETE
 Position EnemyTracker::PositionAfterTime(int time, int target_lane) const {
   auto state = state_;
 
@@ -82,38 +83,44 @@ Position EnemyTracker::PositionAfterTime(int time, int target_lane) const {
   return state.position();
 }
 
-int EnemyTracker::TimeToPosition(const Position& target) const {
-  auto state = state_;
-
-  if (target.end_lane() != state.position().end_lane()) {
-    if (state.position().end_lane() - 1 == target.end_lane())
-      state.set_switch_state(Switch::kSwitchLeft);
-
-    if (state.position().end_lane() + 1 == target.end_lane())
-      state.set_switch_state(Switch::kSwitchRight);
-  }
+int EnemyTracker::TimeToPosition(const Position& target, vector<Position>* steps) const {
+  auto position = state_.position();
+  int velocity = state_.velocity();
 
   int time = 0;
-  if (dead_) time = time_to_spawn();
+
+  if (steps != nullptr)
+    steps->push_back(position);
+
+  if (dead_) {
+    if (steps != nullptr)
+      for (int i = 1; i <= time_to_spawn(); i++)
+        steps->push_back(position);
+    time = time_to_spawn();
+  }
 
   const int kCarLength = race_.cars()[0].length();
 
   for (int limit = 0; limit < 1000; limit++, time++) {
-    double throttle = car_tracker_.velocity_model().PredictThrottle(
-        Velocity(state.position()));
+    double target_velocity = Velocity(position);
+    double reachable_velocity = car_tracker_.velocity_model().Predict(velocity, 1);
 
-    // Acceleration from too low speed
-    if (state.velocity() < 0.9 * Velocity(state.position()))
-      throttle = 1;
+    // TODO turbo
+    if (target_velocity > reachable_velocity * 1.05) { // Acceleration from too low speed
+      position = car_tracker_.PredictPosition(position, reachable_velocity, target.end_lane());
+    } else {
+      position = car_tracker_.PredictPosition(position, target_velocity, target.end_lane());
+    }
 
-    state = car_tracker_.Predict(state, Command(throttle));
+    if (steps != nullptr)
+      steps->push_back(position);
 
-    if (car_tracker_.DistanceBetween(state.position(), target) >
-        car_tracker_.DistanceBetween(target, state.position()))
+    if (car_tracker_.DistanceBetween(position, target) >
+        car_tracker_.DistanceBetween(target, position))
       return time;
   }
 
-  return 100000;
+  return 10000;
 }
 
 // Checks if time difference on that part of track is enough to overtake him
