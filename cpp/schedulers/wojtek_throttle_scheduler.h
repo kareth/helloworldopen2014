@@ -66,6 +66,7 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   // Some stats
   bool initial_schedule_safe_;
   double last_schedule_time_; // ms
+  double last_time_limit_; // ms
   int last_game_tick_ = -1000;
 
   std::ofstream log_file_;
