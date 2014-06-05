@@ -75,7 +75,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
 
   Command command;
   SetStrategy(state);
-  scheduler_->Schedule(state, game_tick, utils::Deadline());
+  scheduler_->Schedule(state, game_tick, utils::Deadline(std::chrono::milliseconds(FLAGS_answer_time)));
   command = scheduler_->command();
 
   scheduler_->IssuedCommand(command);
