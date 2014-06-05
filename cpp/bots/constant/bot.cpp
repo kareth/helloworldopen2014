@@ -21,7 +21,7 @@ namespace bots {
 namespace constant {
 
 Bot::Bot() {
-  srand(time(0));
+  srand(7353521);
 }
 
 Bot::~Bot() {
