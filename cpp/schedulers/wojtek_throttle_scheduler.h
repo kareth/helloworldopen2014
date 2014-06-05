@@ -53,7 +53,7 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   LocalImprover local_improver_;
   std::ofstream log_file_;
   double last_schedule_time_; // ms
-  int tick_;
+  int last_game_tick_ = -1000;
   int time_limit_; // ms
   bool initial_schedule_safe_;
 };
