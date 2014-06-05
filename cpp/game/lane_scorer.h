@@ -15,6 +15,8 @@ class LaneScorer {
              std::vector<EnemyTracker>& enemies,
              const string& color);
 
+  ~LaneScorer();
+
   // [-100 - 100]
   // negative - slower than us (score of the worst guy there)
   // 0        - neutral (wont bump him)
@@ -67,6 +69,8 @@ class LaneScorer {
 
   const int kDeadCrash = -100;
   const int kMustBump = 100;
+
+  double longest_calculation_time_ = 0;
 };
 
 }  // namespace game

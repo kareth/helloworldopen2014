@@ -45,11 +45,8 @@ void VelocityPredictor::Record(const CarState& state) {
 }
 
 double VelocityPredictor::Velocity(const Position& p) const {
-  printf("prevelocity\n");
-  printf("%d %lf <%d-%d>\n", p.piece(), p.piece_distance(), p.start_lane(), p.end_lane());
   if (HasDataToPredict(p))
     return InterpolatePoint(Previous(p), Next(p), p);
-  printf("Cannot interpolate\n");
 
   for (int off = 1; off < race_.track().lanes().size(); off++) {
     for (int side = -1; side <= 1; side+=2) {
@@ -62,7 +59,6 @@ double VelocityPredictor::Velocity(const Position& p) const {
     }
   }
 
-  printf("postvelocity\n");
   return state_.velocity();
 }
 

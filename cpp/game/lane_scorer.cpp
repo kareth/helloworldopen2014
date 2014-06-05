@@ -1,6 +1,7 @@
 #include "game/lane_scorer.h"
 
 #include "game/race_tracker.h"
+#include "utils/stopwatch.h"
 
 DECLARE_bool(log_overtaking);
 
@@ -15,7 +16,12 @@ LaneScorer::LaneScorer(const Race& race,
     race_tracker_(race_tracker), kCarLength(race.cars()[0].length()) {
 }
 
+LaneScorer::~LaneScorer() {
+  printf("Lane scorer longest computation time: %lf ms\n", longest_calculation_time_);
+}
+
 int LaneScorer::ScoreLane(int from, int to, int lane) {
+  utils::StopWatch timer;
   using std::max; using std::min;
   auto& me = *std::find_if(enemies_.begin(), enemies_.end(), [this](const EnemyTracker& e){ return e.color() == this->color_; });
 
@@ -43,6 +49,8 @@ int LaneScorer::ScoreLane(int from, int to, int lane) {
     if (score > 0 && lane_score >= 0)  // If there is s1 worth bumping
       lane_score = max(lane_score, score);
   }
+
+  longest_calculation_time_ = max(longest_calculation_time_, timer.elapsed());
   return lane_score;
 }
 
