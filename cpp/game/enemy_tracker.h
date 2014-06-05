@@ -42,9 +42,12 @@ class EnemyTracker {
   bool has_finished() const { return disabled_ || finished_; }
   bool IsReady() const { return ready_; }
 
-  // TODO add higher level method to assess that
+  // Returns number of ticks to car spawn
+  // 1 means that the car will be back on track in the
+  // moment of next CarPositions
+  // 0 means that its on track now
   int time_to_spawn() const {
-    return car_tracker_.spawn_model().duration() - time_since_crash_; }
+    return std::max(0, car_tracker_.spawn_model().duration() - time_since_crash_ + 1); }
 
   int best_lap() const { return best_lap_; }
   const CarState& state() const { return state_; }

@@ -15,7 +15,7 @@ LaneScorer::LaneScorer(const Race& race,
     race_tracker_(race_tracker), kCarLength(race.cars()[0].length()) {
 }
 
-LaneScore LaneScorer::ScoreLane(int from, int to, int lane) {
+int LaneScorer::ScoreLane(int from, int to, int lane) {
   if (!race_.track().IsLaneCorrect(lane))
     return -10;
 
@@ -52,7 +52,7 @@ LaneScore LaneScorer::ScoreLane(int from, int to, int lane) {
     if (score > 0 && lane_score >= 0)
       lane_score = max(lane_score, score);
   }
-  return LaneScore(lane_score);
+  return lane_score;
 }
 
 // = 10 - ignore

@@ -7,20 +7,6 @@ namespace game {
 
 class RaceTracker;
 
-class LaneScore {
- public:
-  LaneScore(int score) : score_(score) {};
-
-  operator int() const { return score_; }
-
-  bool IsEmpty() { return score_ == 0; }
-  bool CarToOvertake() { return score_ > 0; }
-  bool CarToBump() { return score_ < 0; }
-
- private:
-  int score_;
-};
-
 class LaneScorer {
  public:
   LaneScorer(const Race& race,
@@ -29,10 +15,9 @@ class LaneScorer {
              std::vector<EnemyTracker>& enemies,
              const string& color);
 
-  // = 0 - ignore
-  // > 0 - competitive, should bump
-  // < 0 - slow, should overtake
-  LaneScore ScoreLane(int from, int to, int lane);
+  // [-100 - 100]
+  // negative - slower than us
+  int ScoreLane(int from, int to, int lane);
 
  private:
   int ScoreEnemy(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position);
@@ -49,7 +34,7 @@ class LaneScorer {
   const string color_;
   const double kCarLength;
 
-  const int kDeadCrash = -10;
+  const int kDeadCrash = -100;
   const int kMustBump = 10;
 };
 

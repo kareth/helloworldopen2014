@@ -15,12 +15,6 @@ class RaceTracker {
   RaceTracker(game::CarTracker& car_tracker,
               const game::Race& race, const std::string& color);
 
-  // TODO change those functions to return some specific data on each car
-  // from to inclusive
-  // TODO private?
-  std::vector<std::string> CarsBetween(int piece1, int piece2, int lane);
-  std::vector<EnemyTracker*> PredictedCarsBetween(int from, int to, int lane);
-
   // Detects if issuing the given command is safe based on cars
   // in front of us. If false, also returns command that is safe in safe_command.
   //
@@ -37,7 +31,6 @@ class RaceTracker {
 
   bool IsSafeBehind(const CarState& current_state, const Command& command, Command* safe_command);
 
-
   // Recording methods
 
   void Record(const std::map<std::string, game::Position>& positions);
@@ -53,6 +46,7 @@ class RaceTracker {
   // Lane scores based on who is there
   std::map<Switch, int> ScoreLanes(const CarState& state);
 
+  // TODO
   // Move to enemy?
   bool WorthBumping(const std::string& color);
   bool ShouldOvertake(const std::string& color, int from, int to);
@@ -76,7 +70,6 @@ class RaceTracker {
   // void RecordEnemy(int index, const game::Position& position);
   // void UpdateSpeedStats(int index, const game::Position& position);
 
-  // TODO what about just one map?
   std::vector<EnemyTracker> enemies_;
   // Maps color to index
   std::map<std::string, int> indexes_;

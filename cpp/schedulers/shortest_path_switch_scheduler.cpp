@@ -39,7 +39,7 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
   // [0 - inf] = time loss for each decision compared to optimum
   auto time_loss = path_optimizer_->Score(state.position());
 
-  // [-10 - 10] = (-)overtake, (0)neutral, (+) bump competitive
+  // [-100 - 100] = (-)overtake, (0)neutral, (+) bump competitive
   auto obstacle_scores = race_tracker_.ScoreLanes(state);
 
   Switch best_direction = Switch::kStay;
