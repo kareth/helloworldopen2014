@@ -4,6 +4,7 @@
 #include "utils/stopwatch.h"
 
 DECLARE_bool(log_overtaking);
+DECLARE_bool(continuous_integration);
 
 namespace game {
 
