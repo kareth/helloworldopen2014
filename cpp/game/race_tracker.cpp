@@ -89,6 +89,69 @@ bool RaceTracker::IsSafeInFront(const CarState& current_state, const Command& co
   return IsSafe(current_state, command, safe_command, Command(0));
 }
 
+bool RaceTracker::IsSafeAhead(const CarState& current_state, const Command& command, Command* safe_command) {
+  Command our_command = Command(0);
+  const double kCarLength = race_.cars().at(0).length();
+
+  // TODO bool GenerateSafeMask()
+  vector<CarState> states{current_state, car_tracker_.Predict(current_state, command)};
+  for (int ticks_after = 0; ticks_after < 100; ++ticks_after) {
+    states.emplace_back(car_tracker_.Predict(states.back(), Command(0)));
+    if (!car_tracker_.crash_model().IsSafe(states.back().position().angle())) {
+      std::cout << "IsSafeInFront: Could not found safe mask." << std::endl;
+      *safe_command = command;
+      return false;
+    }
+    if (states.back().velocity() < 3.0) break;
+  }
+
+  for (int ticks_after = 0; ticks_after < 100; ++ticks_after) {
+    const auto& my_state = states[ticks_after];
+
+    // TODO
+    // bool MinVelocityAfterBumpInFront(ticks_after, my_state, &min_velocity_after_bump)
+    bool bumped = false;
+    double min_velocity = 100000.0;
+    for (const auto& enemy : enemies_) {
+      if (enemy.color() == color_) continue;
+
+      // TODO
+      // - check if he is dead after ticks_after
+      if (enemy.is_dead()) continue;
+
+      double velocity = 0.0;
+      int full_throttle_ticks = 0;
+
+      // TODO
+      // - take into account switches
+      Position bump_position = car_tracker_.PredictPosition(my_state.position(), kCarLength);
+
+      if (car_tracker_.MinVelocity(enemy.state(), ticks_after + 1, bump_position, &velocity, &full_throttle_ticks)) {
+        // If the velocity is higher than ours, he probably was behind us.
+        if (velocity < my_state.velocity()) {
+          bumped = true;
+          min_velocity = fmin(min_velocity, velocity);
+        }
+      }
+    }
+
+    if (!bumped) continue;
+
+    CarState state = my_state;
+    state.set_velocity(0.8 * min_velocity);
+    if (!car_tracker_.IsSafe(state)) {
+      if (our_command.throttle() != 1) {
+        std::cout << "IsSafeInFront: After bump we would crash. Slowing down." << std::endl;
+      }
+      *safe_command = Command(0);
+      return false;
+    }
+  }
+
+  // We survived 50 ticks, we should be ok.
+  return true;
+}
+
 // command - the first command that we should issue to 'current_state'
 // our_command - the command that we should issue to 'current_state' after first tick
 // safe_command - if this method return false, safe_command will contain command that is safe.

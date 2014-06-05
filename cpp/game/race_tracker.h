@@ -18,13 +18,26 @@ class RaceTracker {
   // Detects if issuing the given command is safe based on cars
   // in front of us. If false, also returns command that is safe in safe_command.
   //
-  // It only checks cars that are ahead of us (200 units), and makes sure that
-  // if we bump them, we will not crash.
+  // It only checks cars that are ahead of us (or will be ahead of us), and
+  // makes sure that if we bump them, we will not crash.
+  //
+  // Use cases that we need to consider.
+  // - someone is (or will be) in front of us and we will hit him
+  // - someone respawns on top of us - this is hard, because we want to consider it
+  //   only if we will not be able to pass him if we go optimally (it doesn't
+  //   make sense to slow down if going fast is safe).
+  // - one tick after the switch piece -
+  //
+  // Assumptions:
+  // - for a given
   //
   // What is not working:
   // - if someone is much slower, and will take a switch just before us and
   //   we bump into him.
   // - if we ride on switch (or someone is on switch)
+  bool IsSafeAhead(const CarState& current_state, const Command& command, Command* safe_command);
+
+  // TODO(tomek) deprecated version of IsSafeAhead() method.
   bool IsSafeInFront(const CarState& current_state, const Command& command, Command* safe_command);
 
   bool IsSafeAttack(const CarState& current_state, const Command& command, Command* safe_command);
