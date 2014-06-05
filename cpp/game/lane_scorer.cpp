@@ -47,8 +47,6 @@ int LaneScorer::ScoreLane(int from, int to, int lane) {
 }
 
 int LaneScorer::ScoreEnemy(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position) {
-  // TODO if im on the edge of that difference, I can switch into him.
-  // TODO2 - I should also check the end so I wont hit him at the end
   if (FLAGS_log_overtaking)
     printf ("(%d,%.2lf,<%d,%d> =%.2lf) (%d,%.2lf,<%d,%d> =%.2lf) ",
         me.state().position().piece(),
@@ -117,8 +115,8 @@ int LaneScorer::EnemyBumpScore(const EnemyTracker& enemy, double my_speed, doubl
   } else {
     return 0;
   }
-  //if (race_tracker_.IsCompetitive(enemy.color()))
-  //  return 10;
+  // if (race_tracker_.IsCompetitive(enemy.color()))
+  //   return 10;
 }
 
 bool LaneScorer::BumpPosition(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position, Position* bump_position) {
@@ -129,7 +127,7 @@ bool LaneScorer::BumpPosition(const EnemyTracker& me, const EnemyTracker& enemy,
   if (my_time > enemy_time)
     return false;
 
-  // TODO OPTIMIZE - steps ^ 2
+  // OPTIMIZE - steps ^ 2
   for (int i = 0; i < enemy_time; i++) {
     auto my_position = me.PositionAfterTime(i, end_position.end_lane());
     auto enemy_position = enemy.PositionAfterTime(i, end_position.end_lane());
@@ -140,8 +138,7 @@ bool LaneScorer::BumpPosition(const EnemyTracker& me, const EnemyTracker& enemy,
     }
   }
 
-  // We havent found bump (shouldnt happen)
-  return false;
+  return false;  // We havent found bump (shouldnt happen)
 }
 
 }  // namespace game
