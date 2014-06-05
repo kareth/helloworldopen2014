@@ -30,8 +30,9 @@ WojtekThrottleScheduler::WojtekThrottleScheduler(const game::Race& race,
     groups_(groups),
     horizon_(std::accumulate(groups.begin(), groups.end(), 0)),
     best_schedule_(&car_tracker, horizon_),
-    branch_and_bound_(&car_tracker, horizon_, groups_, values), log_file_("wojtek_data_log.csv", std::ofstream::out)
+    branch_and_bound_(&car_tracker, horizon_, groups_, values)
 {
+   log_file_ = std::ofstream("wojtek_data_log.csv", std::ofstream::out);
    //Watchout: executing two WojtekThrottleSchedulers in pararell could be risky becase of log file (TODO)
    log_file_ << "tick," << "x," << "turbo," << "switch," << "a," << "v," << "dir," << "rad," << "piece_no," << "start_lane," << "end_land," << "schedule_time_limit," << "schedule_time," << "initial_schedule_safe," << "nodes_visited," << "leafs_visited," << "unsafe_cuts," << "ub_cuts," << "solution_improvements," << "schedule," << "predicted_angles," << "0_throttle_predictions" << std::endl;
 }
