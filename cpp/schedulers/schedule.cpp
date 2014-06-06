@@ -102,7 +102,7 @@ bool schedulers::Sched::IsSafe(const game::CarState& state, double distance_to_s
         bool switch_done = (switch_position_ >= 0 && switch_position_ <= pos);
         if (!switch_done) {
           // Switch was supposed to be done before distance_to_switch, but it was not
-          std::cerr << "check: " << pos << std::endl;
+          std::cerr << "check: " << pos << " " << distance << " " << distance_to_switch << std::endl;
           return false;
         }
       }
