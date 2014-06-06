@@ -73,6 +73,12 @@ class CarTracker : public CarPredictor {
   bool IsSafe(const CarState& state, double safe_speed = 3);
   // TODO hardcoded safe_speed
 
+  // TODO Add nice comments
+  // Slower version of IsSafe() but more correct
+  // - if velocity = 0 but angular_velocity > 0, we will report not safe
+  // - it will try to first accellarate if Command(0) failed
+  bool GenerateSafeStates(const CarState& state, vector<CarState>* states);
+
   bool IsReady() const;
 
   const CarState& current_state() {
@@ -184,12 +190,14 @@ class CarTracker : public CarPredictor {
   const LaneLengthModel& lane_length_model() { return lane_length_model_; }
 
  private:
+  void LogState();
+  double RadiusInPosition(const Position& position);
+  bool InternalGenerateSafeStates(const CarState& state, vector<CarState>* states);
+  bool InternalAddStates(const CarState& state, Command command, int count, vector<CarState>* states);
+
   const int kDistanceBetweenIter = 500;
   bool just_started_ = true;
   bool last_record_had_bump = false;
-
-  void LogState();
-  double RadiusInPosition(const Position& position);
 
   std::ofstream stats_file_;
 

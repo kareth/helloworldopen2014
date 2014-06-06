@@ -12,6 +12,7 @@ DECLARE_bool(check_if_safe_ahead);
 
 DECLARE_string(throttle_scheduler);
 DECLARE_string(switch_scheduler);
+DECLARE_bool(disable_attack);
 
 namespace schedulers {
 
@@ -28,11 +29,13 @@ BulkScheduler::BulkScheduler(const game::Race& race,
 }
 
 void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline) {
-  bump_scheduler_->Schedule(state);
+  if (!FLAGS_disable_attack) {
+    bump_scheduler_->Schedule(state);
 
-  if (bump_scheduler_->HasTarget()) {
-    command_ = bump_scheduler_->command();
-    return;
+    if (bump_scheduler_->HasTarget()) {
+      command_ = bump_scheduler_->command();
+      return;
+    }
   }
   // Bumper has priority over anything else.
 
@@ -61,9 +64,9 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const u
 
   game::Command safe_command;
   if (FLAGS_check_if_safe_ahead &&
-      !race_tracker_.IsSafeInFront(state_with_switch, command_, &safe_command)) {
+      !race_tracker_.IsSafeAhead(state_with_switch, command_, &safe_command)) {
     command_ = safe_command;
-    std::cout << "INFO: It is not safe in front. Slowing down." << std::endl;
+    std::cout << "INFO: It is not safe ahead. Slowing down." << std::endl;
   }
 }
 

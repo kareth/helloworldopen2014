@@ -67,9 +67,9 @@ game::Command Bot::ComputeMove(const Position& position, int game_tick) {
   //   return Command(game::TurboToggle::kToggleOn);
   // }
   if (crash_) {
-    return Command(0.65);
+    return Command(0);
   }
-  return Command(0.5);
+  return Command(1);
 }
 
 game::Command Bot::GetMove(

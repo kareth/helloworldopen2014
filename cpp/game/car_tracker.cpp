@@ -189,6 +189,49 @@ bool CarTracker::IsSafe(const CarState& state, double safe_speed) {
   return true;
 }
 
+bool CarTracker::GenerateSafeStates(const CarState& state, vector<CarState>* states) {
+  for (int i = 0; i < 1; ++i) {
+    vector<CarState> tmp{state};
+    if (!InternalAddStates(state, Command(1), i, &tmp)) {
+      break;
+    }
+    if (InternalGenerateSafeStates(tmp.back(), &tmp)) {
+      if (states) states->insert(states->end(), tmp.begin(), tmp.end());
+      return true;
+    }
+  }
+  return false;
+}
+
+bool CarTracker::InternalGenerateSafeStates(const CarState& state, vector<CarState>* states) {
+  auto s = state;
+  for (int i = 0; i < 100; ++i) {
+    if (!crash_model_.IsSafe(s.position().angle())) {
+      return false;
+    }
+    if (s.velocity() < 3 &&
+        fabs(s.position().angle() - s.previous_angle()) < 2 &&
+        s.position().angle() < 10) {
+      break;
+    }
+    s = Predict(s, Command(0));
+    if (states) states->push_back(s);
+  }
+  return true;
+}
+
+bool CarTracker::InternalAddStates(const CarState& state, Command command, int count, vector<CarState>* states) {
+  auto s = state;
+  for (int i = 0; i < count; ++i) {
+    s = Predict(s, command);
+    if (states) states->push_back(s);
+    if (!crash_model_.IsSafe(s.position().angle())) {
+      return false;
+    }
+  }
+  return true;
+}
+
 bool CarTracker::IsReady() const {
   return velocity_model_.IsReady() && drift_model_.IsReady();
 }
