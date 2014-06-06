@@ -62,7 +62,7 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
   target.set_start_lane(state_.position().end_lane());
   target.set_end_lane(state_.position().end_lane());
   double distance = car_tracker_.DistanceBetween(state_.position(), target);  // Distance to switch
-  printf("                                                                             distance: %lf\n",distance);
+  //printf("                                                                             distance: %lf\n",distance);
 
   for (int i = scores.size() - 1; i >= 0; i--) {
     auto dir = scores[i].second;
