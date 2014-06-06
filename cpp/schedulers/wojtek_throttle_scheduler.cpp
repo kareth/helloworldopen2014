@@ -46,6 +46,39 @@ WojtekThrottleScheduler::~WojtekThrottleScheduler() {
   }
 }
 
+bool WojtekThrottleScheduler::RepairInitialSchedule(const game::CarState& state, Sched& schedule,
+    double distance_to_switch, double last_throttle) {
+  if (!distance_to_switch < 0) {
+    // I can repair only switch-related issues (TODO)
+    return false;
+  }
+
+  // Try to repair switch
+  int ticks = schedule.GetTicksToTheRequiredSwitch(state, distance_to_switch);
+  // Try to inject the switch at three positions before the switch is due
+  for (int tick = ticks; tick >= std::max(0, ticks - 2); --tick) {
+    if (schedule.TryUpdateSwitchPosition(state, tick, distance_to_switch, last_throttle)) {
+      schedule.UpdateDistance(state);
+      return true;
+    }
+  }
+
+  // If the above failed, try to 0.0 after the switch...
+  for (int i = ticks; i < schedule.size(); ++i) {
+    schedule[i] = 0.0;
+  }
+
+  // ... and once again try to inject the switch
+  for (int tick = ticks; tick >= std::max(0, ticks - 2); --tick) {
+    if (schedule.TryUpdateSwitchPosition(state, tick, distance_to_switch, last_throttle)) {
+      schedule.UpdateDistance(state);
+      return true;
+    }
+  }
+  
+  return false;
+}
+
 bool WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tick, 
         const utils::Deadline& deadline, double distance_to_switch, double last_throttle) {
   last_time_limit_ = deadline.GetDurationToExpire().count() * 1000.0;
@@ -66,12 +99,15 @@ bool WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tic
   // Must do it (never ever think of removing it!)
   best_schedule_.UpdateDistance(state); 
 
-  // Initial schedule should be safe normally. Not safe only if future predictions
-  // have changed
+  // Initial schedule should be safe normally. 
+  // Not safe only if future predictions or switch or turbo decisions have changed
   initial_schedule_safe_ = best_schedule_.IsSafe(state, distance_to_switch, last_throttle);
   if (!initial_schedule_safe_) {
-    best_schedule_.Reset(state);
-    //TODO: Create a good greedy one
+    bool repaired = RepairInitialSchedule(state, best_schedule_, distance_to_switch, last_throttle);
+    if (!repaired) {
+      //TODO: Create a good greedy one instead of resetting
+      best_schedule_.Reset(state);
+    }
   }
 
   branch_and_bound_.Improve(state, best_schedule_, deadline, distance_to_switch, last_throttle);

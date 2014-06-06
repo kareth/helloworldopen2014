@@ -80,7 +80,7 @@ bool schedulers::Sched::TryUpdateSwitchPosition(const game::CarState& state, int
 }
 
 //TODO: Improve performance by adding "from"
-// Whether schedule is safe
+// Whether schedule is safe and switch-correct
 bool schedulers::Sched::IsSafe(const game::CarState& state, double distance_to_switch, double last_throttle) {
   bool check_switch = (distance_to_switch >= 0);
   
@@ -106,7 +106,7 @@ bool schedulers::Sched::IsSafe(const game::CarState& state, double distance_to_s
     }
   }
 
-  // Now wheter the switch is correct
+  // Check whether the planned switch is correct
   if (check_switch) {
     if (switch_position_ < 0 && distance_to_switch < distance) {
         // We should have switch before the end of the horizon, but we did not
@@ -126,7 +126,6 @@ bool schedulers::Sched::IsSafe(const game::CarState& state, double distance_to_s
   }
   
   // This check is last, for efficiency
-  // Is the last state safe?
   return car_tracker_->IsSafe(next);
 }
 
@@ -149,15 +148,21 @@ void schedulers::Sched::ShiftLeftFillSafe(const game::CarState& state, double di
     return ;
   }
 
-  // If not then try to set the last value (it might work if a switch appeared in the horizon)
+  // If not then try to set the last value + switch at the end.
+  // Tt might work if a switch appeared in the horizon
   if (distance_to_switch >= 0) {
     throttles_[size() - 1] = throttles_[size() - 2];
+
+    int saved_switch_position_ = switch_position_;
+    switch_position_ = size() - 1;
     if (IsSafe(state, distance_to_switch, last_throttle)) {
       return;
     }
+    // Undo switch position change
+    switch_position_ = saved_switch_position_;
   }
 
-  // Fall back to 0.0
+  // Otherwise, fall back to 0.0
   throttles_[size() - 1] = 0.0;
 }
 
