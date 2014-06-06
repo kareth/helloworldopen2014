@@ -26,6 +26,7 @@ class Sched {
 
   // Afterwards, you should call UpdateDistance in most cases
   void UpdateSwitchPosition(int switch_position);
+
   // Sets throttles[switch_position] = throttles[switch_position-1]. 
   // You may need to call UpdateDistance afterwards.
   void CorrectSwitch(const game::CarState& state, double last_throttle);

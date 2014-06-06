@@ -84,7 +84,36 @@ bool schedulers::Sched::TryUpdateSwitchPosition(const game::CarState& state, int
 bool schedulers::Sched::IsSafe(const game::CarState& state, double distance_to_switch, double last_throttle) {
   bool check_switch = (distance_to_switch >= 0);
   
+  int distance = 0;
+  game::CarState next = state;
+  // Are all scheduled states safe and switch-correct?
+  for (int pos = 0; pos < size(); ++pos) {
+    // Are angles safe?
+    next = car_tracker_->Predict(next, game::Command(throttles_[pos]));
+    if (!car_tracker_->crash_model().IsSafe(next.position().angle()))
+      return false;
+
+    if (check_switch) {
+      // Check whether switch is planned in tick from range [0,pos]
+      distance += next.velocity();
+      if (distance >= distance_to_switch) {
+        bool switch_done = (switch_position_ >= 0 && switch_position_ <= pos);
+        if (!switch_done) {
+          // Switch was supposed to be done before distance_to_switch, but it was not
+          return false;
+        }
+      }
+    }
+  }
+
+  // Now wheter the switch is correct
   if (check_switch) {
+    if (switch_position_ < 0 && distance_to_switch < distance) {
+        // We should have switch before the end of the horizon, but we did not
+        return false; 
+    }
+
+    // Now, check if there are two consecutive throttles
     if (switch_position_ > 0) {
       last_throttle = throttles_[switch_position_ - 1];
     }
@@ -96,26 +125,7 @@ bool schedulers::Sched::IsSafe(const game::CarState& state, double distance_to_s
     }
   }
   
-  int distance = 0;
-  game::CarState next = state;
-  // Are all scheduled states safe?
-  for (int pos = 0; pos < size(); ++pos) {
-    next = car_tracker_->Predict(next, game::Command(throttles_[pos]));
-    if (!car_tracker_->crash_model().IsSafe(next.position().angle()))
-      return false;
-
-    if (check_switch) {
-      // Check whether we done the switch
-      distance += next.velocity();
-      if (distance >= distance_to_switch) {
-        bool switch_already_done = (switch_position_ >= 0 && switch_position_ <= pos);
-        if (!switch_already_done) {
-          // Switch was supposed to be done before distance_to_switch, but it was not
-          return false;
-        }
-      }
-    }
-  }
+  // This check is last, for efficiency
   // Is the last state safe?
   return car_tracker_->IsSafe(next);
 }
