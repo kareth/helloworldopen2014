@@ -85,8 +85,9 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
   for (double throttle : values_) {
     double saved_switch_position = schedule.switch_position();
 
+    bool failx = false;
     // Check if we are near the switch and have to inject it
-    if (distance_to_switch_ > 0) {
+    if (distance_to_switch_ > 0 && schedule.switch_position() < 0) {
       for (int i = 0; i < group_size; ++i) {
         double d = curr_dist 
           + car_tracker_->velocity_model().PredictDistance(state.velocity(), i+1, throttle);
@@ -96,9 +97,14 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
           schedule.UpdateSwitchPosition(from + i);
           if (from + i == 0) {
             // The very first schedule position
+            if (last_throttle_ > throttle)
+              failx = true;
             throttle = last_throttle_;
           } else if (i == 0) {
             // The first position of the group
+            if (schedule[from - 1] > throttle) {
+              failx = true;
+            }
             throttle = schedule[from - 1];
           } else {
             // Nothing to do (all throttles in the group have the same value)
@@ -107,6 +113,7 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
         }
       }
     }
+    if (failx) break; //FIXME
 
     CarState next = state;
     bool fail = false;
