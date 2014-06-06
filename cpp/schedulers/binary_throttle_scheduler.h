@@ -35,6 +35,8 @@ class BinaryThrottleScheduler : public ThrottleScheduler {
   
   bool TimeToSwitch(int game_tick);
 
+  bool TimeToSwitch(int game_tick);
+
  private:
   static const bool kLoggerOn = true;
 
