@@ -50,13 +50,13 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const u
   throttle_scheduler_->Schedule(state_with_switch,
                                 game_tick,
                                 deadline,
-                                switch_scheduler_.DistanceToSwitch(),
+                                switch_scheduler_->DistanceToSwitch(),
                                 last_throttle_);
   // I assume that after throttle_scheduler, there is nothing computationally intensive, so that throttle_scheduler can take all remaining time (deadline)
 
   if (turbo_scheduler_->ShouldFireTurbo()) {
     command_ = game::Command(game::TurboToggle::kToggleOn);
-  } else if (throttle_scheduler_->TimeToSwitch()) {
+  } else if (throttle_scheduler_->TimeToSwitch(game_tick)) {
     command_ = game::Command(switch_scheduler_->SwitchDirection());
   } else {
     command_ = game::Command(throttle_scheduler_->throttle());

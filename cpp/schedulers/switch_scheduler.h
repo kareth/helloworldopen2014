@@ -22,6 +22,10 @@ class SwitchScheduler {
    virtual void Schedule(const game::CarState& state) = 0;
 
    virtual void Switched() = 0;
+
+   virtual double DistanceToSwitch() { return -1; }
+
+   virtual void set_last_throttle(double t) {};
 };
 
 }  // namespace schedulers
