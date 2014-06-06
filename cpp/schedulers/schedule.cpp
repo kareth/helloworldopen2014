@@ -107,9 +107,9 @@ bool schedulers::Sched::IsSafe(const game::CarState& state, double distance_to_s
   }
 
   // Check whether the planned switch is correct
-  if (check_switch) {
-    if (switch_position_ < 0 && distance_to_switch < distance) {
-        // We should have switch before the end of the horizon, but we did not
+  if (check_switch && distance < distance_to_switch) {
+    if (switch_position_ < 0) {
+        // We should have switch before the end of the horizon, but we have not
         return false; 
     }
 
@@ -117,7 +117,7 @@ bool schedulers::Sched::IsSafe(const game::CarState& state, double distance_to_s
     if (switch_position_ > 0) {
       last_throttle = throttles_[switch_position_ - 1];
     }
-    if (throttles_[switch_position_] != throttles_[switch_position_-1]) {
+    if (throttles_[switch_position_] != last_throttle) {
       // It still could be safe, but I treat it as incorrect. So it should be first corrected
       // by calling CorrectSwitch().
       std::cerr << "Schedule has incorrect throttles" << std::endl;
@@ -178,7 +178,7 @@ void schedulers::Sched::Print() {
   for (int i = 0; i < size(); ++i) {
     printf("%.1f ", throttles_[i]);
   }
-  printf(" [%.1f]\n", distance_);
+  printf(" [%.1f] s=%d\n", distance_, switch_position_);
 }
 
 } // namespace
