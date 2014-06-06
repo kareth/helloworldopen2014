@@ -32,6 +32,7 @@ class Sched {
 
   // Return if succeded (the resulting schedule is safe and switch-correct).
   // 0 <= new_switch_position < size()
+  // Distance is not updated
   bool TryUpdateSwitchPosition(const game::CarState& state, int new_switch_position,
     double distance_to_switch, double last_throttle);
 
