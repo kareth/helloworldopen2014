@@ -91,7 +91,7 @@ bool schedulers::Sched::IsSafe(const game::CarState& state, double distance_to_s
     // Are angles safe?
     next = car_tracker_->Predict(next, game::Command(throttles_[pos]));
     if (!car_tracker_->crash_model().IsSafe(next.position().angle())) {
-      std::cerr << "here: " << pos << std::endl;
+      //std::cerr << "here: " << pos << std::endl;
       return false;
     }
 
@@ -102,7 +102,7 @@ bool schedulers::Sched::IsSafe(const game::CarState& state, double distance_to_s
         bool switch_done = (switch_position_ >= 0 && switch_position_ <= pos);
         if (!switch_done) {
           // Switch was supposed to be done before distance_to_switch, but it was not
-          std::cerr << "check: " << pos << " " << distance << " " << distance_to_switch << std::endl;
+          //std::cerr << "check: " << pos << " " << distance << " " << distance_to_switch << std::endl;
           return false;
         }
       }
@@ -113,7 +113,7 @@ bool schedulers::Sched::IsSafe(const game::CarState& state, double distance_to_s
   if (check_switch && distance_to_switch <= distance) {
     if (switch_position_ < 0) {
         // We should have switch before the end of the horizon, but we have not
-        std::cerr << "bbbb: " << distance << " " << distance_to_switch << std::endl;
+        //std::cerr << "bbbb: " << distance << " " << distance_to_switch << std::endl;
         return false; 
     }
 
@@ -124,7 +124,7 @@ bool schedulers::Sched::IsSafe(const game::CarState& state, double distance_to_s
     if (throttles_[switch_position_] != last_throttle) {
       // It still could be safe, but I treat it as incorrect. So it should be first corrected
       // by calling CorrectSwitch().
-      std::cerr << "Schedule has incorrect throttles" << std::endl;
+      //std::cerr << "Schedule has incorrect throttles" << std::endl;
       return false;
     }
   }
