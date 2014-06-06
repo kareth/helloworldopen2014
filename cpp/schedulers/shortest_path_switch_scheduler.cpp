@@ -119,6 +119,8 @@ double ShortestPathSwitchScheduler::DistanceToSwitch() {
     return -1;
   if (should_switch_now_) {
     Position target(target_switch_, 0);
+    target.set_start_lane(state_.position().end_lane());
+    target.set_end_lane(state_.position().end_lane());
     return car_tracker_.DistanceBetween(state_.position(), target);
   }
   return -1;
