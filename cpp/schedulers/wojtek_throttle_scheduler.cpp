@@ -135,7 +135,8 @@ bool WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tic
   last_schedule_time_ = stopwatch.elapsed();
   Log(state);
   if (!log_to_csv_)
-      printf("finished\n");
+      printf("finished issafe %d\n",is_safe);
+  if (!log_to_csv_) best_schedule_.Print();
   return is_safe;
 }
 
