@@ -21,12 +21,22 @@ class Sched {
   void UpdateDistance(const game::CarState& state);
   void UpdateDistance(double new_distance); // Explicitely
 
+  // Number of ticks until switch. <0 if no switch ahead
+  int GetTicksToTheRequiredSwitch(const game::CarState& state, double distance_to_switch);
 
   // Afterwards, you should call UpdateDistance in most cases
-  void UpdateSwitchPosition(int switch_position) { switch_position_ = switch_position; }
+  void UpdateSwitchPosition(int switch_position);
   // Sets throttles[switch_position] = throttles[switch_position-1]. 
   // You may need to call UpdateDistance afterwards.
   void CorrectSwitch(const game::CarState& state, double last_throttle);
+
+  // Return if succeded (the resulting schedule is safe and switch-correct).
+  // 0 <= new_switch_position < size()
+  bool TryUpdateSwitchPosition(const game::CarState& state, int new_switch_position,
+    double distance_to_switch, double last_throttle);
+
+  // Does not change the safety or correctness
+  void RemoveSwitch();
 
   // distance_to_switch < 0 if no switch ahead.
   bool IsSafe(const game::CarState& state, double distance_to_switch, double last_throttle);
