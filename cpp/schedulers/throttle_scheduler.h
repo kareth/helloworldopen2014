@@ -21,7 +21,12 @@ class ThrottleScheduler {
   virtual void set_strategy(const Strategy& strategy) = 0;
 
   // Updates the state and calculates next state
-  virtual void Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline) = 0;
+  // Returns false if I was not able to prepare a safe schedule
+  virtual bool Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline, 
+                   double distance_to_switch = -1, double last_throttle = 0) = 0;
+
+  // Execute after executing Schedule. 
+  virtual bool TimeToSwitch(int game_tick) = 0;
 
   virtual const std::vector<double>& full_schedule() const = 0;
 };

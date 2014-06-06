@@ -25,6 +25,10 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   static const int HORIZON;
   static const vector<double> values; // possible throttle values to check
 
+  static WojtekThrottleScheduler* CreateQuickScheduler(const game::Race& race, game::CarTracker& car_tracker) {
+      return new WojtekThrottleScheduler(race, car_tracker, QUICK_GROUPS);
+  }
+
   // Expected time limit in miliseconds
   WojtekThrottleScheduler(const game::Race& race,
                           game::CarTracker& car_tracker,
@@ -42,8 +46,10 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   void set_strategy(const Strategy& strategy) override {  }
 
   // Updates the state and calculates next state
-  void Schedule(const game::CarState& state, int game_tick, 
-                const utils::Deadline& deadline) override;
+  bool Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline, 
+                double distance_to_switch = -1, double last_throttle = 0) override;
+
+  bool TimeToSwitch(int game_tick);
 
   const std::vector<double>& full_schedule() const override { return best_schedule_.throttles_; }
 

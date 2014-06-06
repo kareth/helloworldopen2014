@@ -1,7 +1,6 @@
 set(SCHEDULERS_SOURCES
   binary_throttle_scheduler.cpp
   wojtek_throttle_scheduler.cpp
-  magic_throttle_scheduler.cpp
   greedy_turbo_scheduler.cpp
   shortest_path_switch_scheduler.cpp
   bulk_scheduler.cpp
@@ -15,7 +14,6 @@ set(SCHEDULERS_HEADERS
   throttle_scheduler.h
   binary_throttle_scheduler.h
   wojtek_throttle_scheduler.h
-  magic_throttle_scheduler.h
   switch_scheduler.h
   turbo_scheduler.h
   greedy_turbo_scheduler.h

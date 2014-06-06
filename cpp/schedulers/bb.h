@@ -26,7 +26,7 @@ class BranchAndBound {
 
   BranchAndBound(game::CarTracker* car_tracker, int horizon, const vector<int>& groups, const vector<double>& values);
 
-  void Improve(const game::CarState& state, Sched& schedule, const utils::Deadline& deadline);
+  void Improve(const game::CarState& state, Sched& schedule, const utils::Deadline& deadline, double distance_to_switch, double last_throttle);
 
   Stats stats() { return stats_; }
 

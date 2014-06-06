@@ -21,7 +21,9 @@ BranchAndBound::BranchAndBound(game::CarTracker* car_tracker, int horizon, const
   : horizon_(horizon), car_tracker_(car_tracker), best_(car_tracker, horizon), groups_(groups), values_(values), deadline_()
 { }
 
-void BranchAndBound::Improve(const game::CarState& state, Sched& schedule, const utils::Deadline& deadline) {
+void BranchAndBound::Improve(const game::CarState& state, Sched& schedule, const utils::Deadline& deadline, 
+      double distance_to_switch, double last_throttle) {
+  //FIXME: switches
   // "global" for B&B
   best_ = schedule;
   lower_bound_ = LowerBound(best_);
@@ -59,7 +61,7 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
 
   if (from >= horizon_) {
     stats_.leafs_visited += 1;
-    schedule.set_distance(curr_dist);
+    schedule.UpdateDistance(curr_dist);
     //schedule.Print();
 
     bool better = (schedule.distance() > best_.distance());
