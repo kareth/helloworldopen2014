@@ -91,7 +91,7 @@ bool schedulers::Sched::IsSafe(const game::CarState& state, double distance_to_s
     // Are angles safe?
     next = car_tracker_->Predict(next, game::Command(throttles_[pos]));
     if (!car_tracker_->crash_model().IsSafe(next.position().angle())) {
-      std::cerr << "here: " << pos << std::endl;
+      //std::cerr << "here: " << pos << std::endl;
       return false;
     }
 
@@ -102,7 +102,7 @@ bool schedulers::Sched::IsSafe(const game::CarState& state, double distance_to_s
         bool switch_done = (switch_position_ >= 0 && switch_position_ <= pos);
         if (!switch_done) {
           // Switch was supposed to be done before distance_to_switch, but it was not
-          std::cerr << "check: " << pos << " " << distance << " " << distance_to_switch << std::endl;
+         // std::cerr << "check: " << pos << " " << distance << " " << distance_to_switch << std::endl;
           return false;
         }
       }
