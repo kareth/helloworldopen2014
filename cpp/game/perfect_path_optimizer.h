@@ -1,13 +1,13 @@
-#ifndef CPP_GAME_GREEDY_PATH_OPTIMIZER_H_
-#define CPP_GAME_GREEDY_PATH_OPTIMIZER_H_
+#ifndef CPP_GAME_PERFECT_PATH_OPTIMIZER_H_
+#define CPP_GAME_PERFECT_PATH_OPTIMIZER_H_
 
 #include "game/path_optimizer_interface.h"
 
 namespace game {
 
-class GreedyPathOptimizer : public PathOptimizerInterface {
+class PerfectPathOptimizer : public PathOptimizerInterface {
  public:
-  GreedyPathOptimizer(const Race& race, CarTracker& car_tracker);
+  PerfectPathOptimizer(const Race& race, CarTracker& car_tracker);
 
   // Returns all possible decisions with associated score
   // score means the loss of time (lap-wise) compared to optimal choice

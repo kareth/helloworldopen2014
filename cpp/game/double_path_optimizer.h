@@ -1,0 +1,31 @@
+#ifndef CPP_GAME_DOUBLE_PATH_OPTIMIZER_H_
+#define CPP_GAME_DOUBLE_PATH_OPTIMIZER_H_
+
+#include "game/path_optimizer_interface.h"
+
+namespace game {
+
+class DoublePathOptimizer : public PathOptimizerInterface {
+ public:
+  DoublePathOptimizer(const Race& race, CarTracker& car_tracker);
+
+  // Returns all possible decisions with associated score
+  // score means the loss of time (lap-wise) compared to optimal choice
+  // so atleast one lane will always have value of 0
+  std::map<Switch, int> Score(const Position& position) override;
+
+ private:
+  void RunPerfectOptimizer();
+
+  const Race& race_;
+  CarTracker& car_tracker_;
+
+  GreedyPathOptimizer greedy_;
+  PerfectPathOptimizer perfect_;
+
+  std::atomic_bool is_perfect_ready_;
+};
+
+}  // namespace game
+
+#endif  // CPP_GAME_GREEDY_PATH_OPTIMIZER_H_
