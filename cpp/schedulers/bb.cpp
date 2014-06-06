@@ -17,18 +17,21 @@ const double BranchAndBound::EGAP = 0.0;
  *  - improve local improvement using some kind of gradients.
  */
 
-BranchAndBound::BranchAndBound(game::CarTracker* car_tracker, int horizon, const vector<int>& groups, const vector<double>& values) 
-  : horizon_(horizon), car_tracker_(car_tracker), best_(car_tracker, horizon), groups_(groups), values_(values), deadline_()
+BranchAndBound::BranchAndBound(game::CarTracker* car_tracker, int horizon, 
+    const vector<int>& groups, const vector<double>& values) 
+  : horizon_(horizon), car_tracker_(car_tracker), best_(car_tracker, horizon), 
+  groups_(groups), values_(values), deadline_()
 { }
 
-void BranchAndBound::Improve(const game::CarState& state, Sched& schedule, const utils::Deadline& deadline, 
-      double distance_to_switch, double last_throttle) {
-  //FIXME: switches
-  // "global" for B&B
+void BranchAndBound::Improve(const game::CarState& state, Sched& schedule, 
+    const utils::Deadline& deadline, double distance_to_switch, double last_throttle) {
+  // "global" variables for B&B
   best_ = schedule;
   lower_bound_ = LowerBound(best_);
   upper_bound_ = UpperBound(state, 0, best_, 0); 
   deadline_ = deadline;
+  distance_to_switch_ = distance_to_switch;
+  last_throttle_ = last_throttle;
 
   schedule.Reset(state);
 
@@ -47,11 +50,13 @@ double BranchAndBound::UpperBound(const game::CarState& from_state, double from_
   // From the given state upper bound is when we try throttle 1.0 from now on to the end 
   // (without taking care of safety)
 
-  return from_dist + car_tracker_->velocity_model().PredictDistance(from_state.velocity(), horizon_ - from, 1.0);
+  return from_dist + car_tracker_->velocity_model().PredictDistance(
+      from_state.velocity(), horizon_ - from, 1.0);
 }
 
 // Returning true if optimum found
-bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double curr_dist, int from, int from_group) {
+bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double curr_dist, 
+    int from, int from_group) {
   stats_.nodes_visited += 1;
   
   if (deadline_.HasExpired()) {
@@ -59,7 +64,9 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
       return true;
   }
 
+  // Is this node a leaf?
   if (from >= horizon_) {
+    //FIXME: switches
     stats_.leafs_visited += 1;
     schedule.UpdateDistance(curr_dist);
     //schedule.Print();
@@ -78,10 +85,7 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
   }
 
   int group_size = groups_[from_group];
-  for (int i = 0; i < values_.size(); ++i) {
-    double throttle = values_[i];
-    int group_size = groups_[from_group];
-
+  for (double throttle : values_) {
     CarState next = state;
     bool fail = false;
     for (int j=0; j<group_size; ++j) {
@@ -92,7 +96,8 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
         fail = true;
         break; 
         // It is still possible to not crash when using a higher throttle,
-        // so we should not return false here (it does not improve performance, but make the results worse)
+        // so we should not return false here (it does not improve performance, 
+        // but make the results worse)
       }
       schedule[from+j] = throttle;
     }
