@@ -14,9 +14,10 @@ ShortestPathSwitchScheduler::ShortestPathSwitchScheduler(
     game::CarTracker& car_tracker)
   : race_(race), car_tracker_(car_tracker), race_tracker_(race_tracker),
     should_switch_now_(false), waiting_for_switch_(false),
-    target_switch_(-1) {
+    target_switch_(-1), last_throttle_(0) {
 
   path_optimizer_.reset(new game::DoublePathOptimizer(race, car_tracker_));
+  throttle_scheduler_.reset(WojtekThrottleScheduler::CreateQuickScheduler());
 }
 
 bool ShortestPathSwitchScheduler::WaitingToReachIssuedSwitch(const game::CarState& state) {
@@ -33,6 +34,7 @@ bool ShortestPathSwitchScheduler::WaitingToReachIssuedSwitch(const game::CarStat
 //
 // Updates and calculates next state
 void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
+  // TODO dont stop
   if (WaitingToReachIssuedSwitch(state))
     return;
 
@@ -96,6 +98,11 @@ game::Switch ShortestPathSwitchScheduler::ExpectedSwitch() {
   } else {
     return Switch::kStay;
   }
+}
+
+game::Switch DistanceToSwitch() {
+
+
 }
 
 }  // namespace schedulers

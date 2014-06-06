@@ -24,6 +24,8 @@ BulkScheduler::BulkScheduler(const game::Race& race,
 
   bump_scheduler_.reset(
       new BumpScheduler(race_, race_tracker_, car_tracker_));
+
+  last_throttle_ = 0;
 }
 
 void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline) {
@@ -31,28 +33,30 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const u
 
   if (bump_scheduler_->HasTarget()) {
     command_ = bump_scheduler_->command();
+    if (!command_.SwitchSet() && !command_.TurboSet())
+      last_throttle_ = command_.throttle();
     return;
   }
+
   // Bumper has priority over anything else.
 
   turbo_scheduler_->Schedule(state);
   switch_scheduler_->Schedule(state);
 
-  // TODO IMPORTANT!
-  // Passing expected switch is dangerous.
-  // If we schedule for that event, and fail to switch in time
-  // our schedule is invalidated and causes crashes
-  //
-  // If we want to switch, schedule throttle for target lane bent
+  // We assume that the path wih given switch is safe!
   auto state_with_switch = state;
   if (switch_scheduler_->ExpectedSwitch() != game::Switch::kStay)
     state_with_switch.set_switch_state(switch_scheduler_->ExpectedSwitch());
-  throttle_scheduler_->Schedule(state_with_switch, game_tick, deadline);
+  throttle_scheduler_->Schedule(state_with_switch,
+                                game_tick,
+                                deadline,
+                                switch_scheduler_.DistanceToSwitch(),
+                                last_throttle_);
   // I assume that after throttle_scheduler, there is nothing computationally intensive, so that throttle_scheduler can take all remaining time (deadline)
 
   if (turbo_scheduler_->ShouldFireTurbo()) {
     command_ = game::Command(game::TurboToggle::kToggleOn);
-  } else if (switch_scheduler_->ShouldSwitch()) {
+  } else if (throttle_scheduler_->TimeToSwitch()) {
     command_ = game::Command(switch_scheduler_->SwitchDirection());
   } else {
     command_ = game::Command(throttle_scheduler_->throttle());
@@ -64,6 +68,10 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const u
     command_ = safe_command;
     std::cout << "INFO: It is not safe in front. Slowing down." << std::endl;
   }
+
+  if (!command_.SwitchSet() && !command_.TurboSet())
+    last_throttle_ = command_.throttle();
+  switch_scheduler_->set_last_throttle(last_throttle_);
 }
 
 void BulkScheduler::set_strategy(const Strategy& strategy) {

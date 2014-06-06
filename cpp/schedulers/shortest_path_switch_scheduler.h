@@ -59,6 +59,9 @@ class ShortestPathSwitchScheduler : public SwitchScheduler {
 
    std::unique_ptr<game::PathOptimizerInterface> path_optimizer_;
 
+   std::unique_ptr<ThrottleScheduler> throttle_scheduler_;
+   double last_throttle_;
+
    game::CarTracker& car_tracker_;
    game::RaceTracker& race_tracker_;
    const game::Race& race_;
