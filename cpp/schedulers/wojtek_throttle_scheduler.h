@@ -15,6 +15,8 @@
 #include "schedulers/local_improver.h"
 #include "utils/deadline.h"
 
+DECLARE_bool(log_wojtek_to_file);
+
 namespace schedulers {
 
 class WojtekThrottleScheduler : public ThrottleScheduler {
@@ -25,14 +27,14 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   static const vector<double> values; // possible throttle values to check
 
   static WojtekThrottleScheduler* CreateQuickScheduler(const game::Race& race, game::CarTracker& car_tracker) {
-      return new WojtekThrottleScheduler(race, car_tracker, QUICK_GROUPS);
+      return new WojtekThrottleScheduler(race, car_tracker, QUICK_GROUPS, false);
   }
 
   // Expected time limit in miliseconds
   WojtekThrottleScheduler(const game::Race& race,
                           game::CarTracker& car_tracker,
-                          const vector<int>& groups = DEFAULT_GROUPS);
-
+                          const vector<int>& groups = DEFAULT_GROUPS, 
+                          bool log_to_csv = FLAGS_log_wojtek_to_file);
   ~WojtekThrottleScheduler() override;
 
   // Returns scheduled throttle
@@ -79,6 +81,7 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   double last_time_limit_; // ms
   int last_game_tick_ = -1000;
 
+  bool log_to_csv_;
   std::ofstream log_file_;
 };
 

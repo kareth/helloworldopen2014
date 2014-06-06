@@ -22,8 +22,7 @@ maps = (
     "usa",
 )
 
-physics = range(0,6)
-#physics = range(0,7)
+physics = range(0,7)
 
 NO_LAPS = 3
 
