@@ -25,7 +25,7 @@ std::map<Switch, int> Score(const Position& position) override {
 
 void DoublePathOptimizer::RunPerfectOptimizer() {
   optimizer_thread_.reset(
-      new std::thread(&PerfectPathOptimizer::Optimize, &perfect_));
+      new std::thread(&PerfectPathOptimizer::Optimize, &perfect_, &is_perfect_ready_));
 
 }
 

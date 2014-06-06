@@ -14,6 +14,8 @@ class PerfectPathOptimizer : public PathOptimizerInterface {
   // so atleast one lane will always have value of 0
   std::map<Switch, int> Score(const Position& position) override;
 
+  void Optimize();
+
  private:
   // The distance between 'start' and 'end' assuming that 'end' position is on
   // lane 'lane'.
