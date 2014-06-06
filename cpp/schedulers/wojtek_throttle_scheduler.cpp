@@ -46,7 +46,7 @@ WojtekThrottleScheduler::~WojtekThrottleScheduler() {
   }
 }
 
-void WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline) {
+void WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline, double distance_to_switch) {
   last_time_limit_ = deadline.GetDurationToExpire().count() * 1000.0;
   utils::StopWatch stopwatch;
 
@@ -77,7 +77,7 @@ void WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tic
 
   // Once again, just to be 200% sure check for safety
   if (!best_schedule_.IsSafe(state)) {
-    std::cerr << "Schedule is not safe. This should not happen" << std::endl;
+    std::cerr << "Schedule is not safe. Generally, this should not happen" << std::endl;
     best_schedule_.Reset(state);
   }
 
