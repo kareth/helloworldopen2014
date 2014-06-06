@@ -43,6 +43,10 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const u
   turbo_scheduler_->Schedule(state);
   switch_scheduler_->Schedule(state);
 
+
+  //std::cout << state.position().ShortDebugString() << std::endl;
+  //printf("(%d %lf %lf)\n", switch_scheduler_->ExpectedSwitch(), switch_scheduler_->DistanceToSwitch(), last_throttle_);
+  //printf("\n");
   // We assume that the path wih given switch is safe!
   auto state_with_switch = state;
   if (switch_scheduler_->ExpectedSwitch() != game::Switch::kStay)

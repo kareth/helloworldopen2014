@@ -51,18 +51,26 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
   }
   sort(scores.begin(), scores.end());  // Last are the best
 
+  /*for (auto p : scores) {
+    printf("{%d %d}  ",p.first, p.second);
+  }
+  printf("\n");*/
+
 
   auto target = Position(race_.track().NextSwitch(state.position().piece()), 0);
   target.set_start_lane(state_.position().end_lane());
   target.set_end_lane(state_.position().end_lane());
   double distance = car_tracker_.DistanceBetween(state_.position(), target);  // Distance to switch
+  //printf("distance: %lf\n",distance);
 
   for (int i = scores.size() - 1; i >= 0; i--) {
     auto dir = scores[i].second;
     if (!IsChangeDecision(dir)) {
+      //printf("no_change\n");
       return;  // the same as before
 
     } else {
+      //printf("change %d\n", dir);
       if (dir == Switch::kStay && already_issued_switch_ != Switch::kStay)
         continue;  // We cannot stop switch command...
 
@@ -70,6 +78,7 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
       state_with_switch.set_switch_state(dir);
       if (throttle_scheduler_->Schedule(state_, -1, utils::Deadline(std::chrono::microseconds(200)),
             distance, last_throttle_)) {
+        //printf("Safe!\n");
 
         if (dir == Switch::kStay) {
           waiting_for_switch_ = false;
@@ -83,7 +92,7 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
           target_switch_ = race_.track().NextSwitch(state.position().piece());
           direction_ = dir;
         }
-
+        return;  // found best
       }
     }
   }
@@ -105,6 +114,7 @@ bool ShortestPathSwitchScheduler::IsChangeDecision(const Switch& s) {
 }
 
 double ShortestPathSwitchScheduler::DistanceToSwitch() {
+  //printf(" [%d %d %d] \n", waiting_for_switch_, should_switch_now_, target_switch_);
   if (waiting_for_switch_)
     return -1;
   if (should_switch_now_) {
