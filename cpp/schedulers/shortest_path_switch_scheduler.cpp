@@ -22,6 +22,7 @@ ShortestPathSwitchScheduler::ShortestPathSwitchScheduler(
 
 bool ShortestPathSwitchScheduler::WaitingToReachIssuedSwitch(const game::CarState& state) {
   if (state.position().piece() == target_switch_) {
+    should_switch_now_ = false;
     waiting_for_switch_ = false;
     target_switch_ = -1;
     already_issued_switch_ = Switch::kStay;
@@ -61,7 +62,7 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
   target.set_start_lane(state_.position().end_lane());
   target.set_end_lane(state_.position().end_lane());
   double distance = car_tracker_.DistanceBetween(state_.position(), target);  // Distance to switch
-  //printf("distance: %lf\n",distance);
+  printf("                                                                             distance: %lf\n",distance);
 
   for (int i = scores.size() - 1; i >= 0; i--) {
     auto dir = scores[i].second;
@@ -121,6 +122,8 @@ double ShortestPathSwitchScheduler::DistanceToSwitch() {
     Position target(target_switch_, 0);
     target.set_start_lane(state_.position().end_lane());
     target.set_end_lane(state_.position().end_lane());
+    //std::cout << "s: " << state_.position().ShortDebugString() << std::endl;
+    //std::cout << "t: " << target.ShortDebugString() << std::endl;
     return car_tracker_.DistanceBetween(state_.position(), target);
   }
   return -1;
