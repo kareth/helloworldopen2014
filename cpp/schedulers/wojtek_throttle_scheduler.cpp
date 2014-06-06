@@ -47,6 +47,7 @@ WojtekThrottleScheduler::~WojtekThrottleScheduler() {
 }
 
 void WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline) {
+  //TODO: Optimize last lap according to strategy
   last_time_limit_ = deadline.GetDurationToExpire().count() * 1000.0;
   utils::StopWatch stopwatch;
 
@@ -70,6 +71,7 @@ void WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tic
   initial_schedule_safe_ = best_schedule_.IsSafe(state);
   if (!initial_schedule_safe_) {
     best_schedule_.Reset(state);
+    //TODO: Use some quick greedy method just in case
   }
 
   branch_and_bound_.Improve(state, best_schedule_, deadline);
