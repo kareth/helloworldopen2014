@@ -17,12 +17,15 @@ class Sched {
   vector<double> throttles() const { return throttles_; }
   double switch_position() const { return switch_position_; }
 
-  void set_switch_position(int switch_position) { switch_position_ = switch_position; }
 
   void UpdateDistance(const game::CarState& state);
   void UpdateDistance(double new_distance); // Explicitely
 
-  // Sets throttles[switch_position] = throttles[switch_position-1]. You may need to call UpdateDistance afterwards.
+
+  // Afterwards, you should call UpdateDistance in most cases
+  void UpdateSwitchPosition(int switch_position) { switch_position_ = switch_position; }
+  // Sets throttles[switch_position] = throttles[switch_position-1]. 
+  // You may need to call UpdateDistance afterwards.
   void CorrectSwitch(const game::CarState& state, double last_throttle);
 
   // distance_to_switch < 0 if no switch ahead.
