@@ -55,6 +55,11 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
  private:
   void Log(const game::CarState& state);
   void PrintSchedule(const game::CarState& state, const Sched& schedule, int len);
+
+  // Repair is destructive. It can change the schedule without repairing it
+  bool RepairInitialSchedule(const game::CarState& state, Sched& schedule, 
+          double distance_to_switch, double last_throttle);
+
   int horizon() const { return horizon_; }
 
   const game::Race& race_;
