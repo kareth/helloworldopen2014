@@ -47,6 +47,10 @@ WojtekThrottleScheduler::~WojtekThrottleScheduler() {
 }
 
 void WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline, double distance_to_switch) {
+  //FIXME: last_throttle_ in the API. THIS IS A MUST
+  //FIXME: switches
+  double last_throttle = 0;
+
   last_time_limit_ = deadline.GetDurationToExpire().count() * 1000.0;
   utils::StopWatch stopwatch;
 
@@ -56,27 +60,28 @@ void WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tic
   int tick_diff = game_tick - last_game_tick_;
   if (1 <= tick_diff && tick_diff <= 4) {
     for (int i = 0; i < tick_diff; ++i) {
-      best_schedule_.ShiftLeftFillSafe(state);
+      best_schedule_.ShiftLeftFillSafe(state, distance_to_switch, last_throttle);
     }
   } else {
     // We will still try to use the old schedule, but, it could be not safe.
     // This will be checked subsequently
   }
-  // Must do it, because we could have unpredicted turbo/switches, etc. ahead
+  // Must do it (never ever think of removing it!)
   best_schedule_.UpdateDistance(state); 
 
   // Initial schedule should be safe normally. Not safe only if future predictions
   // have changed
-  initial_schedule_safe_ = best_schedule_.IsSafe(state);
+  initial_schedule_safe_ = best_schedule_.IsSafe(state, distance_to_switch, last_throttle);
   if (!initial_schedule_safe_) {
     best_schedule_.Reset(state);
+    //TODO: Create a good greedy one
   }
 
-  branch_and_bound_.Improve(state, best_schedule_, deadline);
-  local_improver_.Improve(state, best_schedule_, 0.1, deadline);
+  branch_and_bound_.Improve(state, best_schedule_, deadline, distance_to_switch, last_throttle);
+  local_improver_.Improve(state, best_schedule_, 0.1, deadline, distance_to_switch, last_throttle);
 
   // Once again, just to be 200% sure check for safety
-  if (!best_schedule_.IsSafe(state)) {
+  if (!best_schedule_.IsSafe(state, distance_to_switch, last_throttle)) {
     std::cerr << "Schedule is not safe. Generally, this should not happen" << std::endl;
     best_schedule_.Reset(state);
   }
