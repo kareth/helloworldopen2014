@@ -139,8 +139,7 @@ void WojtekThrottleScheduler::PrintSchedule(const game::CarState& state, const S
 }
 
 bool WojtekThrottleScheduler::TimeToSwitch(int game_tick) {
-    //FIXME
-    return false;
+  return best_schedule_.switch_position() == 0;
 }
 
 void WojtekThrottleScheduler::Log(const game::CarState& state) {
