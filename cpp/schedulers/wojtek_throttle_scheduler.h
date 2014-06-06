@@ -46,6 +46,8 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
                 const utils::Deadline& deadline,
                 double distance_to_switch = -1) override;
 
+  bool TimeToSwitch(int game_tick);
+
   const std::vector<double>& full_schedule() const override { return best_schedule_.throttles_; }
 
  private:

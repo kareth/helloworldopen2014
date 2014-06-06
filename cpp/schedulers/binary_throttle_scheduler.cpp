@@ -141,6 +141,11 @@ int BinaryThrottleScheduler::FindBestMask(const CarState& state, double* distanc
   return mask;
 }
 
+bool BinaryThrottleScheduler::TimeToSwitch(int game_tick) {
+    //TODO(If we want to maintain binary throttle scheduler to make switches. Else no switches and possible crashes)
+    return false;
+}
+
 void BinaryThrottleScheduler::Log(const game::CarState& state) {
   if (!FLAGS_log_masks) return;
   int i = 0;
