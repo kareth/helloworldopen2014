@@ -13,6 +13,10 @@ void schedulers::Sched::UpdateDistance(const game::CarState& state) {
   distance_ = car_tracker_->velocity_model().PredictDistance(state.velocity(), throttles_);
 }
 
+void schedulers::Sched::UpdateDistance(double new_distance) {
+  distance_ = new_distance;
+}
+
 void schedulers::Sched::CorrectSwitch(const game::CarState& state, double last_throttle) {
   bool switch_is_planned = (switch_position_ >= 0);
   if (switch_is_planned) {

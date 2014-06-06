@@ -61,7 +61,7 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
 
   if (from >= horizon_) {
     stats_.leafs_visited += 1;
-    schedule.set_distance(curr_dist);
+    schedule.UpdateDistance(curr_dist);
     //schedule.Print();
 
     bool better = (schedule.distance() > best_.distance());
