@@ -46,7 +46,7 @@ WojtekThrottleScheduler::~WojtekThrottleScheduler() {
   }
 }
 
-void WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline, double distance_to_switch, double last_throttle) {
+bool WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline, double distance_to_switch, double last_throttle) {
   //FIXME: switches
 
   last_time_limit_ = deadline.GetDurationToExpire().count() * 1000.0;
@@ -87,6 +87,7 @@ void WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tic
   last_game_tick_ = game_tick;
   last_schedule_time_ = stopwatch.elapsed();
   Log(state);
+  return true; //FIXME
 }
 
 
