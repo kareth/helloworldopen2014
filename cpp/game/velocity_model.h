@@ -71,7 +71,6 @@ class VelocityModel {
         velocity = Predict(velocity, throttles[i]);
         distance += velocity;
     }
-    //TODO(Wojtek): We can improve performance by summing up geometric sequence
     return distance;
   }
 

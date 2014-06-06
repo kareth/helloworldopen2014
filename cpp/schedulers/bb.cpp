@@ -60,16 +60,13 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
   stats_.nodes_visited += 1;
   
   if (deadline_.HasExpired()) {
-      // Pretend we have found optimum
-      return true;
+    return true; // Pretend we have found optimum
   }
 
   // Is this node a leaf?
   if (from >= horizon_) {
-    //FIXME: switches
     stats_.leafs_visited += 1;
     schedule.UpdateDistance(curr_dist);
-    //schedule.Print();
 
     bool better = (schedule.distance() > best_.distance());
     if (better) {
@@ -86,44 +83,73 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
 
   int group_size = groups_[from_group];
   for (double throttle : values_) {
+    double saved_switch_position = schedule.switch_position();
+
+    // Check if we are near the switch and have to inject it
+    if (distance_to_switch_ > 0) {
+      for (int i = 0; i < group_size; ++i) {
+        double d = curr_dist 
+          + car_tracker_->velocity_model().PredictDistance(state.velocity(), i+1, throttle);
+
+        if (d >= distance_to_switch_) {
+          // We have to inject the switch
+          schedule.UpdateSwitchPosition(from + i);
+          if (from + i == 0) {
+            // The very first schedule position
+            throttle = last_throttle_;
+          } else if (i == 0) {
+            // The first position of the group
+            throttle = schedule[from - 1];
+          } else {
+            // Nothing to do (all throttles in the group have the same value)
+          }
+          break;
+        }
+      }
+    }
+
     CarState next = state;
     bool fail = false;
-    for (int j=0; j<group_size; ++j) {
+    for (int j = 0; j < group_size; ++j) {
       next = car_tracker_->Predict(next, game::Command(throttle));
-
-      // Cut fast
+      // Cut fast if not safe
       if (!car_tracker_->crash_model().IsSafe(next.position().angle())) {
         fail = true;
         break; 
-        // It is still possible to not crash when using a higher throttle,
-        // so we should not return false here (it does not improve performance, 
-        // but make the results worse)
       }
-      schedule[from+j] = throttle;
+      schedule[from + j] = throttle;
     }
     if (fail) {
-        stats_.unsafe_cuts += 1;
-        continue;
+      stats_.unsafe_cuts += 1;
+      schedule.UpdateSwitchPosition(saved_switch_position);
+      continue;
     }
 
-    double this_dist = car_tracker_->velocity_model().PredictDistance(state.velocity(), group_size, throttle);
+    double this_dist = car_tracker_->velocity_model().PredictDistance(state.velocity(), 
+        group_size, throttle);
     double ub = UpperBound(next, curr_dist + this_dist, schedule, from + group_size);
 
     // Prune
     if (ub - EGAP <= lower_bound_) {
       stats_.ub_cuts += 1;
+      schedule.UpdateSwitchPosition(saved_switch_position);
       continue;
     }
 
     // This is an heuristic, but it slightly improves performance
     // It tries to cut leaves that probably will be still cut by IsSafe earlier
-    if (horizon_ - from < 10)
-        if (!car_tracker_->IsSafe(next, 4.0))
-            return false;
+    if (horizon_ - from < 10 && !car_tracker_->IsSafe(next, 4.0)) {
+      schedule.UpdateSwitchPosition(saved_switch_position);
+      return false;
+    }
 
     if (Branch(next, schedule, curr_dist + this_dist, from + groups_[from_group], from_group + 1)) {
       return true;
     }
+    schedule.UpdateSwitchPosition(saved_switch_position);
+    //TODO: Sort out exits from this function. Auxiliary function for each values is needed.
+    //To many points of exit. To many places, where
+    //I have to add the cleaning code: schedule.UpdateSwitchPosition(saved_switch_position);
   }
   return false;
 }
