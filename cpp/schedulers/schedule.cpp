@@ -21,7 +21,7 @@ int schedulers::Sched::GetTicksToTheRequiredSwitch(const game::CarState& state, 
   if (distance_to_switch < 0)
     return -1;
 
-  int distance = 0;
+  double distance = 0;
   game::CarState next = state;
   for (int pos = 0; pos < size(); ++pos) {
     //TODO(minor) I could use the quicker PredictVelocity (waiting for turbo)
@@ -84,7 +84,7 @@ bool schedulers::Sched::TryUpdateSwitchPosition(const game::CarState& state, int
 bool schedulers::Sched::IsSafe(const game::CarState& state, double distance_to_switch, double last_throttle) {
   bool check_switch = (distance_to_switch >= 0);
   
-  int distance = 0;
+  double distance = 0;
   game::CarState next = state;
   // Are all scheduled states safe and switch-correct?
   for (int pos = 0; pos < size(); ++pos) {

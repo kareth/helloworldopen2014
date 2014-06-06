@@ -79,6 +79,7 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const u
   if (!command_.SwitchSet() && !command_.TurboSet())
     last_throttle_ = command_.throttle();
   switch_scheduler_->set_last_throttle(last_throttle_);
+  //std::cout << command_.DebugString() << std::endl;
 }
 
 void BulkScheduler::set_strategy(const Strategy& strategy) {
