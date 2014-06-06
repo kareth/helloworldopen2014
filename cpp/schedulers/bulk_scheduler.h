@@ -38,6 +38,8 @@ class BulkScheduler : public Scheduler {
   Strategy strategy_;
   game::Command command_;
 
+  double last_throttle_;
+
   game::CarTracker& car_tracker_;
   game::RaceTracker& race_tracker_;
   const game::Race& race_;
