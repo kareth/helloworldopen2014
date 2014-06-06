@@ -37,6 +37,8 @@ class BranchAndBound {
 
   double upper_bound_;
   double lower_bound_;
+  double distance_to_switch_;
+  double last_throttle_;
   int horizon_;
   game::CarTracker* car_tracker_;
   Sched best_;
