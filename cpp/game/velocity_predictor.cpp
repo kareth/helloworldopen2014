@@ -45,7 +45,7 @@ void VelocityPredictor::Record(const CarState& raw_state) {
 
   // Check for all points between last point and current point and check if they are below
   // the line between aforementioned 2 points
-  auto point = state_;
+  auto point = state;
   while (true) {
     point = Next(point.position());
 

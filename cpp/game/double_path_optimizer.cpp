@@ -6,12 +6,12 @@ namespace game {
 DoublePathOptimizer::DoublePathOptimizer(const Race& race, CarTracker& car_tracker)
   : race_(race), car_tracker_(car_tracker),
     greedy_(race, car_tracker),
-    perfect_(race, car_tracker) {
+    perfect_(race, car_tracker.CreatePhysicsParams()) {
   is_perfect_ready_.store(false);
   optimizer_started_ = false;
 }
 
-std::map<Switch, int> Score(const Position& position) override {
+std::map<Switch, int> DoublePathOptimizer::Score(const Position& position) {
   if (is_perfect_ready_.load() == true) {
     return perfect_.Score(position);
   } else {
@@ -26,7 +26,6 @@ std::map<Switch, int> Score(const Position& position) override {
 void DoublePathOptimizer::RunPerfectOptimizer() {
   optimizer_thread_.reset(
       new std::thread(&PerfectPathOptimizer::Optimize, &perfect_, &is_perfect_ready_));
-
 }
 
 }  // namespace game

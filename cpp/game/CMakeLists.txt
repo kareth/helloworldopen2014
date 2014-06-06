@@ -23,6 +23,8 @@ set(GAME_SOURCES
   velocity_predictor.cpp
   physics_params.cpp
   greedy_path_optimizer.cpp
+  double_path_optimizer.cpp
+  perfect_path_optimizer.cpp
 )
 
 set(GAME_HEADERS
@@ -56,6 +58,8 @@ set(GAME_HEADERS
   physics_params.h
   greedy_path_optimizer.h
   path_optimizer_interface.h
+  double_path_optimizer.h
+  perfect_path_optimizer.h
 )
 
 set(GAME_TESTS

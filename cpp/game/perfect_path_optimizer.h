@@ -7,14 +7,14 @@ namespace game {
 
 class PerfectPathOptimizer : public PathOptimizerInterface {
  public:
-  PerfectPathOptimizer(const Race& race, CarTracker& car_tracker);
+  PerfectPathOptimizer(const Race& race, const PhysicsParams& physics);
 
   // Returns all possible decisions with associated score
   // score means the loss of time (lap-wise) compared to optimal choice
   // so atleast one lane will always have value of 0
   std::map<Switch, int> Score(const Position& position) override;
 
-  void Optimize();
+  void Optimize(std::atomic_bool* ready_flag);
 
  private:
   // The distance between 'start' and 'end' assuming that 'end' position is on
@@ -26,8 +26,9 @@ class PerfectPathOptimizer : public PathOptimizerInterface {
 
   const int kApproximateSpeed = 1;
 
-  const Race& race_;
-  CarTracker& car_tracker_;
+  // IMPORTANT: COPIES
+  Race race_;
+  PhysicsParams physics_;
 };
 
 }  // namespace game
