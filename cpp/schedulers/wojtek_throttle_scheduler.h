@@ -25,6 +25,10 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   static const int HORIZON;
   static const vector<double> values; // possible throttle values to check
 
+  static WojtekThrottleScheduler* CreateQuickScheduler(const game::Race& race, game::CarTracker& car_tracker) {
+      return new WojtekThrottleScheduler(race, car_tracker, QUICK_GROUPS);
+  }
+
   // Expected time limit in miliseconds
   WojtekThrottleScheduler(const game::Race& race,
                           game::CarTracker& car_tracker,
