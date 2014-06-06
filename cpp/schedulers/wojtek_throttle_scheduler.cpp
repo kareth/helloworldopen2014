@@ -48,13 +48,18 @@ WojtekThrottleScheduler::~WojtekThrottleScheduler() {
 
 bool WojtekThrottleScheduler::RepairInitialSchedule(const game::CarState& state, Sched& schedule,
     double distance_to_switch, double last_throttle) {
-  if (!distance_to_switch < 0) {
+  if (distance_to_switch < 0) {
     // I can repair only switch-related issues (TODO)
     return false;
   }
 
   // Try to repair switch
   int ticks = schedule.GetTicksToTheRequiredSwitch(state, distance_to_switch);
+  if (ticks < 0) {
+    // Switch is too far away, so it not the problem in this Schedule
+    return false;
+  }
+
   // Try to inject the switch at three positions before the switch is due
   for (int tick = ticks; tick >= std::max(0, ticks - 2); --tick) {
     if (schedule.TryUpdateSwitchPosition(state, tick, distance_to_switch, last_throttle)) {
