@@ -17,14 +17,12 @@ class PerfectPathOptimizer : public PathOptimizerInterface {
   void Optimize(std::atomic_bool* ready_flag);
 
  private:
-  // The distance between 'start' and 'end' assuming that 'end' position is on
-  // lane 'lane'.
-  double DistanceBetween(const Position& position1, const Position& position2, int lane);
+  void SimulateLanes();
+  void ComputeScores();
 
-  // Maps -1, 0 1 to kSwitchLeft, stay, right
-  Switch OffsetToDirection(int offset);
-
-  const int kApproximateSpeed = 1;
+  // [piece][lane]
+  vector<vector<double>> lane_times_;
+  vector<vector<map<Switch, int>>> lane_scores_;
 
   // IMPORTANT: COPIES
   Race race_;
