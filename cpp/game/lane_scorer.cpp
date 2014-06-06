@@ -133,6 +133,13 @@ int LaneScorer::EnemyBumpScore(const EnemyTracker& enemy, double my_speed, doubl
 bool LaneScorer::BumpPosition(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position, Position* bump_position) {
   vector<Position> my_prediction, enemy_prediction;
   int my_time = me.TimeToPosition(end_position, &my_prediction);
+
+  std::cout << " end_position: " << end_position.ShortDebugString() << std::endl
+            << " enemy_target: " << car_tracker_.PredictPosition(end_position, kCarLength * 1.1).ShortDebugString() << std::endl
+            << " me: " << me.state().position().ShortDebugString() << std::endl
+            << " enemy: " << enemy.state().position().ShortDebugString() << std::endl
+            << std::endl;
+
   int enemy_time = enemy.TimeToPosition(car_tracker_.PredictPosition(end_position, kCarLength * 1.1), &enemy_prediction);
 
   printf("Predicting bump position, %d and %d steps done.\n", my_time, enemy_time);
