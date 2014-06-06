@@ -4,17 +4,9 @@ namespace schedulers {
 
 //TODO: Why the compiler asks me for explicit schedulers::?
 schedulers::Sched::Sched(game::CarTracker* car_tracker, int horizon)
-  : car_tracker_(car_tracker), throttles_(horizon, 0), distance_(0) {
+  : car_tracker_(car_tracker), throttles_(horizon, 0), distance_(0), switch_position_(-1) {
   // There is no state given, so we assume no initial speed, thus distance = 0, 
   // but this state of Sched is actually invalid, because no CarState is provided
-}
-
-game::CarState schedulers::Sched::Predict(const game::CarState& state) {
-  game::CarState next = state;
-  for (int i = 0; i<size(); ++i) {
-    next = car_tracker_->Predict(next, game::Command(throttles_[i]));
-  }
-  return next;
 }
 
 void schedulers::Sched::UpdateDistance(const game::CarState& state) {

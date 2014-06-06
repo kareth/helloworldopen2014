@@ -39,8 +39,6 @@ class Sched {
   vector<double> throttles_; // Breaks encapsulation, but need it, unfortunatelly
 
  private:
-  game::CarState Predict(const game::CarState& state);
- private:
 
   game::CarTracker* car_tracker_;
   double distance_;
