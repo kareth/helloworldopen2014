@@ -23,7 +23,10 @@ class DoublePathOptimizer : public PathOptimizerInterface {
   GreedyPathOptimizer greedy_;
   PerfectPathOptimizer perfect_;
 
+  std::unique_ptr<std::thread> optimizer_thread_;
+
   std::atomic_bool is_perfect_ready_;
+  bool optimizer_started_;
 };
 
 }  // namespace game

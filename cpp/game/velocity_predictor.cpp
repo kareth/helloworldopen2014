@@ -6,7 +6,22 @@ VelocityPredictor::VelocityPredictor(CarTracker& car_tracker, const Race& race)
   : car_tracker_(car_tracker), race_(race) {
 }
 
-void VelocityPredictor::Reset(const CarState& state) {
+namespace {
+
+CarState Flatten(CarState state) {
+  state.position_reference().set_start_lane(state.position().end_lane());
+  return state;
+}
+
+Position Flatten(Position position) {
+  position.set_start_lane(position.end_lane());
+  return position;
+}
+
+}  // Anonymous
+
+void VelocityPredictor::Reset(const CarState& raw_state) {
+  auto state = Flatten(raw_state);
   // If new point or faster one;
   if (!HasDataToPredict(state.position()) ||
       Velocity(state.position()) < state.velocity()) {
@@ -15,9 +30,11 @@ void VelocityPredictor::Reset(const CarState& state) {
   state_ = state;
 }
 
-void VelocityPredictor::Record(const CarState& state) {
-  if (IsOnExceedingSwitch(state))
+void VelocityPredictor::Record(const CarState& raw_state) {
+  if (IsOnExceedingSwitch(raw_state))
     return;
+
+  auto state = Flatten(raw_state);
 
   // If the point is 'something new' or if we just swapped lanes
   if (!HasDataToPredict(state.position()) ||
@@ -44,7 +61,9 @@ void VelocityPredictor::Record(const CarState& state) {
   AddPoint(state);
 }
 
-double VelocityPredictor::Velocity(const Position& p) const {
+double VelocityPredictor::Velocity(const Position& position) const {
+  auto p = Flatten(position);
+
   if (HasDataToPredict(p))
     return InterpolatePoint(Previous(p), Next(p), p);
 
@@ -79,7 +98,8 @@ bool VelocityPredictor::HasDataToPredict(const Position& p) const {
 
   auto previous = Previous(p);
   auto next = Next(p);
-  if (car_tracker_.DistanceBetween(previous.position(), next.position()) <=
+  if (car_tracker_.DistanceBetween(
+        previous.position(), next.position(), nullptr, next.velocity() * 3) <=
       next.velocity() + 1e-3) {
     return true;
   } else {

@@ -15,16 +15,17 @@ std::map<Switch, int> Score(const Position& position) override {
   if (is_perfect_ready_.load() == true) {
     return perfect_.Score(position);
   } else {
-    if (car_tracker_.IsReady()) {
+    if (optimizer_started_ == false && car_tracker_.IsReady()) {
       RunPerfectOptimizer();
       optimizer_started_ = true;
     }
-
     return greedy_.Score(position);
   }
 }
 
 void DoublePathOptimizer::RunPerfectOptimizer() {
+  optimizer_thread_.reset(
+      new std::thread(&PerfectPathOptimizer::Optimize, &perfect_));
 
 }
 

@@ -79,6 +79,7 @@ class CarState {
         switch_(switch_state), throttle_(throttle), turbo_state_(turbo_state) {
   }
 
+  Position& position_reference() { return position_; }
   const Position& position() const { return position_; }
   double velocity() const { return velocity_; }
 
