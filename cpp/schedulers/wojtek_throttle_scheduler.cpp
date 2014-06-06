@@ -100,6 +100,11 @@ void WojtekThrottleScheduler::PrintSchedule(const game::CarState& state, const S
   printf("\n");
 }
 
+bool WojtekThrottleScheduler::TimeToSwitch(int game_tick) {
+    //FIXME
+    return false;
+}
+
 void WojtekThrottleScheduler::Log(const game::CarState& state) {
   if (FLAGS_log_schedule) {
     PrintSchedule(state, best_schedule_, std::min(horizon_, 20));

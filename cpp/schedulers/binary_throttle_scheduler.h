@@ -33,6 +33,8 @@ class BinaryThrottleScheduler : public ThrottleScheduler {
                 const utils::Deadline& deadline, double distance_to_switch) override;
 
   const std::vector<double>& full_schedule() const override { return schedule_; }
+  
+  bool TimeToSwitch(int game_tick);
 
  private:
   static const bool kLoggerOn = true;
