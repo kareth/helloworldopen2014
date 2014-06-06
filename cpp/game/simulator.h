@@ -1,4 +1,3 @@
-
 #ifndef CPP_GAME_SIMULATOR_H_
 #define CPP_GAME_SIMULATOR_H_
 

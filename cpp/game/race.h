@@ -32,7 +32,7 @@ class Race {
   bool qualification_phase() const { return duration_ != 0; }
   bool race_phase() const { return duration_ == 0; }
 
-  jsoncons::json ToJson() { return data_; }
+  const jsoncons::json& ToJson() const { return data_; }
 
  private:
   int laps_ = 0;
