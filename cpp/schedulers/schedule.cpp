@@ -90,16 +90,19 @@ bool schedulers::Sched::IsSafe(const game::CarState& state, double distance_to_s
   for (int pos = 0; pos < size(); ++pos) {
     // Are angles safe?
     next = car_tracker_->Predict(next, game::Command(throttles_[pos]));
-    if (!car_tracker_->crash_model().IsSafe(next.position().angle()))
+    if (!car_tracker_->crash_model().IsSafe(next.position().angle())) {
+      std::cerr << "here: " << pos << std::endl;
       return false;
+    }
 
     if (check_switch) {
       // Check whether switch is planned in tick from range [0,pos]
       distance += next.velocity();
-      if (distance >= distance_to_switch) {
+      if (distance_to_switch <= distance) {
         bool switch_done = (switch_position_ >= 0 && switch_position_ <= pos);
         if (!switch_done) {
           // Switch was supposed to be done before distance_to_switch, but it was not
+          std::cerr << "check: " << pos << std::endl;
           return false;
         }
       }
@@ -107,9 +110,10 @@ bool schedulers::Sched::IsSafe(const game::CarState& state, double distance_to_s
   }
 
   // Check whether the planned switch is correct
-  if (check_switch && distance < distance_to_switch) {
+  if (check_switch && distance_to_switch <= distance) {
     if (switch_position_ < 0) {
         // We should have switch before the end of the horizon, but we have not
+        std::cerr << "bbbb: " << distance << " " << distance_to_switch << std::endl;
         return false; 
     }
 
