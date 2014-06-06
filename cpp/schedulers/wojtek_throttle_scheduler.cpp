@@ -90,7 +90,6 @@ bool WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tic
   return true; //FIXME
 }
 
-
 void WojtekThrottleScheduler::PrintSchedule(const game::CarState& state, const Sched& schedule, int len) {
   for (int i=0; i<len; ++i)
     printf("%.2f ", schedule[i]);
