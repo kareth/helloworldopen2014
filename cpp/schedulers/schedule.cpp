@@ -70,16 +70,18 @@ bool schedulers::Sched::IsSafe(const game::CarState& state, double distance_to_s
 
 // No guarantee it is still safe
 void schedulers::Sched::ShiftLeft(const game::CarState& state) {
-  for (int i =0; i<size()-1; ++i) {
-    throttles_[i] = throttles_[i+1];
+  for (int i = 0; i < size() - 1; ++i) {
+    throttles_[i] = throttles_[i + 1];
   }
-  throttles_[size()-1] = 0.0;
+  throttles_[size() - 1] = 0.0;
+  switch_position_ -= 1;
+
   UpdateDistance(state);
 }
 
 void schedulers::Sched::ShiftLeftFillSafe(const game::CarState& state, double distance_to_switch, double last_throttle) {
   ShiftLeft(state);
-  // Try to set 1.0
+  // Try 1.0 at the end
   throttles_[size() - 1] = 1.0;
   if (IsSafe(state, distance_to_switch, last_throttle)) {
     return ;
@@ -101,6 +103,7 @@ void schedulers::Sched::Reset(const game::CarState& state) {
   for (int i = 0; i<size(); ++i) {
     throttles_[i] = 0;
   }
+  switch_position_ = -1;
   UpdateDistance(state);
 }
 
