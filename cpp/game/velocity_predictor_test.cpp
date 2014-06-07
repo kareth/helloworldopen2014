@@ -77,7 +77,7 @@ TEST_F(VelocityPredictorTest, ShouldNotOverwriteHigherSpeed) {
   velocity_predictor_->Reset(BuildState(1, 10, 5));
   velocity_predictor_->Record(BuildState(1, 20, 10));
   velocity_predictor_->Record(BuildState(1, 35, 15));
-  velocity_predictor_->Record(BuildState(1, 45, 20));
+  velocity_predictor_->Record(BuildState(1, 55, 20));
 
   EXPECT_NEAR(7.5, velocity_predictor_->Velocity(BuildPosition(1, 10)), kEps);
   EXPECT_NEAR(17.5, velocity_predictor_->Velocity(BuildPosition(1, 40)), kEps);

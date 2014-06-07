@@ -36,29 +36,38 @@ void VelocityPredictor::Record(const CarState& raw_state) {
 
   auto state = Flatten(raw_state);
 
-  // If the point is 'something new' or if we just swapped lanes
-  if (!HasDataToPredict(state.position()) ||
-      state.position().end_lane() != state_.position().end_lane()) {
-    AddPoint(state);
-    return;
+  if (state.position().end_lane() != state_.position().end_lane()) { // If we just swapped lanes
+    Reset(raw_state);
   }
-
-  // Check for all points between last point and current point and check if they are below
-  // the line between aforementioned 2 points
-  auto point = state;
-  while (true) {
-    point = Next(point.position());
-
-    if (car_tracker_.DistanceBetween(point.position(), state.position()) >
-        car_tracker_.DistanceBetween(state.position(), point.position()))
-      break;
-
-    auto new_velocity = InterpolatePoint(state_, state, point.position());
-    if (new_velocity > point.velocity())
-      points[point.position().end_lane()].erase(point);
+  else if (!HasDataToPredict(state.position())) {   // If the point is 'something new'
+    points[state.position().end_lane()].insert(state);
+    state_ = state;
   }
+  else {
+    // Check for all points between last point and current point and check if they are below
+    // the line between aforementioned 2 points
+    bool should_add = (Velocity(state.position()) < state.velocity());
 
-  AddPoint(state);
+    auto point = state_;
+    while (true) {
+      point = Next(point.position());
+
+      // ... state_ ........ point ....... state ...
+      if (car_tracker_.DistanceBetween(
+            state_.position(), point.position()) >=
+          car_tracker_.DistanceBetween(
+            state_.position(), state.position()))
+        break;
+
+      auto new_velocity = InterpolatePoint(state_, state, point.position());
+      if (new_velocity > point.velocity())
+        points[point.position().end_lane()].erase(point);
+    }
+
+    if (should_add)
+      points[state.position().end_lane()].insert(state);
+    state_ = state;
+  }
 }
 
 double VelocityPredictor::Velocity(const Position& position) const {
@@ -82,6 +91,7 @@ double VelocityPredictor::Velocity(const Position& position) const {
 }
 
 void VelocityPredictor::AddPoint(const CarState& state) {
+  // If new point or faster one;
   points[state.position().end_lane()].insert(state);
   state_ = state;
 }
