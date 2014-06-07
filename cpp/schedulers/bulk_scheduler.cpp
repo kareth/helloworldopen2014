@@ -88,7 +88,7 @@ void BulkScheduler::Overtake(const string& color) {
 
 void BulkScheduler::IssuedCommand(const game::Command& command) {
   if (command.SwitchSet()) {
-    printf("Switch\n");
+    printf("Switch (%d)\n", int(command.get_switch()));
     switch_scheduler_->Switched();
   } else if (command.TurboSet()) {
     printf("YABADABADUUUU\n");

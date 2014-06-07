@@ -88,6 +88,7 @@ add_subdirectory(data)
 target_link_libraries(game
   ${Boost_LIBRARIES}
   common_flags
+  bots
 )
 
 add_executable(game_tests ${GAME_TESTS})
