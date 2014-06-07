@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include "game/path_optimizer_interface.h"
+#include "game/velocity_predictor.h"
 
 namespace bots {
 namespace switch_optimizer {
@@ -36,6 +37,8 @@ class PerfectPathOptimizer : public PathOptimizerInterface {
   // [piece][lane]
   vector<vector<double>> lane_times_;
   vector<vector<map<Switch, double>>> lane_scores_;
+
+  VelocityPredictor velocity_predictor_;
 
   // IMPORTANT: COPIES
   Race race_;

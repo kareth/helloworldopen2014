@@ -18,12 +18,15 @@
 
 #include "schedulers/wojtek_throttle_scheduler.h"
 
+#include "game/velocity_predictor.h"
+
 namespace bots {
 namespace switch_optimizer {
 
 class Bot : public bots::BotInterface {
  public:
   Bot();
+  explicit Bot(game::VelocityPredictor* velocity_predictor);
   ~Bot();
 
   void JoinedGame() override {}
@@ -53,6 +56,9 @@ class Bot : public bots::BotInterface {
 
   game::Race race_;
   std::vector<game::CarState> states_;
+
+  game::VelocityPredictor* velocity_predictor_;
+  std::unique_ptr<game::VelocityPredictor> velocity_predictor_uniq_;
 
   std::string color_;
   bool started_ = false;

@@ -8,7 +8,8 @@ namespace game {
 
 
 PerfectPathOptimizer::PerfectPathOptimizer(const Race& race, const PhysicsParams& physics)
-  : race_(race), physics_(physics), car_tracker_(&race_, physics) {
+  : race_(race), physics_(physics), car_tracker_(&race_, physics),
+    velocity_predictor_(car_tracker_, race_) {
 }
 
 std::map<Switch, int> PerfectPathOptimizer::Score(const Position& position) {
@@ -31,9 +32,10 @@ void PerfectPathOptimizer::SimulateLanes() {
   for (int i = 0; i < lane_times_.size(); i++)
     lane_times_[i].resize(race_.track().lanes().size());
 
-
   for (int lane = 0; lane < race_.track().lanes().size(); lane++) {
-     bots::RawBot raw(new bots::switch_optimizer::Bot());
+     std::unique_ptr<bots::switch_optimizer::Bot> bot(new bots::switch_optimizer::Bot(&velocity_predictor_));
+
+     bots::RawBot raw(bot.get());
      Simulator simulator;
 
      Simulator::Options opt;
@@ -43,7 +45,7 @@ void PerfectPathOptimizer::SimulateLanes() {
 
      simulator.Run(&raw, opt);
 
-     ParseBotData(lane, static_cast<bots::switch_optimizer::Bot*>(raw.bot()));
+     ParseBotData(lane, static_cast<bots::switch_optimizer::Bot*>(bot.get()));
   }
 }
 

@@ -17,7 +17,11 @@ using schedulers::Strategy;
 namespace bots {
 namespace switch_optimizer {
 
-Bot::Bot() {
+Bot::Bot() : velocity_predictor_(nullptr) {
+}
+
+Bot::Bot(game::VelocityPredictor* velocity_predictor)
+  : velocity_predictor_(velocity_predictor) {
 }
 
 Bot::~Bot() {
@@ -29,6 +33,11 @@ void Bot::NewRace(const Race& race) {
   car_tracker_.reset(new CarTracker(&race_, PhysicsParams::Load()));
 
   throttle_scheduler_.reset(new schedulers::WojtekThrottleScheduler(race, *car_tracker_.get()));
+
+  if (velocity_predictor_ == nullptr) {
+    velocity_predictor_uniq_.reset(new game::VelocityPredictor(*car_tracker_.get(), race_));
+    velocity_predictor_ = velocity_predictor_uniq_.get();
+  }
 }
 
 game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick)  {
@@ -38,7 +47,10 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
   auto& state = car_tracker_->current_state();
   states_.push_back(state);
 
-  //velocity_tracker_.Record(state);
+  if (game_tick > 1)
+    velocity_predictor_->Record(state);
+  else
+    velocity_predictor_->Reset(state);
 
   if (crashed_) return Command(0);
 
