@@ -26,7 +26,7 @@ physics = range(0,6)
 
 NO_LAPS = 3
 
-MAX_TIME_TO_MOVE_MS = 3.0
+MAX_TIME_TO_MOVE_MS = 30.0
 
 def avg(x):
     return sum(x)/len(x)

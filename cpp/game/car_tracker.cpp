@@ -99,11 +99,17 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
   // Return distance when starting from initial velocity and using throttles
 double CarTracker::PredictDistance(const CarState& state, 
     const vector<double>& throttles) const {
-  double distance = 0;
+  TurboState turbo_state = state.turbo_state();
   double velocity = state.velocity();
-  for (int i = 0; i < throttles.size(); ++i) {
-      velocity = velocity_model_.Predict(velocity, throttles[i]);
-      distance += velocity;
+
+  double distance = 0;
+  for (double throttle : throttles) {
+    if (turbo_state.is_on()) {
+      throttle *= turbo_state.turbo().factor();
+      turbo_state.Decrement();
+    }
+    velocity = velocity_model_.Predict(velocity, throttle);
+    distance += velocity;
   }
   return distance;
 }
