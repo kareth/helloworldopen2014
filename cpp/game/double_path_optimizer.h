@@ -2,6 +2,7 @@
 #define CPP_GAME_DOUBLE_PATH_OPTIMIZER_H_
 
 #include <thread>
+#include <atomic>
 #include "game/path_optimizer_interface.h"
 #include "game/greedy_path_optimizer.h"
 #include "game/perfect_path_optimizer.h"

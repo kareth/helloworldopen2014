@@ -4,7 +4,7 @@
 #include <algorithm>
 #include "game/path_optimizer_interface.h"
 #include "game/velocity_predictor.h"
-#include <thread>
+#include <atomic>
 
 namespace bots {
 namespace switch_optimizer {
