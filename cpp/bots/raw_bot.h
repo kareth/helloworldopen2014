@@ -21,6 +21,8 @@ class RawBot {
   explicit RawBot(BotInterface* bot);
   ~RawBot();
 
+  BotInterface* bot() { return bot_.get(); }
+
   std::vector<jsoncons::json> React(const jsoncons::json& msg);
 
  private:

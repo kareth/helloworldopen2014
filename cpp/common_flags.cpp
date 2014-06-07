@@ -22,3 +22,5 @@ DEFINE_bool(write_switch_models, false, "If true, switch models (length + radius
 DEFINE_bool(log_overtaking, false, "log overtaking scores");
 DEFINE_bool(always_switch, false, "");
 DEFINE_bool(force_safe_angle, false, "");
+
+DEFINE_bool(log_simulator_csv, false, "Log in simulator to data.csv");

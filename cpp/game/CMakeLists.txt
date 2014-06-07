@@ -60,6 +60,7 @@ set(GAME_HEADERS
   path_optimizer_interface.h
   double_path_optimizer.h
   perfect_path_optimizer.h
+  simulator.h
 )
 
 set(GAME_TESTS

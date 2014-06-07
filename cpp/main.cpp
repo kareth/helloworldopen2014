@@ -17,6 +17,7 @@
 #include "bots/stepping/bot.h"
 #include "bots/constant/bot.h"
 #include "bots/kamikaze/bot.h"
+#include "bots/switch_optimizer/bot.h"
 
 DEFINE_string(track, "", "The track to join the race. Possible options: keimola, germany, usa.");
 DEFINE_int32(num_players, 1, "The number of players that will race (including you)");
@@ -42,6 +43,8 @@ bots::BotInterface* GetBot(const string& bot_algorithm) {
     return new bots::constant::Bot();
   if (bot_algorithm == "kamikaze")
     return new bots::kamikaze::Bot();
+  if (bot_algorithm == "switch_optimizer")
+    return new bots::switch_optimizer::Bot();
 
   return new bots::basic::Bot();
 }

@@ -4,8 +4,9 @@
 #include <fstream>
 #include <chrono>
 #include "utils/stopwatch.h"
+#include "bots/raw_bot.h"
 
-DEFINE_bool(log_simulator_csv, false, "Log in simulator to data.csv");
+DECLARE_bool(log_simulator_csv);
 
 using jsoncons::json;
 

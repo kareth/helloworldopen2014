@@ -1,9 +1,18 @@
 #ifndef CPP_GAME_PERFECT_PATH_OPTIMIZER_H_
 #define CPP_GAME_PERFECT_PATH_OPTIMIZER_H_
 
+#include <algorithm>
 #include "game/path_optimizer_interface.h"
 
+namespace bots {
+namespace switch_optimizer {
+  class Bot;
+}
+}
+
 namespace game {
+
+class Simulator;
 
 class PerfectPathOptimizer : public PathOptimizerInterface {
  public:
@@ -17,12 +26,15 @@ class PerfectPathOptimizer : public PathOptimizerInterface {
   void Optimize(std::atomic_bool* ready_flag);
 
  private:
+  double LapLength(int piece, int lane);
+  void ParseBotData(bots::switch_optimizer::Bot* bot);
+
   void SimulateLanes();
   void ComputeScores();
 
   // [piece][lane]
   vector<vector<double>> lane_times_;
-  vector<vector<map<Switch, int>>> lane_scores_;
+  vector<vector<map<Switch, double>>> lane_scores_;
 
   // IMPORTANT: COPIES
   Race race_;
