@@ -12,7 +12,7 @@ namespace schedulers {
 
 class Straight {
  public:
-  Straight(int length, int from, int to)
+  Straight(double length, int from, int to)
     : length_(length), from_(from), to_(to) {}
 
   double length() const { return length_; }
@@ -20,7 +20,7 @@ class Straight {
   int to() const { return to_; }
 
  private:
-  int length_;
+  double length_;
   int from_;
   int to_;
 };
