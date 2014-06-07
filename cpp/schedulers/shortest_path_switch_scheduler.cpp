@@ -43,18 +43,18 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
   auto obstacle_scores = race_tracker_.ScoreLanes(state);
 
   Switch best_direction = Switch::kStay;
-  int best_score = -10000000;
+  double best_score = -10000000;
 
   for (auto& el : time_loss) {
     Switch dir = el.first;
 
     // TODO improve weights on scores
-    int score =
+    double score =
       - time_loss[dir]                       // ticks
       + std::min(0, obstacle_scores[dir]) * 1000  // overtaking strictly more important
       + std::max(0, obstacle_scores[dir]) * 1;    // bumping just a bit better
 
-    if (score > best_score) {
+    if (score > best_score || (score == best_score && dir == Switch::kStay)) {
       best_score = score;
       best_direction = dir;
     }

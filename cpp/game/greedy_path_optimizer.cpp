@@ -6,8 +6,8 @@ GreedyPathOptimizer::GreedyPathOptimizer(const Race& race, CarTracker& car_track
   : race_(race), car_tracker_(car_tracker) {
 }
 
-std::map<Switch, int> GreedyPathOptimizer::Score(const Position& position) {
-  std::map<Switch, int> res;
+std::map<Switch, double> GreedyPathOptimizer::Score(const Position& position) {
+  std::map<Switch, double> res;
 
   // We evaluate next two switches to decide if we should change the lane.
   int from = race_.track().NextSwitch(position.piece());
@@ -16,7 +16,7 @@ std::map<Switch, int> GreedyPathOptimizer::Score(const Position& position) {
   Position end_position;
   end_position.set_piece(to);
 
-  int min_time = 1000000;
+  double min_time = 1000000;
   for (int offset = -1; offset <= 1; offset++) {
     int lane = position.end_lane() + offset;
     if (race_.track().IsLaneCorrect(lane)) {

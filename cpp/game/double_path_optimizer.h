@@ -16,7 +16,7 @@ class DoublePathOptimizer : public PathOptimizerInterface {
   // Returns all possible decisions with associated score
   // score means the loss of time (lap-wise) compared to optimal choice
   // so atleast one lane will always have value of 0
-  std::map<Switch, int> Score(const Position& position) override;
+  std::map<Switch, double> Score(const Position& position) override;
 
  private:
   void RunPerfectOptimizer();

@@ -12,7 +12,7 @@ class PathOptimizerInterface {
    // Returns all possible decisions with associated score
    // score means the loss of time (lap-wise) compared to optimal choice
    // so atleast one lane will always have value of 0
-   virtual std::map<Switch, int> Score(const Position& position) = 0;
+   virtual std::map<Switch, double> Score(const Position& position) = 0;
 
  private:
 };

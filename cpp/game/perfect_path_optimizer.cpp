@@ -6,25 +6,27 @@
 
 namespace game {
 
+DEFINE_bool(perfect_switches, false, "Calculate switches magically");
 
 PerfectPathOptimizer::PerfectPathOptimizer(const Race& race, const PhysicsParams& physics)
   : race_(race), physics_(physics), car_tracker_(&race_, physics),
     velocity_predictor_(car_tracker_, race_) {
 }
 
-std::map<Switch, int> PerfectPathOptimizer::Score(const Position& position) {
-  //return lane_scores_[position.piece()][position.end_lane()];
-  return std::map<Switch, int>();
+std::map<Switch, double> PerfectPathOptimizer::Score(const Position& position) {
+  return lane_scores_[position.piece()][position.end_lane()];
 }
 
 void PerfectPathOptimizer::Optimize(std::atomic<bool>* ready_flag) {
-  printf("---------- Switch Optimizer Started!\n");
-  printf("---------- Starting simulation\n");
-  SimulateLanes();
-  printf("---------- Simulation done, calculating scores\n");
-  ComputeScores();
-  //ready_flag->store(true);
-  printf("---------- Optimizer Finished!\n");
+  if (FLAGS_perfect_switches) {
+    printf("---------- Switch Optimizer Started!\n");
+    printf("---------- Starting simulation\n");
+    SimulateLanes();
+    printf("---------- Simulation done, calculating scores\n");
+    ComputeScores();
+    ready_flag->store(true);
+    printf("---------- Optimizer Finished!\n");
+  }
 }
 
 void PerfectPathOptimizer::SimulateLanes() {
@@ -49,8 +51,8 @@ void PerfectPathOptimizer::SimulateLanes() {
 
 // TODO we can take average of 3 laps
 void PerfectPathOptimizer::ParseBotData(int lane, bots::switch_optimizer::Bot* bot) {
-  printf("------------- Total steps: %lu\n", bot->states().size());
-  printf("------------- Parsing lane data!\n");
+  //printf("------------- Total steps: %lu\n", bot->states().size());
+  //printf("------------- Parsing lane data!\n");
 
   auto& states = bot->states();
 
@@ -78,7 +80,7 @@ void PerfectPathOptimizer::ParseBotData(int lane, bots::switch_optimizer::Bot* b
 
     // Current - time spent on piece p
     lane_times_[p][lane] = current;
-    printf("%d %d %lf\n",lane, p, current);
+    //printf("%d %d %lf\n",lane, p, current);
 
     beg = pos;
   }
@@ -124,17 +126,19 @@ void PerfectPathOptimizer::ComputeScores() {
   for (int piece = 0; piece < lane_times_.size(); piece++) {
     for (int lane = 0; lane < lane_times_[piece].size(); lane++) {
 
+      int next_switch = race_.track().NextSwitch(piece);
+
       double shortest = 1000000;
       if (lane > 0) {
-        lane_scores_[piece][lane][Switch::kSwitchLeft] = LapLength(piece + 1, lane - 1);
+        lane_scores_[piece][lane][Switch::kSwitchLeft] = LapLength(next_switch, lane - 1);
         shortest = std::min(shortest, lane_scores_[piece][lane][Switch::kSwitchLeft]);
       }
 
-      lane_scores_[piece][lane][Switch::kStay] = LapLength(piece + 1, lane);
+      lane_scores_[piece][lane][Switch::kStay] = LapLength(next_switch, lane);
       shortest = std::min(shortest, lane_scores_[piece][lane][Switch::kStay]);
 
       if (lane < lane_scores_[piece].size() - 1) {
-        lane_scores_[piece][lane][Switch::kSwitchRight] = LapLength(piece + 1, lane + 1);
+        lane_scores_[piece][lane][Switch::kSwitchRight] = LapLength(next_switch, lane + 1);
         shortest = std::min(shortest, lane_scores_[piece][lane][Switch::kSwitchRight]);
       }
 
@@ -142,6 +146,10 @@ void PerfectPathOptimizer::ComputeScores() {
         lane_scores_[piece][lane][el.first] = lane_scores_[piece][lane][el.first] - shortest;
     }
   }
+
+  //for (int piece = 0; piece < lane_times_.size(); piece++)
+  //  printf("%d > %lf %lf\n",piece, lane_scores_[piece][0][Switch::kStay], lane_scores_[piece][0][Switch::kSwitchRight] );
+
 }
 
 // Its slow as !@#$, but who cares...
@@ -165,11 +173,13 @@ double PerfectPathOptimizer::LapLength(int piece, int lane) {
     for (int l = 0; l < dp[p].size(); l++)  // kStay
       dp[next][l] = dp[curr][l];
 
-    for (int l = 0; l < dp[p].size() - 1; l++)  // kRight
-      dp[next][l] = min(dp[curr][l + 1], dp[next][l]);
+    if (race_.track().pieces()[next].has_switch()) {
+      for (int l = 0; l < dp[p].size() - 1; l++)  // kRight
+        dp[next][l] = min(dp[curr][l + 1], dp[next][l]);
 
-    for (int l = 1; l < dp[p].size(); l++)  // kLeft
-      dp[next][l] = min(dp[curr][l - 1], dp[next][l]);
+      for (int l = 1; l < dp[p].size(); l++)  // kLeft
+        dp[next][l] = min(dp[curr][l - 1], dp[next][l]);
+    }
 
     for (int l = 0; l < dp[p].size(); l++)   // add lengths
       dp[next][l] += lane_times_[next][l];
@@ -180,7 +190,7 @@ double PerfectPathOptimizer::LapLength(int piece, int lane) {
   for (int l = 0; l < dp[prev].size(); l++)
     best = min(best, dp[prev][l]);
 
-  printf("%d %d : %lf\n",piece, lane, best);
+  //printf("%d %d : %lf\n",piece, lane, best);
 
   return best;
 }
