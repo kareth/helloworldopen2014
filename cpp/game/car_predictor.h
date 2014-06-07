@@ -113,6 +113,14 @@ class CarState {
     return ss.str();
   }
 
+  std::string ShortDebugString() const {
+    std::stringstream ss;
+    ss << "position: " << position_.ShortDebugString();
+    ss << " switch: " << as_integer(switch_);
+    ss << " velocity: " << velocity_;
+    ss << " previous_angle: " << previous_angle_;
+    return ss.str();
+  }
 
   // This is used to predict bumps. Maybe we should write
   // method in car tracker (Bump(state1, state2)?).

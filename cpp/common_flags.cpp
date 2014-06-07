@@ -6,7 +6,7 @@ DEFINE_int32(handicap, 0, "");
 DEFINE_bool(check_if_safe_ahead, true, "");
 DEFINE_int32(answer_time, 7000, "Time limit for answer in ms");
 
-
+DEFINE_bool(disable_attack, false, "");
 DEFINE_bool(bump_with_turbo, true, "kamikazebumps");
 DEFINE_bool(defend_turbo_bump, false, "Defend against people that have bump_with_turbo");
 
@@ -21,3 +21,6 @@ DEFINE_bool(write_switch_models, false, "If true, switch models (length + radius
 
 DEFINE_bool(log_overtaking, false, "log overtaking scores");
 DEFINE_bool(always_switch, false, "");
+DEFINE_bool(force_safe_angle, false, "");
+
+DEFINE_bool(log_simulator_csv, false, "Log in simulator to data.csv");

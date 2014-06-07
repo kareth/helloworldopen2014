@@ -12,6 +12,7 @@ DECLARE_bool(check_if_safe_ahead);
 
 DECLARE_string(throttle_scheduler);
 DECLARE_string(switch_scheduler);
+DECLARE_bool(disable_attack);
 
 namespace schedulers {
 
@@ -30,7 +31,8 @@ BulkScheduler::BulkScheduler(const game::Race& race,
 }
 
 void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline) {
-  bump_scheduler_->Schedule(state);
+  if (!FLAGS_disable_attack) {
+    bump_scheduler_->Schedule(state);
 
   if (bump_scheduler_->HasTarget()) {
     command_ = bump_scheduler_->command();
@@ -70,10 +72,14 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const u
   }
 
   game::Command safe_command;
-  if (FLAGS_check_if_safe_ahead &&
-      !race_tracker_.IsSafeInFront(state_with_switch, command_, &safe_command)) {
-    command_ = safe_command;
-    std::cout << "INFO: It is not safe in front. Slowing down." << std::endl;
+  if (FLAGS_check_if_safe_ahead) {
+    // Make sure that if we want to make switch now, we don't use state_with_switch.
+    // That could cause us to ignore the switch even though we haven't actually switched.
+    const game::CarState* s = command_.SwitchSet() ? &state : &state_with_switch;
+    if (!race_tracker_.IsSafeAhead(*s, command_, &safe_command)) {
+      std::cout << "INFO: It is not safe ahead. Slowing down." << std::endl;
+      command_ = safe_command;
+    }
   }
 
   if (!command_.SwitchSet() && !command_.TurboSet())
@@ -96,7 +102,7 @@ void BulkScheduler::Overtake(const string& color) {
 
 void BulkScheduler::IssuedCommand(const game::Command& command) {
   if (command.SwitchSet()) {
-    printf("Switch\n");
+    printf("Switch (%d)\n", int(command.get_switch()));
     switch_scheduler_->Switched();
   } else if (command.TurboSet()) {
     printf("YABADABADUUUU\n");

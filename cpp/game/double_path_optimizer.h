@@ -1,10 +1,11 @@
 #ifndef CPP_GAME_DOUBLE_PATH_OPTIMIZER_H_
 #define CPP_GAME_DOUBLE_PATH_OPTIMIZER_H_
 
+#include <thread>
+#include <atomic>
 #include "game/path_optimizer_interface.h"
 #include "game/greedy_path_optimizer.h"
 #include "game/perfect_path_optimizer.h"
-#include <thread>
 
 namespace game {
 
@@ -15,7 +16,7 @@ class DoublePathOptimizer : public PathOptimizerInterface {
   // Returns all possible decisions with associated score
   // score means the loss of time (lap-wise) compared to optimal choice
   // so atleast one lane will always have value of 0
-  std::map<Switch, int> Score(const Position& position) override;
+  std::map<Switch, double> Score(const Position& position) override;
 
  private:
   void RunPerfectOptimizer();
@@ -28,7 +29,7 @@ class DoublePathOptimizer : public PathOptimizerInterface {
 
   std::unique_ptr<std::thread> optimizer_thread_;
 
-  std::atomic_bool is_perfect_ready_;
+  std::atomic<bool> is_perfect_ready_;
   bool optimizer_started_;
 };
 

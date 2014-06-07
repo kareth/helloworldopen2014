@@ -49,6 +49,7 @@ target_link_libraries(bot
   bots_stepping
   bots_constant
   bots_kamikaze
+  bots_switch_optimizer
   common_flags
   game
   physics
@@ -67,6 +68,7 @@ target_link_libraries(throttle_tester
   bots_stepping
   bots_constant
   bots_kamikaze
+  bots_switch_optimizer
   common_flags
   game
   physics

@@ -11,7 +11,7 @@ DoublePathOptimizer::DoublePathOptimizer(const Race& race, CarTracker& car_track
   optimizer_started_ = false;
 }
 
-std::map<Switch, int> DoublePathOptimizer::Score(const Position& position) {
+std::map<Switch, double> DoublePathOptimizer::Score(const Position& position) {
   if (is_perfect_ready_.load() == true) {
     return perfect_.Score(position);
   } else {

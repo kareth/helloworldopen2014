@@ -60,6 +60,7 @@ set(GAME_HEADERS
   path_optimizer_interface.h
   double_path_optimizer.h
   perfect_path_optimizer.h
+  simulator.h
 )
 
 set(GAME_TESTS
@@ -87,6 +88,7 @@ add_subdirectory(data)
 target_link_libraries(game
   ${Boost_LIBRARIES}
   common_flags
+  bots
 )
 
 add_executable(game_tests ${GAME_TESTS})

@@ -214,6 +214,49 @@ bool CarTracker::IsSafe(const CarState& state, double safe_speed) {
   return true;
 }
 
+bool CarTracker::GenerateSafeStates(const CarState& state, vector<CarState>* states) {
+  for (int i = 0; i < 15; ++i) {
+    vector<CarState> tmp;
+    if (!InternalAddStates(state, Command(1), i, &tmp)) {
+      break;
+    }
+    if (InternalGenerateSafeStates(tmp.size() > 0 ? tmp.back() : state, &tmp)) {
+      if (states) states->insert(states->end(), tmp.begin(), tmp.end());
+      return true;
+    }
+  }
+  return false;
+}
+
+bool CarTracker::InternalGenerateSafeStates(const CarState& state, vector<CarState>* states) {
+  auto s = state;
+  for (int i = 0; i < 100; ++i) {
+    if (!crash_model_.IsSafe(s.position().angle())) {
+      return false;
+    }
+    if (s.velocity() < 3 &&
+        fabs(s.position().angle() - s.previous_angle()) < 2 &&
+        s.position().angle() < 10) {
+      break;
+    }
+    s = Predict(s, Command(0));
+    if (states) states->push_back(s);
+  }
+  return true;
+}
+
+bool CarTracker::InternalAddStates(const CarState& state, Command command, int count, vector<CarState>* states) {
+  auto s = state;
+  for (int i = 0; i < count; ++i) {
+    s = Predict(s, command);
+    if (states) states->push_back(s);
+    if (!crash_model_.IsSafe(s.position().angle())) {
+      return false;
+    }
+  }
+  return true;
+}
+
 bool CarTracker::IsReady() const {
   return velocity_model_.IsReady() && drift_model_.IsReady();
 }
@@ -262,7 +305,7 @@ CarState CarTracker::CreateCarState(const CarState& prev, const Position& positi
   return CarState(position, velocity, prev.position().angle(), Switch::kStay, 0.0, turbo_state);
 }
 
-double CarTracker::DistanceBetween(const Position& position1, const Position& position2, bool* is_perfect, double max_distance) {
+double CarTracker::DistanceBetween(const Position& position1, const Position& position2, bool* is_perfect, double max_distance) const {
   bool tmp_perfect = true;
   if (is_perfect != nullptr) *is_perfect = true;
   double distance = 0.0;
@@ -300,7 +343,7 @@ double CarTracker::DistanceBetween(const Position& position1, const Position& po
   return distance;
 }
 
-Position CarTracker::PredictPosition(const Position& position, double distance, int target_lane) {
+Position CarTracker::PredictPosition(const Position& position, double distance, int target_lane) const {
   if (target_lane == -1) target_lane = position.end_lane();
 
   Position result = position;
@@ -336,7 +379,7 @@ Position CarTracker::PredictPosition(const Position& position, double distance, 
   return result;
 }
 
-bool CarTracker::MinVelocity(const CarState& car_state, int ticks, const Position& target, double* min_velocity, int* full_throttle_ticks) {
+bool CarTracker::MinVelocity(const CarState& car_state, int ticks, const Position& target, double* min_velocity, int* full_throttle_ticks) const {
   // TODO we should improve this method!
   double distance = DistanceBetween(car_state.position(), target);
   if (distance > 1000) return false;
@@ -462,5 +505,159 @@ PhysicsParams CarTracker::CreatePhysicsParams() {
   physics_params.switch_radius_params = radius_model_.CreateParams();
   return physics_params;
 }
+
+// Note: This method is slow and performance can be improved in many places.
+bool CarTracker::CanBumpAfterNTicks(
+    const CarState& my_state,
+    const CarState& enemy_state,
+    int ticks_after,
+    double* min_velocity) const {
+  // The minimum and maximum distance enemy can travel.
+  double enemy_min_distance = 1000000000.0;
+  double enemy_max_distance = 0.0;
+  for (int full_throttle_ticks = 0; full_throttle_ticks <= ticks_after; full_throttle_ticks += ticks_after) {
+    double v = enemy_state.velocity();
+    double d = 0.0;
+    for (int i = 0; i < full_throttle_ticks; ++i) { v = velocity_model_.Predict(v, 1); d += v; }
+    for (int i = 0; i < ticks_after - full_throttle_ticks; ++i) { v = velocity_model_.Predict(v, 0); d += v; }
+
+    if (full_throttle_ticks == 0) {
+      enemy_min_distance = d;
+    } else {
+      enemy_max_distance = d;
+    }
+  }
+  // std::cout << "ticks_after: " << ticks_after << std::endl;
+  // std::cout << "enemy_position: " << enemy_state.position().ShortDebugString() << std::endl;
+  // std::cout << "enemy_min_distance: " << enemy_min_distance << std::endl
+  //           << "enemy_max_distance: " << enemy_max_distance << std::endl;
+
+  const double kCarLength = race_->cars().at(0).length();
+
+  Position min_position = my_state.position();
+  // NOTE: Not passing target lane is intentional beucase bumping on switches
+  // is strange. If we are just before the switch, we can only bump into people
+  // that are not changing lanes on the switch. If someone is changing the lane
+  // then bump will not happen.
+  Position max_position = PredictPosition(my_state.position(), kCarLength);
+
+  // std::cout << "min_position: " << min_position.ShortDebugString() << std::endl
+  //           << "max_position: " << max_position.ShortDebugString() << std::endl;
+
+  // We substract the distance in min_position instead of using DistanceBetween,
+  // because of standing cars. If cars stands exactly between min and max, then
+  // distance from enemy position to min_position would be huge (and we don't want
+  // that).
+  double distance_to_max_position = DistanceBetween(enemy_state.position(), max_position);
+  double distance_to_min_position = distance_to_max_position - kCarLength;
+
+  // std::cout << "distance_to_min_position: " << distance_to_min_position << std::endl
+  //           << "distance_to_max_position: " << distance_to_max_position << std::endl;
+
+  // Check if the enemy can even get to the bumping range using 'ticks_after'.
+  if (enemy_max_distance < distance_to_min_position ||
+      distance_to_max_position < enemy_min_distance) {
+    // std::cout << "It is NOT possible for enemy to get to bumping range" << std::endl;
+    return false;
+  }
+
+  // std::cout << "It is possible for enemy to get to bumping position" << std::endl;
+
+  // This is a special case for switches.
+  if (enemy_max_distance < distance_to_max_position) {
+    if (DistanceBetween(min_position, PredictPosition(enemy_state.position(), enemy_max_distance, max_position.end_lane()), nullptr, kCarLength + 1) >= kCarLength + 1e-9) {
+      // std::cout << "He is on the switch but he can't bump me" << std::endl;
+      return false;
+    }
+  }
+
+  for (int full_throttle_ticks = 0; full_throttle_ticks <= ticks_after; full_throttle_ticks++) {
+    double v = enemy_state.velocity();
+    double d = 0.0;
+    for (int i = 0; i < full_throttle_ticks; ++i) { v = velocity_model_.Predict(v, 1); d += v; }
+    for (int i = 0; i < ticks_after - full_throttle_ticks; ++i) { v = velocity_model_.Predict(v, 0); d += v; }
+
+    if (d < distance_to_min_position || full_throttle_ticks == 0) {
+      *min_velocity = v;
+    }
+  }
+
+  if (*min_velocity > my_state.velocity()) {
+    // std::cout << "Enemy has higher velocity than we (he was probably behind us)" << std::endl;
+    return false;
+  }
+
+  return true;
+}
+
+bool CarTracker::IsBumpInevitable(
+    const CarState& my_state_before,
+    const CarState& my_state_after,
+    const CarState& enemy_state,
+    int ticks_after) const {
+  const double kCarLength = race_->cars().at(0).length();
+  double v = enemy_state.velocity();
+  double enemy_distance = 0.0;
+  for (int i = 0; i < ticks_after; ++i) {
+    v = velocity_model_.Predict(v, 1);
+    enemy_distance += v;
+  }
+
+  // Can change lanes within distance?
+  int target_lane = enemy_state.position().end_lane();
+  if (target_lane > 0) target_lane--;
+  else target_lane++;
+
+  Position bump_position = PredictPosition(my_state_after.position(), kCarLength);
+
+  Position enemy_position_after = PredictPosition(enemy_state.position(), enemy_distance, target_lane);
+  // He was able to switch lane.
+  if (enemy_position_after.start_lane() == target_lane) {
+    // std::cout << "Enemy is able to switch lane" << std::endl;
+    return false;
+  }
+
+  double my_distance = DistanceBetween(my_state_before.position(), bump_position);
+
+  double check_distance =
+      DistanceBetween(my_state_before.position(), enemy_state.position(), nullptr, my_distance) +
+      enemy_distance +
+      DistanceBetween(enemy_position_after, bump_position, nullptr, my_distance);
+
+  if (fabs(my_distance - check_distance) < 1e-5) {
+    return true;
+  }
+
+  // std::cout << "my_state_before: " << my_state_before.position().ShortDebugString() << std::endl;
+  // std::cout << "bump_position: " << bump_position.ShortDebugString() << std::endl;
+  // std::cout << "enemy_position: " << enemy_state.position().ShortDebugString() << std::endl;
+  // std::cout << "enemy_position_after: " << enemy_position_after.ShortDebugString() << std::endl;
+
+  // std::cout << "my_distance: " << my_distance << std::endl;
+  // std::cout << "enemy_distance: " << enemy_distance << std::endl;
+  // std::cout << "check_distance: " << check_distance << std::endl;
+
+  return false;
+}
+
+bool CarTracker::IsSafeAttack(
+    const CarState& current_state,
+    const CarState& enemy_state,
+    Command* command) {
+  if (DistanceBetween(current_state.position(), enemy_state.position()) > 100) {
+    return false;
+  }
+
+  CarState my_state = current_state;
+  for (int ticks_after = 1; ticks_after < 100; ++ticks_after) {
+
+    if (!crash_model_.IsSafe(my_state.position().angle())) {
+      return false;
+    }
+  }
+
+  return false;
+}
+
 
 }  // namespace game
