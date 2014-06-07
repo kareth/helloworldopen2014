@@ -6,8 +6,9 @@
 
 namespace game {
 
+
 PerfectPathOptimizer::PerfectPathOptimizer(const Race& race, const PhysicsParams& physics)
-  : race_(race), physics_(physics) {
+  : race_(race), physics_(physics), car_tracker_(&race_, physics) {
 }
 
 std::map<Switch, int> PerfectPathOptimizer::Score(const Position& position) {
@@ -42,13 +43,77 @@ void PerfectPathOptimizer::SimulateLanes() {
 
      simulator.Run(&raw, opt);
 
-     ParseBotData(static_cast<bots::switch_optimizer::Bot*>(raw.bot()));
+     ParseBotData(lane, static_cast<bots::switch_optimizer::Bot*>(raw.bot()));
   }
 }
 
-void PerfectPathOptimizer::ParseBotData(bots::switch_optimizer::Bot* bot) {
+// TODO we can take average of 3 laps
+void PerfectPathOptimizer::ParseBotData(int lane, bots::switch_optimizer::Bot* bot) {
   printf("------------- Total steps: %lu\n", bot->states().size());
   printf("------------- Parsing lane data!\n");
+
+  auto& states = bot->states();
+
+  int beg;  // first tick before beginning of lap 1
+  for (beg = 0; beg < states.size(); beg++)
+    if (states[beg].position().lap() >= 1)
+      break;
+  beg--;
+
+  for (int p = 0; p < race_.track().pieces().size(); p++) {
+    int pos = beg;
+
+    double current = TimeOnPieceBetween(states[pos], states[pos+1], p);
+    while (states[pos + 1].position().piece() == p) {
+      current += 1;
+      pos++;
+      if (pos + 1 >= states.size())  // this strongly should not happen
+        return;
+    }
+    current += TimeOnPieceBetween(states[pos], states[pos+1], p);
+
+
+    if (pos == beg)  // whole piece is between 2 ticks
+      current = TimeOnPieceBetween(states[pos], states[pos + 1], p);
+
+    // Current - time spent on piece p
+    lane_times_[p][lane] = current;
+    printf("%d %d %lf\n",lane, p, current);
+
+    beg = pos;
+  }
+
+  // Replace all straights with the same values
+  // TODO just replacing by first one, does it matter?
+  for (int piece = 0; piece < lane_times_.size(); piece++)
+    for (int lane = 0; lane < lane_times_[piece].size(); lane++)
+      if (race_.track().pieces()[piece].type() == PieceType::kStraight)
+        lane_times_[piece][lane] = lane_times_[piece][0];
+}
+
+// Does not work on switches
+// Ratio of distance on piece to total distance between two ticks
+double PerfectPathOptimizer::TimeOnPieceBetween(const CarState& a, const CarState& b, int piece) {
+  Position from, to;
+  int pieces = race_.track().pieces().size();
+  if (piece == a.position().piece()) {
+    from = a.position();
+    to = a.position();
+    to.set_piece((from.piece() + 1) % pieces);
+    to.set_piece_distance(0);
+  } else if (piece == b.position().piece()) {
+    from = b.position();
+    to = b.position();
+    from.set_piece_distance(0);
+  } else {  // between
+    from = a.position();
+    from.set_piece(piece);
+    from.set_piece_distance(0);
+    to = from;
+    to.set_piece((from.piece() + 1) % pieces);
+  }
+  return car_tracker_.DistanceBetween(from, to) /
+         car_tracker_.DistanceBetween(a.position(), b.position());
 }
 
 void PerfectPathOptimizer::ComputeScores() {
@@ -91,9 +156,9 @@ double PerfectPathOptimizer::LapLength(int piece, int lane) {
 
   for (int i = 0; i < dp[piece].size(); i++)
     dp[piece][i] = 1000000;
-  dp[piece][lane] = 0;
+  dp[piece][lane] = lane_times_[piece][lane];
 
-  for (int p = 0; p < dp.size(); p++) {
+  for (int p = 0; p < dp.size() - 1; p++) {
     int curr = (piece + p) % dp.size();
     int next = (piece + p + 1) % dp.size();
 
@@ -111,10 +176,11 @@ double PerfectPathOptimizer::LapLength(int piece, int lane) {
   }
 
   double best = 1000000;
-  for (int l = 0; l < dp[piece].size(); l++)
-    best = min(best, dp[piece][l]);
+  int prev = (piece + dp.size() - 1) % dp.size();
+  for (int l = 0; l < dp[prev].size(); l++)
+    best = min(best, dp[prev][l]);
 
-  //printf("%d %d : %lf\n",piece, lane, best);
+  printf("%d %d : %lf\n",piece, lane, best);
 
   return best;
 }

@@ -45,7 +45,7 @@ class Bot : public bots::BotInterface {
 
   void CarDNF(const std::string& color) override;
 
-  std::vector<game::CarState> states() { return states_; }
+  const std::vector<game::CarState>& states() { return states_; }
 
  private:
   void SetStrategy(const game::CarState& state);

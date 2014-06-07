@@ -27,7 +27,8 @@ class PerfectPathOptimizer : public PathOptimizerInterface {
 
  private:
   double LapLength(int piece, int lane);
-  void ParseBotData(bots::switch_optimizer::Bot* bot);
+  void ParseBotData(int lane, bots::switch_optimizer::Bot* bot);
+  double TimeOnPieceBetween(const CarState& a, const CarState& b, int piece);
 
   void SimulateLanes();
   void ComputeScores();
@@ -38,6 +39,7 @@ class PerfectPathOptimizer : public PathOptimizerInterface {
 
   // IMPORTANT: COPIES
   Race race_;
+  CarTracker car_tracker_;
   PhysicsParams physics_;
 };
 
