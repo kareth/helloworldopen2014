@@ -216,6 +216,11 @@ class CarTracker : public CarPredictor {
       const CarState& enemy_state,
       int ticks_after) const;
 
+  bool IsSafeAttack(
+    const CarState& current_state,
+    const CarState& enemy_state,
+    const Command& command);
+
  private:
   void LogState();
   double RadiusInPosition(const Position& position);

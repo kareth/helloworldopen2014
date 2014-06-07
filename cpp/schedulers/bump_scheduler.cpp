@@ -96,7 +96,7 @@ game::Command BumpScheduler::BumpCommand(const game::CarState& state) {
     if (race_tracker_.IsSafeAttack(state, Command(throttle), &safe_command))
       return Command(throttle);
 
-  if (race_tracker_.IsSafeInFront(state, Command(1), &safe_command))
+  if (race_tracker_.IsSafeAhead(state, Command(1), &safe_command))
     return Command(1);
   return Command(0);
 }

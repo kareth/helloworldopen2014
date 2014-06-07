@@ -37,9 +37,6 @@ class RaceTracker {
   // - if we ride on switch (or someone is on switch)
   bool IsSafeAhead(const CarState& current_state, const Command& command, Command* safe_command);
 
-  // TODO(tomek) deprecated version of IsSafeAhead() method.
-  bool IsSafeInFront(const CarState& current_state, const Command& command, Command* safe_command);
-
   bool IsSafeAttack(const CarState& current_state, const Command& command, Command* safe_command);
 
   bool IsSafeBehind(const CarState& current_state, const Command& command, Command* safe_command);
@@ -75,6 +72,9 @@ class RaceTracker {
   bool BumpOccured(const std::string& color, const std::string& color2);
 
  private:
+  // TODO(tomek) deprecated version of IsSafeAhead() method.
+  bool IsSafeInFront(const CarState& current_state, const Command& command, Command* safe_command);
+
   bool IsSafe(const CarState& state, const Command& command,
               Command* safe_command, const Command& our_command);
 
