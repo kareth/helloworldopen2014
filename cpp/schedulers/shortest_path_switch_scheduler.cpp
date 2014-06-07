@@ -16,7 +16,7 @@ ShortestPathSwitchScheduler::ShortestPathSwitchScheduler(
     should_switch_now_(false), waiting_for_switch_(false),
     target_switch_(-1) {
 
-  path_optimizer_.reset(new game::GreedyPathOptimizer(race, car_tracker_));
+  path_optimizer_.reset(new game::DoublePathOptimizer(race, car_tracker_));
 }
 
 bool ShortestPathSwitchScheduler::WaitingToReachIssuedSwitch(const game::CarState& state) {

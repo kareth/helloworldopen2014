@@ -85,7 +85,7 @@ Position EnemyTracker::PositionAfterTime(int time, int target_lane) const {
 
 int EnemyTracker::TimeToPosition(const Position& target, vector<Position>* steps) const {
   auto position = state_.position();
-  int velocity = state_.velocity();
+  double velocity = state_.velocity();
 
   int time = 0;
 
@@ -100,7 +100,7 @@ int EnemyTracker::TimeToPosition(const Position& target, vector<Position>* steps
     velocity = 0;
   }
 
-  const int kCarLength = race_.cars()[0].length();
+  const double kCarLength = race_.cars()[0].length();
 
   for (int limit = 0; limit < 1000; limit++, time++) {
     double target_velocity = Velocity(position);

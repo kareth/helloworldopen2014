@@ -3,7 +3,7 @@
 
 #include "schedulers/switch_scheduler.h"
 #include "game/race_tracker.h"
-#include "game/greedy_path_optimizer.h"
+#include "game/double_path_optimizer.h"
 
 DECLARE_bool(overtake);
 
