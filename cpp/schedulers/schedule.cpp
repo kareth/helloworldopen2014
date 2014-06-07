@@ -10,7 +10,7 @@ schedulers::Sched::Sched(game::CarTracker* car_tracker, int horizon)
 }
 
 void schedulers::Sched::UpdateDistance(const game::CarState& state) {
-  distance_ = car_tracker_->velocity_model().PredictDistance(state.velocity(), throttles_);
+  distance_ = car_tracker_->PredictDistance(state, throttles_);
 }
 
 void schedulers::Sched::UpdateDistance(double new_distance) {

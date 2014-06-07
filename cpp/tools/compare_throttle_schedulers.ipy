@@ -22,9 +22,9 @@ maps = (
     "usa",
 )
 
-physics = range(0,7)
+physics = range(0,6)
 
-NO_LAPS = 10
+NO_LAPS = 3
 
 MAX_TIME_TO_MOVE_MS = 3.0
 

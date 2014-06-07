@@ -50,8 +50,7 @@ double BranchAndBound::UpperBound(const game::CarState& from_state, double from_
   // From the given state upper bound is when we try throttle 1.0 from now on to the end 
   // (without taking care of safety)
 
-  return from_dist + car_tracker_->velocity_model().PredictDistance(
-      from_state.velocity(), horizon_ - from, 1.0);
+  return from_dist + car_tracker_->PredictDistance(from_state, horizon_ - from, 1.0);
 }
 
 // Returning true if optimum found
@@ -90,7 +89,7 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
     if (distance_to_switch_ > 0 && schedule.switch_position() < 0) {
       for (int i = 0; i < group_size; ++i) {
         double d = curr_dist 
-          + car_tracker_->velocity_model().PredictDistance(state.velocity(), i+1, throttle);
+          + car_tracker_->PredictDistance(state, i+1, throttle);
 
         if (d >= distance_to_switch_) {
           // We have to inject the switch
@@ -132,8 +131,7 @@ bool BranchAndBound::Branch(const game::CarState& state, Sched& schedule, double
       continue;
     }
 
-    double this_dist = car_tracker_->velocity_model().PredictDistance(state.velocity(), 
-        group_size, throttle);
+    double this_dist = car_tracker_->PredictDistance(state, group_size, throttle);
     double ub = UpperBound(next, curr_dist + this_dist, schedule, from + group_size);
 
     // Prune
