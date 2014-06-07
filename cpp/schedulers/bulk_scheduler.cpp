@@ -63,10 +63,14 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const u
   }
 
   game::Command safe_command;
-  if (FLAGS_check_if_safe_ahead &&
-      !race_tracker_.IsSafeAhead(state_with_switch, command_, &safe_command)) {
-    command_ = safe_command;
-    std::cout << "INFO: It is not safe ahead. Slowing down." << std::endl;
+  if (FLAGS_check_if_safe_ahead) {
+    // Make sure that if we want to make switch now, we don't use state_with_switch.
+    // That could cause us to ignore the switch even though we haven't actually switched.
+    const game::CarState* s = command_.SwitchSet() ? &state : &state_with_switch;
+    if (!race_tracker_.IsSafeAhead(*s, command_, &safe_command)) {
+      std::cout << "INFO: It is not safe ahead. Slowing down." << std::endl;
+      command_ = safe_command;
+    }
   }
 }
 

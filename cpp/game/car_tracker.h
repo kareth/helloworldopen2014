@@ -119,7 +119,7 @@ class CarTracker : public CarPredictor {
   // distances (someone just ahead of use or someone just behind us), it
   // shouldn't matter.
   double DistanceBetween(const Position& position1, const Position& position2,
-                         bool* is_perfect=nullptr, double max_distance=10000000);
+                         bool* is_perfect=nullptr, double max_distance=10000000) const;
 
 
   // Returns true if the car starting from "car_state" can reach "target" using
@@ -133,7 +133,7 @@ class CarTracker : public CarPredictor {
   //   - no switches, etc.
   // - no turbo :(
   // - it is only lower bound (it is possible such min_velocity cannot be achieved.
-  bool MinVelocity(const CarState& car_state, int ticks, const Position& target, double* min_velocity, int* full_throttle_ticks);
+  bool MinVelocity(const CarState& car_state, int ticks, const Position& target, double* min_velocity, int* full_throttle_ticks) const;
 
   // Returns position that is "distance" units farther. In case we encounter
   // switches, we assume we are trying to reach target_lane.
@@ -147,7 +147,7 @@ class CarTracker : public CarPredictor {
   // position can be incorrect. But because we use it mainly to compute small
   // distances (someone just ahead of use or someone just behind us), it
   // shouldn't matter.
-  Position PredictPosition(const Position& position, double distance, int target_lane=-1);
+  Position PredictPosition(const Position& position, double distance, int target_lane=-1) const;
 
   // Returns true, if there is high probability that there was a bump.
   bool HasSomeoneMaybeBumpedMe(const map<string, Position>& positions, const std::string& color);
@@ -182,12 +182,39 @@ class CarTracker : public CarPredictor {
   const CrashModel& GetCrashModel() const { return crash_model_; }
 
   const VelocityModel& GetVelocityModel() const { return velocity_model_; }
-  
+
   const DriftModel& GetDriftModel() const { return drift_model_; }
 
   PhysicsParams CreatePhysicsParams();
 
   const LaneLengthModel& lane_length_model() { return lane_length_model_; }
+
+
+  // Returns true if 'enemy_state' can be in such position after 'ticks_after'
+  // that 'my_state' will hit 'enemy_state'. If true, also returns the min
+  // velocity of the enemy.
+  //
+  // 'my_state' - state after 'ticks_after' ticks
+  // 'enemy_state' - state that we should simulate 'ticks_after' ticks from.
+  // 'ticks_after' - ticks to simulate
+  // 'min_velocity' - only set if method returns true
+  //
+  // This method is safe, but can sometimes return true (there was a bump)
+  // even if bump was not possible (because of switches).
+  //
+  // Note: This method can be slow O(ticks^2) but performance can be easily
+  // improved if needed.
+  bool CanBumpAfterNTicks(
+      const CarState& my_state,
+      const CarState& enemy_state,
+      int ticks_after,
+      double* min_velocity) const;
+
+  bool IsBumpInevitable(
+      const CarState& my_state_before,
+      const CarState& my_state_after,
+      const CarState& enemy_state,
+      int ticks_after) const;
 
  private:
   void LogState();

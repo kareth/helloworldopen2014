@@ -498,4 +498,131 @@ TEST_F(PredictPositionTest, SkipSwitchWithTargetLine) {
   EXPECT_EQ(1, result.end_lane());
 }
 
+class CanBumpAfterNTicksTest : public ::testing::Test {
+ protected:
+  const double kEps = 1e-9;
+
+  void SetUp() {
+    json game_init_json = json::parse_file("data/gameInit.json");
+    const auto& race_json = game_init_json["data"]["race"];
+
+    race_.ParseFromJson(race_json);
+    car_tracker_.reset(new CarTracker(&race_, PhysicsParams()));
+  }
+
+  CarState Simulate(const Position& position,
+                    double velocity,
+                    int ticks) {
+    CarState my_state(position);
+    my_state.set_velocity(velocity);
+    for (int i = 0; i < ticks; ++i) {
+      my_state = car_tracker_->Predict(my_state, Command(0));
+    }
+    return my_state;
+  }
+
+  Race race_;
+  std::unique_ptr<CarTracker> car_tracker_;
+};
+
+TEST_F(CanBumpAfterNTicksTest, EnemyIsBehindUs) {
+  const int kTicks = 30;
+  CarState my_state = Simulate(Position(1, 5.0), 5.0, kTicks);
+
+  CarState enemy_state(Position(0, 50.0));
+  enemy_state.set_velocity(6);
+
+  double velocity;
+  EXPECT_FALSE(car_tracker_->CanBumpAfterNTicks(my_state, enemy_state, kTicks, &velocity));
+}
+
+TEST_F(CanBumpAfterNTicksTest, EnemyIsInFrontAndCanBump) {
+  const int kTicks = 10;
+  CarState my_state = Simulate(Position(1, 5.0), 5.0, kTicks);
+
+  CarState enemy_state(Position(1, 56.0));
+  enemy_state.set_velocity(3);
+
+  double velocity;
+  ASSERT_TRUE(car_tracker_->CanBumpAfterNTicks(my_state, enemy_state, kTicks, &velocity));
+  EXPECT_NEAR(2.4512184206626402, velocity, 1e-5);
+}
+
+TEST_F(CanBumpAfterNTicksTest, EnemyIsInFrontAndCanNotBump) {
+  const int kTicks = 10;
+  CarState my_state = Simulate(Position(1, 5.0), 5.0, kTicks);
+
+  CarState enemy_state(Position(1, 56.0));
+  enemy_state.set_velocity(5);
+
+  double velocity;
+  EXPECT_FALSE(car_tracker_->CanBumpAfterNTicks(my_state, enemy_state, kTicks, &velocity));
+}
+
+TEST_F(CanBumpAfterNTicksTest, SwitchCanBump) {
+  const int kTicks = 20;
+  CarState my_state = Simulate(Position(3, 10.0), 5.0, kTicks);
+
+  // Enemy is on different lane! Piece 3 is a switch.
+  CarState enemy_state(Position(3, 20.0, 0.0, 1, 0));
+  enemy_state.set_velocity(3);
+
+  double velocity;
+  ASSERT_TRUE(car_tracker_->CanBumpAfterNTicks(my_state, enemy_state, kTicks, &velocity));
+  EXPECT_NEAR(3.1739114350623394, velocity, 1e-5);
+}
+
+TEST_F(CanBumpAfterNTicksTest, SwitchCannotBump) {
+  const int kTicks = 20;
+  CarState my_state = Simulate(Position(3, 10.0), 5.0, kTicks);
+
+  // Enemy is on different lane! Piece 3 is a switch.
+  CarState enemy_state(Position(3, 10.0, 0.0, 1, 0));
+  enemy_state.set_velocity(3);
+
+  double velocity;
+  ASSERT_FALSE(car_tracker_->CanBumpAfterNTicks(my_state, enemy_state, kTicks, &velocity));
+}
+
+TEST_F(CanBumpAfterNTicksTest, EnemyIsStanding) {
+  // TODO
+}
+
+class IsBumpInevitableTest : public ::testing::Test {
+ protected:
+  const double kEps = 1e-9;
+
+  void SetUp() {
+    json game_init_json = json::parse_file("data/gameInit.json");
+    const auto& race_json = game_init_json["data"]["race"];
+
+    race_.ParseFromJson(race_json);
+    car_tracker_.reset(new CarTracker(&race_, PhysicsParams()));
+  }
+
+  CarState Simulate(const Position& position,
+                    double velocity,
+                    int ticks) {
+    CarState my_state(position);
+    my_state.set_velocity(velocity);
+    for (int i = 0; i < ticks; ++i) {
+      my_state = car_tracker_->Predict(my_state, Command(0));
+    }
+    return my_state;
+  }
+
+  Race race_;
+  std::unique_ptr<CarTracker> car_tracker_;
+};
+
+TEST_F(IsBumpInevitableTest, Basic) {
+  const int kTicks = 2;
+  CarState my_state_before = Simulate(Position(4, 80.9611), 80.9611 - 73.8948, 0);
+  CarState my_state_after = Simulate(Position(4, 80.9611), 80.9611 - 73.8948, kTicks);
+
+  CarState enemy_state = CarState(Position(5, 41.5524));
+
+  EXPECT_TRUE(car_tracker_->IsBumpInevitable(my_state_before, my_state_after, enemy_state, kTicks));
+}
+
 }  // namespace game

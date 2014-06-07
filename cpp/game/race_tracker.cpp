@@ -96,45 +96,47 @@ bool RaceTracker::IsSafeAhead(const CarState& current_state, const Command& comm
   if (!car_tracker_.GenerateSafeStates(states.back(), &states)) {
     std::cout << "IsSafeAhead: Could not found safe mask." << std::endl;
     *safe_command = command;
-    return false;
+    return true;
   }
 
   for (int ticks_after = 1; ticks_after < states.size(); ++ticks_after) {
     const auto& my_state = states[ticks_after];
 
-    // TODO
-    // bool MinVelocityAfterBumpInFront(ticks_after, my_state, &min_velocity_after_bump)
     bool bumped = false;
+    bool bump_inevitable = false;
+
     double min_velocity = 100000.0;
     for (const auto& enemy : enemies_) {
       if (enemy.color() == color_) continue;
       if (enemy.has_finished()) continue;
 
       // FIXME
-      // - check if he is dead after ticks_after
+      // Replace it with:
+      // if (!enemy.IsThreatTo(me)) continue;
       if (enemy.is_dead()) continue;
 
-
       double velocity = 0.0;
-      int full_throttle_ticks = 0;
+      if (car_tracker_.CanBumpAfterNTicks(my_state, enemy.state(), ticks_after, &velocity)) {
+        bumped = true;
+        min_velocity = fmin(min_velocity, velocity);
+      }
 
-      // FIXME
-      // - take into account switches
-      Position bump_position = car_tracker_.PredictPosition(my_state.position(), kCarLength);
-
-      if (car_tracker_.MinVelocity(enemy.state(), ticks_after, bump_position, &velocity, &full_throttle_ticks)) {
-        // If the velocity is higher than ours, he probably was behind us.
-        if (velocity < my_state.velocity()) {
-          bumped = true;
-          min_velocity = fmin(min_velocity, velocity);
-        }
+      // Have I already bumped him and the bump is inevitable so it doesn't make sense
+      // to simulate more.
+      if (car_tracker_.IsBumpInevitable(states[0], my_state, enemy.state(), ticks_after)) {
+        std::cout << "IsSafeAhead: Bump is inevitable" << std::endl;
+        bump_inevitable = true;
       }
     }
 
+    if (!bumped && bump_inevitable) break;
     if (!bumped) continue;
 
     CarState state = my_state;
     state.set_velocity(0.8 * min_velocity);
+
+    // std::cout << "Predicted state after bump: " << state.ShortDebugString() << std::endl;
+
     if (!car_tracker_.GenerateSafeStates(state, nullptr)) {
       *safe_command = Command(0);
 
@@ -150,6 +152,8 @@ bool RaceTracker::IsSafeAhead(const CarState& current_state, const Command& comm
 
       return false;
     }
+
+    if (bump_inevitable) break;
   }
 
   // We survived 100 ticks, we should be ok.

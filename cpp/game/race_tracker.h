@@ -80,6 +80,12 @@ class RaceTracker {
 
   void DetectBumps(const std::map<std::string, Position>& positions);
 
+  bool IsBumpInevitable(
+      const CarState& my_state_before,
+      const CarState& my_state_after,
+      const CarState& enemy_state,
+      int ticks_after);
+
   // void RecordEnemy(int index, const game::Position& position);
   // void UpdateSpeedStats(int index, const game::Position& position);
 

@@ -14,6 +14,11 @@ class Position {
   Position();
   Position(int piece, double piece_distance)
     : piece_index_(piece), piece_distance_(piece_distance) {}
+  Position(int piece, double piece_distance, double angle)
+    : piece_index_(piece), piece_distance_(piece_distance), angle_(angle) {}
+  Position(int piece, double piece_distance, double angle, int start_lane, int end_lane)
+    : piece_index_(piece), piece_distance_(piece_distance), angle_(angle),
+      start_lane_(start_lane), end_lane_(end_lane) {}
 
   double angle() const { return angle_; }
   int piece() const { return piece_index_; }
