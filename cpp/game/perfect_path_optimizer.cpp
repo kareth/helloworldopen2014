@@ -17,7 +17,7 @@ std::map<Switch, int> PerfectPathOptimizer::Score(const Position& position) {
   return std::map<Switch, int>();
 }
 
-void PerfectPathOptimizer::Optimize(std::atomic_bool* ready_flag) {
+void PerfectPathOptimizer::Optimize(std::atomic<bool>* ready_flag) {
   printf("---------- Switch Optimizer Started!\n");
   printf("---------- Starting simulation\n");
   SimulateLanes();

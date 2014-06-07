@@ -4,6 +4,7 @@
 #include <algorithm>
 #include "game/path_optimizer_interface.h"
 #include "game/velocity_predictor.h"
+#include <thread>
 
 namespace bots {
 namespace switch_optimizer {
@@ -24,7 +25,7 @@ class PerfectPathOptimizer : public PathOptimizerInterface {
   // so atleast one lane will always have value of 0
   std::map<Switch, int> Score(const Position& position) override;
 
-  void Optimize(std::atomic_bool* ready_flag);
+  void Optimize(std::atomic<bool>* ready_flag);
 
  private:
   double LapLength(int piece, int lane);

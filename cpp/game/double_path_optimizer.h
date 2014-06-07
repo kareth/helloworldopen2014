@@ -28,7 +28,7 @@ class DoublePathOptimizer : public PathOptimizerInterface {
 
   std::unique_ptr<std::thread> optimizer_thread_;
 
-  std::atomic_bool is_perfect_ready_;
+  std::atomic<bool> is_perfect_ready_;
   bool optimizer_started_;
 };
 
