@@ -618,14 +618,13 @@ bool CarTracker::IsBumpInevitable(
 bool CarTracker::IsSafeAttack(
     const CarState& current_state,
     const CarState& enemy_state,
-    const Command& command) {
+    Command* command) {
   if (DistanceBetween(current_state.position(), enemy_state.position()) > 100) {
     return false;
   }
 
   CarState my_state = current_state;
   for (int ticks_after = 1; ticks_after < 100; ++ticks_after) {
-    my_state = Predict(my_state, (ticks_after == 1 ? command : Command(1)));
 
     if (!crash_model_.IsSafe(my_state.position().angle())) {
       return false;

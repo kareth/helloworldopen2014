@@ -31,6 +31,9 @@ class BumpScheduler {
  private:
   game::Command FollowSwitch(const game::CarState& me, const game::CarState& target);
 
+  // The new version of scheduling attacks.
+  void Schedule2(const game::CarState& state);
+
   game::CarTracker& car_tracker_;
   game::RaceTracker& race_tracker_;
   const game::Race& race_;

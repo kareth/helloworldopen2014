@@ -2,8 +2,10 @@
 
 DECLARE_bool(check_if_safe_ahead);
 DECLARE_bool(bump_with_turbo);
+DEFINE_bool(new_attack, false, "");
 
 using game::Command;
+using ::game::CarState;
 
 namespace schedulers {
 
@@ -16,6 +18,10 @@ BumpScheduler::BumpScheduler(const game::Race& race,
 }
 
 void BumpScheduler::Schedule(const game::CarState& state) {
+  if (FLAGS_new_attack) {
+    Schedule2(state);
+    return;
+  }
   if (has_bump_target_) {
     // Already bumped
     if (race_tracker_.BumpOccured(race_tracker_.my_color(), bump_target_)) {
@@ -107,6 +113,10 @@ game::Command BumpScheduler::FollowSwitch(const game::CarState& me, const game::
   if (me.position().end_lane() + 1 == target.position().end_lane())
     return Command(game::Switch::kSwitchRight);
   return Command(1);
+}
+
+void BumpScheduler::Schedule2(const CarState& state) {
+
 }
 
 }  // namespace schedulers
