@@ -33,9 +33,7 @@ void PerfectPathOptimizer::SimulateLanes() {
     lane_times_[i].resize(race_.track().lanes().size());
 
   for (int lane = 0; lane < race_.track().lanes().size(); lane++) {
-     std::unique_ptr<bots::switch_optimizer::Bot> bot(new bots::switch_optimizer::Bot(&velocity_predictor_));
-
-     bots::RawBot raw(bot.get());
+     bots::RawBot raw(new bots::switch_optimizer::Bot(&velocity_predictor_));
      Simulator simulator;
 
      Simulator::Options opt;
@@ -45,7 +43,7 @@ void PerfectPathOptimizer::SimulateLanes() {
 
      simulator.Run(&raw, opt);
 
-     ParseBotData(lane, static_cast<bots::switch_optimizer::Bot*>(bot.get()));
+     ParseBotData(lane, static_cast<bots::switch_optimizer::Bot*>(raw.bot()));
   }
 }
 

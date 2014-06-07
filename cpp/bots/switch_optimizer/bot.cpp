@@ -34,10 +34,10 @@ void Bot::NewRace(const Race& race) {
 
   throttle_scheduler_.reset(new schedulers::WojtekThrottleScheduler(race, *car_tracker_.get()));
 
-  if (velocity_predictor_ == nullptr) {
+  /*if (velocity_predictor_ == nullptr) {
     velocity_predictor_uniq_.reset(new game::VelocityPredictor(*car_tracker_.get(), race_));
     velocity_predictor_ = velocity_predictor_uniq_.get();
-  }
+  }*/
 }
 
 game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick)  {
