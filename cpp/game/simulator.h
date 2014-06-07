@@ -7,7 +7,7 @@
 #include "bots/raw_bot.h"
 
 DECLARE_bool(log_simulator_csv);
-DEFINE_int32(laps, 3, "Number of laps");
+DECLARE_int32(laps);
 
 using jsoncons::json;
 

@@ -34,11 +34,12 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const u
   if (!FLAGS_disable_attack) {
     bump_scheduler_->Schedule(state);
 
-  if (bump_scheduler_->HasTarget()) {
-    command_ = bump_scheduler_->command();
-    if (!command_.SwitchSet() && !command_.TurboSet())
-      last_throttle_ = command_.throttle();
-    return;
+    if (bump_scheduler_->HasTarget()) {
+      command_ = bump_scheduler_->command();
+      if (!command_.SwitchSet() && !command_.TurboSet())
+        last_throttle_ = command_.throttle();
+      return;
+    }
   }
 
   // Bumper has priority over anything else.

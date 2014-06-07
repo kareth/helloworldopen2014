@@ -38,7 +38,8 @@ with open(os.path.join('results',"results.csv"), "w") as f:
         for map in maps:
             for physic in physics:
                 answer_time = int(MAX_TIME_TO_MOVE_MS * 1000)
-                res = !bin/throttle_tester --throttle_scheduler=$scheduler --nocheck_if_safe_ahead --track=$map --physics=$physic --answer_time=$answer_time --laps=$NO_LAPS
+                #res = !bin/throttle_tester --throttle_scheduler=$scheduler --nocheck_if_safe_ahead --track=$map --physics=$physic --answer_time=$answer_time --laps=$NO_LAPS
+                res = !bin/throttle_tester --throttle_scheduler=$scheduler --track=$map --physics=$physic --answer_time=$answer_time --laps=$NO_LAPS
                 if scheduler == 'WojtekThrottleScheduler':
                     name = os.path.join('results', "wojtek-" + map + "-" + str(physic) + ".csv")
                     !mv wojtek_data_log.csv $name 2>/dev/null
