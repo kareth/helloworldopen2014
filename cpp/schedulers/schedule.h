@@ -13,10 +13,9 @@ class Sched {
   Sched(game::CarTracker* car_tracker_, int horizon);
 
   int size() const { return throttles_.size(); }
+  const vector<double>& throttles() const { return throttles_; }
   double distance() const { return distance_; }
-  vector<double> throttles() const { return throttles_; }
   double switch_position() const { return switch_position_; }
-
 
   void UpdateDistance(const game::CarState& state);
   void UpdateDistance(double new_distance); // Explicitely
@@ -51,10 +50,9 @@ class Sched {
   double& operator[](std::size_t idx) { return throttles_[idx]; };
   const double operator[](std::size_t idx) const { return throttles_[idx]; };
 
-  vector<double> throttles_; // Breaks encapsulation, but need it, unfortunatelly
 
  private:
-
+  vector<double> throttles_; // Breaks encapsulation, but need it, unfortunatelly
   game::CarTracker* car_tracker_;
   double distance_;
   int switch_position_; // no switch if < 0

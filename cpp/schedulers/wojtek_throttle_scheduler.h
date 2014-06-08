@@ -52,7 +52,7 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
 
   bool TimeToSwitch(int game_tick);
 
-  const std::vector<double>& full_schedule() const override { return best_schedule_.throttles_; }
+  const std::vector<double>& full_schedule() const override { return best_schedule_.throttles(); }
 
  private:
   void Log(const game::CarState& state);
