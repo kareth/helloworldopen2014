@@ -30,3 +30,5 @@ DEFINE_int32(laps, 3, "Number of laps");
 
 DEFINE_double(overtake_treshold, 0.9, "Ratio of velocity to overtake guy");
 DEFINE_double(turbo_bump_treshold, 0.94, "Ratio of best laps");
+
+DEFINE_bool(fastbanana_mode, false, "");

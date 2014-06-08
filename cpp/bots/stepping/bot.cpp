@@ -9,6 +9,7 @@ DECLARE_bool(bump_with_turbo);
 DECLARE_bool(defend_turbo_bump);
 DECLARE_bool(write_switch_models);
 DEFINE_bool(log_position, false, "");
+DECLARE_bool(fastbanana_mode);
 
 using std::string;
 using std::vector;
@@ -92,6 +93,17 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
   // TODO
   if (crashed_)
     return Command(0);
+
+  if (FLAGS_fastbanana_mode) {
+    if (race_.laps() != -1) {  // Qual
+      if (car_tracker_->IsReady())
+        return Command(0);
+      // else normal throttle
+    } else {  // Race
+      if (game_tick < 3)
+        return Command(0);
+    }
+  }
 
   Command command;
   SetStrategy(state);
