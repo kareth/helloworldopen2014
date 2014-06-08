@@ -249,8 +249,6 @@ class CarTracker : public CarPredictor {
   bool just_started_ = true;
   bool last_record_had_bump = false;
 
-  std::ofstream stats_file_;
-
   CarState state_;
   Command last_command_;
 

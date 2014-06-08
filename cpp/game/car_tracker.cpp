@@ -17,14 +17,11 @@ CarTracker::CarTracker(const Race* race, const PhysicsParams& params)
       radius_model_(&race_->track(), &lane_length_model_, params.switch_radius_params),
       velocity_model_(params.velocity_model_params),
       drift_model_(params.drift_model_params) {
-  stats_file_.open ("bin/" + FLAGS_race_id + "/stats.csv");
-  stats_file_ << "piece_index,start_lane,end_lane,radius,in_piece_distance,angle,velocity,throttle" << std::endl;
 
   params.LogMissingData(race->track());
 }
 
 CarTracker::~CarTracker() {
-  stats_file_.close();
 }
 
 CarState CarTracker::Predict(const CarState& state, const Command& command) {
@@ -266,17 +263,6 @@ double CarTracker::RadiusInPosition(const Position& position) {
 }
 
 void CarTracker::LogState() {
-  const auto& position = state_.position();
-
-  stats_file_ << std::setprecision(std::numeric_limits<double>::digits10)
-    << position.piece() << ","
-    << position.start_lane() << ","
-    << position.end_lane() << ","
-    << race_->track().LaneRadius(position.piece(), position.start_lane()) << ","
-    << position.piece_distance() << ","
-    << state_.position().angle() << ","
-    << state_.velocity() << ","
-    << state_.throttle() << std::endl;
 }
 
 void CarTracker::RecordTurboAvailable(const game::Turbo& turbo) {
@@ -287,7 +273,6 @@ void CarTracker::RecordCarCrash() {
   auto crashed_state = Predict(state_, last_command_);
   crash_model_.RecordCarCrash(crashed_state.position().angle());
   Reset();
-  stats_file_ << "CRASH" << std::endl;
 }
 
 CarState CarTracker::CreateCarState(const CarState& prev, const Position& position) const {
