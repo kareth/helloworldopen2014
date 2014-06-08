@@ -20,8 +20,10 @@ class Sched {
   void UpdateDistance(const game::CarState& state);
   void UpdateDistance(double new_distance); // Explicitely
 
-  // Number of ticks until switch according to the schedule. Returns <0 if no switch ahead
-  int GetTicksToTheRequiredSwitch(const game::CarState& state, double distance_to_switch);
+  // Latest tick we have to put the switch according to the schedule. 
+  // May return an upperbound
+  // Returns <0 if no switch ahead (or it is not yet in the range of schedule). 
+  int GetLatestTickSwitchIsDue(const game::CarState& state, double distance_to_switch);
 
   // Afterwards, you should call UpdateDistance in most cases
   void UpdateSwitchPosition(int switch_position);

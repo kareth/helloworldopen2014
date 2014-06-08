@@ -17,27 +17,26 @@ void schedulers::Sched::UpdateDistance(double new_distance) {
   distance_ = new_distance;
 }
 
-int schedulers::Sched::GetTicksToTheRequiredSwitch(const game::CarState& state, double distance_to_switch) {
+int schedulers::Sched::GetLatestTickSwitchIsDue(const game::CarState& state, double distance_to_switch) {
   if (distance_to_switch < 0)
     return -1;
 
-  double distance = 0;
-  game::CarState next = state;
   for (int pos = 0; pos < size(); ++pos) {
-    //TODO(minor) I could use the quicker PredictVelocity (waiting for turbo)
-    next = car_tracker_->Predict(next, game::Command(throttles_[pos]));
-
-    distance += next.velocity();
+    //TODO(minor) This is not effective, but this method is called in the context I do not
+    //care about such uneffectiveness
+    vector<double> subthrottles(throttles_.begin(), throttles_.begin() + pos + 1);
+    double distance = car_tracker_->PredictDistance(state, subthrottles);
     if (distance >= distance_to_switch) {
       if (throttles_[pos] == 0.0) {
         return pos;
       } else {
-        // +1 might be too much in some cases, but I am looking for the upper bound
-        return pos + 1; 
+        // +1 might be too much when we change throttle[pos] to 0.0, since it would place us 
+        // in front of the switch, but here I am looking for the upper bound
+        return std::min(pos + 1, size() - 1);
       }
     }
   }
-  // Distance longer then the current horizon. We will not care yet.
+  // Distance to switch is longer then the current horizon. We will not care yet.
   return -1;
 }
 
