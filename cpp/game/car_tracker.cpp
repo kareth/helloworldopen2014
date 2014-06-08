@@ -691,7 +691,7 @@ bool CarTracker::IsSafeAttack(
 
   // If enemy can change lane to right, simulate that.
   Command command3 = command1;
-  if (enemy_state.position().end_lane() < race_->track().lanes().size()) {
+  if (enemy_state.position().end_lane() + 1 < race_->track().lanes().size()) {
     enemy_state.set_switch_state(Switch::kSwitchRight);
     if (!IsSafeAttackWithoutSwitches(my_state, enemy_state, &command3, allow_turbo)) {
       std::cout << "IsSafeAttack: If enemy switches to right, attack would be unsuccessful." << std::endl;
@@ -729,13 +729,13 @@ bool CarTracker::IsSafeAttackWithoutSwitches(
   for (int ticks_after = 1; ticks_after < enemy_safe_states.size(); ++ticks_after) {
     // Compute follow command.
     Command follow_command = Command(1.0);
-    if (allow_turbo && !my_state.turbo_state().is_on()) follow_command = Command::Turbo();
     if (my_state.position().end_lane() < enemy_state.position().end_lane() && my_state.switch_state() != Switch::kSwitchRight) {
       follow_command = Command(Switch::kSwitchRight);
     }
     if (my_state.position().end_lane() > enemy_state.position().end_lane() && my_state.switch_state() != Switch::kSwitchLeft) {
       follow_command = Command(Switch::kSwitchLeft);
     }
+    if (allow_turbo && !my_state.turbo_state().is_on() && ticks_after == 1) follow_command = Command::Turbo();
 
     if (ticks_after == 1) *command = follow_command;
     my_state = Predict(my_state, follow_command);
