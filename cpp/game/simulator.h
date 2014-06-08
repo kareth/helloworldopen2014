@@ -63,7 +63,7 @@ class Simulator {
     // Used when 'track_name' is empty.
     Race race;
 
-    int max_ticks_to_simulate = 10000;
+    int max_ticks_to_simulate = 1000000;
     int max_laps_to_simulate = FLAGS_laps;
 
     PhysicsParams physics_params;
