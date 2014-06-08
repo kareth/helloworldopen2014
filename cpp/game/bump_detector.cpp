@@ -10,7 +10,10 @@ void BumpDetector::Record(const std::vector<EnemyTracker>& enemies, const std::m
   bumps_.clear();
   const double kCarLength = race_.cars()[0].length();
   for (auto& a : enemies) {
+    if (positions.find(a.color()) == positions.end()) continue;
     for (auto& b : enemies) {
+      if (positions.find(b.color()) == positions.end()) continue;
+
       auto& a_pos = positions.at(a.color());
       auto& b_pos = positions.at(b.color());
 

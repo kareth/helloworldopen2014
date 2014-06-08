@@ -1,3 +1,7 @@
 #!/bin/bash
 
-./bin/bot --host="$1" --port="$2" --bot="$3" --key="$4" --print_models --write_switch_models
+./bin/bot --host="$1" --port="$2" --bot="$3" --key="$4" --print_models \
+  --write_switch_models \
+  --new_attack \
+  --answer_time=5000 \
+  --log_position
