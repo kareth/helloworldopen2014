@@ -58,13 +58,22 @@ class Command {
     return ss.str();
   }
 
- private:
-  bool switch_set_;
-  bool throttle_set_;
-  bool turbo_set_;
+  bool operator==(const Command& c) const {
+    return switch_set_ == c.switch_set_ &&
+           throttle_set_ == c.throttle_set_ &&
+           turbo_set_ == c.turbo_set_ &&
+           throttle_ == c.throttle_ &&
+           switch_ == c.switch_ &&
+           turbo_ == c.turbo_;
+  }
 
-  double throttle_;
-  Switch switch_;
+ private:
+  bool switch_set_ = false;
+  bool throttle_set_ = false;
+  bool turbo_set_ = false;
+
+  double throttle_ = 0.0;
+  Switch switch_ = Switch::kStay;
   TurboToggle turbo_;
 };
 

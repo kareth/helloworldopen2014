@@ -21,7 +21,7 @@ LaneScorer::~LaneScorer() {
   printf("Lane scorer longest computation time: %lf ms\n", longest_calculation_time_);
 }
 
-int LaneScorer::ScoreLane(int from, int to, int lane) {
+double LaneScorer::ScoreLane(int from, int to, int lane) {
   utils::StopWatch timer;
   using std::max; using std::min;
   auto& me = *std::find_if(enemies_.begin(), enemies_.end(), [this](const EnemyTracker& e){ return e.color() == this->color_; });
@@ -57,7 +57,7 @@ int LaneScorer::ScoreLane(int from, int to, int lane) {
   return lane_score;
 }
 
-int LaneScorer::ScoreEnemy(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position) {
+double LaneScorer::ScoreEnemy(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position) {
   if (FLAGS_log_overtaking)
     printf ("(%d,%.2lf,<%d,%d> =%.2lf) (%d,%.2lf,<%d,%d> =%.2lf) ",
         me.state().position().piece(),
@@ -93,7 +93,7 @@ int LaneScorer::ScoreEnemy(const EnemyTracker& me, const EnemyTracker& enemy, co
   }
 }
 
-int LaneScorer::ScoreDeadEnemy(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position) {
+double LaneScorer::ScoreDeadEnemy(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position) {
   auto safe_position = car_tracker_.PredictPosition(enemy.state().position(), 3 * kCarLength);
 
   // Wont reach safe_position before spawn
@@ -104,7 +104,7 @@ int LaneScorer::ScoreDeadEnemy(const EnemyTracker& me, const EnemyTracker& enemy
   }
 }
 
-int LaneScorer::ScoreLivingEnemy(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position) {
+double LaneScorer::ScoreLivingEnemy(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position) {
   // If models are ready try to predict if we will actually hit
   if (enemy.IsReady() && me.IsReady()) {
     Position bump_position;
@@ -120,9 +120,9 @@ int LaneScorer::ScoreLivingEnemy(const EnemyTracker& me, const EnemyTracker& ene
   }
 }
 
-int LaneScorer::EnemyBumpScore(const EnemyTracker& enemy, double my_speed, double his_speed) {
+double LaneScorer::EnemyBumpScore(const EnemyTracker& enemy, double my_speed, double his_speed) {
   if (his_speed < 0.95 * my_speed) {
-    return (kDeadCrash) * (1 - his_speed / my_speed);
+    return double(kDeadCrash) * (1.0 - his_speed / my_speed);
   } else {
     return 0;
   }
@@ -143,6 +143,7 @@ bool LaneScorer::BumpPosition(const EnemyTracker& me, const EnemyTracker& enemy,
   int enemy_time = enemy.TimeToPosition(car_tracker_.PredictPosition(end_position, kCarLength * 1.1), &enemy_prediction);
 
   //printf("Predicting bump position, %d and %d steps done.\n", my_time, enemy_time);
+  printf(" {{%d %d}} ", my_time, enemy_time);
 
   if (my_time > enemy_time)
     return false;

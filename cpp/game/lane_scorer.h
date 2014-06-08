@@ -24,23 +24,23 @@ class LaneScorer {
   //
   // @lane should be valid track lane
   // @labe should be reachable from my position without doing full lap
-  int ScoreLane(int from, int to, int lane);
+  double ScoreLane(int from, int to, int lane);
 
  private:
   // Returns score for the enemy
   // end_position is the position that I want to be able to reach safely
   // i.e. begin of switch
-  int ScoreEnemy(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position);
+  double ScoreEnemy(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position);
 
   // Returns 0 if we can just pass him before he spawns
   // Returns kDeadCrash if he spawns before we pass him
   // Uses 2 * kCarLength additional distance to decide if its safe
-  int ScoreDeadEnemy(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position);
+  double ScoreDeadEnemy(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position);
 
   // Checks if bump will occur
   // If yes, returns bumpscore based on cars
   // predicted velocity in the moment of bump
-  int ScoreLivingEnemy(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position);
+  double ScoreLivingEnemy(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position);
 
   // -100      for car standing or spawning
   // <-100, 0) for cars that are slower than us by more than 5%
@@ -50,7 +50,7 @@ class LaneScorer {
   // Scales linearly by far, should probably be other
   // TODO if the guy is just 5% slower, we can possibly just
   //      get stuck behind him. What if we should overtake?
-  int EnemyBumpScore(const EnemyTracker& enemy, double my_speed, double his_speed);
+  double EnemyBumpScore(const EnemyTracker& enemy, double my_speed, double his_speed);
 
   // Returns true if bump will occur
   // result in bump_position as position of the car ahead (enemy)
@@ -67,8 +67,8 @@ class LaneScorer {
 
   const double kCarLength;
 
-  const int kDeadCrash = -100;
-  const int kMustBump = 100;
+  const double kDeadCrash = -100;
+  const double kMustBump = 100;
 
   double longest_calculation_time_ = 0;
 };

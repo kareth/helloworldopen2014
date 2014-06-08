@@ -22,7 +22,7 @@ class GreedyPathOptimizer : public PathOptimizerInterface {
   // Maps -1, 0 1 to kSwitchLeft, stay, right
   Switch OffsetToDirection(int offset);
 
-  const int kApproximateSpeed = 1;
+  const double kApproximateSpeed = 1.0;
 
   const Race& race_;
   CarTracker& car_tracker_;
