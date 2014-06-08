@@ -1,0 +1,71 @@
+7 physics, 9 maps
+
+WojtekThrottleScheduler,elaeintarha,0,321,3262,26057.5,1.958,0.435029,False
+WojtekThrottleScheduler,elaeintarha,1,340,3451,26056.9,2.366,0.318885,False
+WojtekThrottleScheduler,elaeintarha,2,303,3075,26058.3,3.585,0.522147,False
+WojtekThrottleScheduler,elaeintarha,3,317,3222,26058.7,2.982,0.510826,False
+WojtekThrottleScheduler,elaeintarha,4,345,3494,26060.8,3.614,0.421564,False
+WojtekThrottleScheduler,elaeintarha,5,329,3334,26054.4,3.837,0.446084,False
+WojtekThrottleScheduler,elaeintarha,6,313,3180,26064,2.082,0.443273,False
+WojtekThrottleScheduler,pentag,0,549,5554,37444.8,3.032,0.639183,False
+WojtekThrottleScheduler,pentag,1,558,5642,37442.9,3.507,0.528532,False
+WojtekThrottleScheduler,pentag,2,521,5267,37438.1,2.851,0.674048,False
+WojtekThrottleScheduler,pentag,3,549,5535,37446.8,3.631,0.675428,False
+WojtekThrottleScheduler,pentag,4,583,5880,37440,2.557,0.604958,False
+WojtekThrottleScheduler,pentag,5,564,5683,37448.7,4.364,0.649396,False
+WojtekThrottleScheduler,pentag,6,536,5407,37445.1,5.731,0.662797,False
+WojtekThrottleScheduler,england,0,542,5463,38562.5,3.192,0.586297,False
+WojtekThrottleScheduler,england,1,552,5580,38567.2,3.281,0.442073,False
+WojtekThrottleScheduler,england,2,512,5154,38799.7,3.254,0.608636,False
+WojtekThrottleScheduler,england,3,540,5454,38718.7,3.237,0.588962,False
+WojtekThrottleScheduler,england,4,578,5826,38566.8,2.446,0.505575,False
+WojtekThrottleScheduler,england,5,557,5612,38601.2,3.061,0.561628,False
+WojtekThrottleScheduler,england,6,526,5320,38839.5,2.3,0.565705,False
+WojtekThrottleScheduler,france,0,420,4258,31927.3,4.42,0.703352,False
+WojtekThrottleScheduler,france,1,435,4407,31925.7,6.637,0.526367,False
+WojtekThrottleScheduler,france,2,394,3994,31928.8,3.412,0.733543,False
+WojtekThrottleScheduler,france,3,417,4216,31928.3,6.181,0.769989,False
+WojtekThrottleScheduler,france,4,448,4543,31924.2,18.979,0.837237,False
+WojtekThrottleScheduler,france,5,431,4361,31928.9,4.555,0.70751,False
+WojtekThrottleScheduler,france,6,408,4134,31923.9,5.662,0.777392,False
+WojtekThrottleScheduler,germany,0,506,5098,33855.2,7.533,0.838386,False
+WojtekThrottleScheduler,germany,1,510,5151,33836.2,11.982,0.732658,False
+WojtekThrottleScheduler,germany,2,479,4836,33831.6,12.973,0.842406,False
+WojtekThrottleScheduler,germany,3,506,5101,33836.3,37.479,0.756982,False
+WojtekThrottleScheduler,germany,4,537,5414,33832.3,4.882,0.690856,False
+WojtekThrottleScheduler,germany,5,519,5238,33831.8,5.563,0.735866,False
+WojtekThrottleScheduler,germany,6,492,4961,33836,3.447,0.717896,False
+WojtekThrottleScheduler,imola,0,441,4457,29680.6,4.069,0.66681,False
+WojtekThrottleScheduler,imola,1,445,4504,29682.4,3.076,0.569203,False
+WojtekThrottleScheduler,imola,2,416,4196,29683,4.994,0.817423,False
+WojtekThrottleScheduler,imola,3,438,4437,29678.3,4.764,0.748152,False
+WojtekThrottleScheduler,imola,4,469,4734,29683.2,6.748,0.662439,False
+WojtekThrottleScheduler,imola,5,454,4584,29677,4.937,0.771733,False
+WojtekThrottleScheduler,imola,6,428,4328,29684.3,3.8,0.735656,False
+WojtekThrottleScheduler,keimola,0,434,4379,33133,2.376,0.509854,False
+WojtekThrottleScheduler,keimola,1,445,4501,33130.2,3.561,0.458774,False
+WojtekThrottleScheduler,keimola,2,408,4123,33133.4,4.802,0.648776,False
+WojtekThrottleScheduler,keimola,3,429,4337,33132.1,4.703,0.559005,False
+WojtekThrottleScheduler,keimola,4,460,4648,33132.6,3.19,0.456873,False
+WojtekThrottleScheduler,keimola,5,443,4468,33131.7,17.271,0.615775,False
+WojtekThrottleScheduler,keimola,6,422,4264,33132.2,21.827,0.705403,False
+WojtekThrottleScheduler,suzuka,0,542,5476,38005.1,4.037,0.628827,False
+WojtekThrottleScheduler,suzuka,1,546,5522,38004.4,3.075,0.451461,False
+WojtekThrottleScheduler,suzuka,2,510,5154,38004.5,4.693,0.697729,False
+WojtekThrottleScheduler,suzuka,3,540,5448,38033.3,7.568,0.689509,False
+WojtekThrottleScheduler,suzuka,4,573,5785,38000.9,3.68,0.562373,False
+WojtekThrottleScheduler,suzuka,5,554,5608,38003.5,3.577,0.625429,False
+WojtekThrottleScheduler,suzuka,6,528,5326,38008.1,4.103,0.610474,False
+WojtekThrottleScheduler,usa,0,288,2934,27355.1,0.884,0.260178,False
+WojtekThrottleScheduler,usa,1,323,3289,27361.2,0.83,0.209144,False
+WojtekThrottleScheduler,usa,2,270,2744,27358.7,1.298,0.350823,False
+WojtekThrottleScheduler,usa,3,285,2899,27356.8,1.287,0.315978,False
+WojtekThrottleScheduler,usa,4,309,3153,27360.2,0.749,0.202132,False
+WojtekThrottleScheduler,usa,5,294,2993,27357.3,1.305,0.29264,False
+WojtekThrottleScheduler,usa,6,280,2849,27364.8,0.877,0.278159,False
+
+summary for WojtekThrottleScheduler
+total_avg_ticks_per_lap = 28724.700000000008
+max_tick_time           = 37.479
+avg_tick_time           = 0.5851142539682542
+number of crashes       = 0
