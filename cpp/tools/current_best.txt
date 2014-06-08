@@ -1,0 +1,7 @@
+7 physics, 9 maps
+
+summary for WojtekThrottleScheduler
+total_avg_ticks_per_lap = 28724.700000000008
+max_tick_time           = 37.479
+avg_tick_time           = 0.5851142539682542
+number of crashes       = 0
