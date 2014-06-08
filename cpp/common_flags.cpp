@@ -26,3 +26,5 @@ DEFINE_bool(force_safe_angle, false, "");
 DEFINE_bool(log_simulator_csv, false, "Log in simulator to data.csv");
 
 DEFINE_int32(laps, 3, "Number of laps");
+
+DEFINE_double(overtake_treshold, 0.9, "Ratio of velocity to overtake guy");
