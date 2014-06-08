@@ -49,7 +49,8 @@ with open(os.path.join('results',"results.csv"), "w") as f:
         for map in maps:
             for physic in range(0, FLAGS.physics):
                 answer_time = int(FLAGS.answer_time * 1000)
-                res = !bin/throttle_tester --throttle_scheduler=$scheduler --track=$map --physics=$physic --answer_time=$answer_time --laps=$FLAGS.laps --log_wojtek_to_file
+                #res = !bin/throttle_tester --throttle_scheduler=$scheduler --track=$map --physics=$physic --answer_time=$answer_time --laps=$FLAGS.laps --log_wojtek_to_file
+                res = !bin/throttle_tester --throttle_scheduler=$scheduler --track=$map --physics=$physic --answer_time=$answer_time --laps=$FLAGS.laps
                 name_out = os.path.join('results', map + "-" + str(physic) + ".out")
                 with open(name_out, 'w') as x:
                     x.write("\n".join(res))
