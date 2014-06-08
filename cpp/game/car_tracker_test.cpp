@@ -697,6 +697,16 @@ TEST_F(IsSafeAttackTest, FollowEnemy) {
   EXPECT_EQ(Switch::kSwitchRight, command.get_switch());
 }
 
+TEST_F(IsSafeAttackTest, FollowEnemyWithAlreadySwitched) {
+  CarState my_state = CarState(Position(2, 50, 1.5, 0, 0), 11.0, 1.6, Switch::kSwitchRight, 1, TurboState());
+  CarState enemy_state = CarState(Position(3, 10, 1.5, 0, 1), 8.0, 1.6, Switch::kStay, 1, TurboState());
+
+  Command command;
+  EXPECT_TRUE(car_tracker_->IsSafeAttack(my_state, enemy_state, &command));
+  EXPECT_TRUE(command.ThrottleSet());
+  EXPECT_EQ(1.0, command.throttle());
+}
+
 TEST_F(IsSafeAttackTest, CantFollowEnemy) {
   CarState my_state = CarState(Position(2, 50, 1.5, 1, 1), 11.0, 1.6, Switch::kSwitchLeft, 1, TurboState());
   CarState enemy_state = CarState(Position(3, 10, 1.5, 1, 1), 8.0, 1.6, Switch::kStay, 1, TurboState());
@@ -711,6 +721,17 @@ TEST_F(IsSafeAttackTest, AppliedSwitchButCanFollow) {
 
   Command command;
   EXPECT_TRUE(car_tracker_->IsSafeAttack(my_state, enemy_state, &command));
+}
+
+TEST_F(IsSafeAttackTest, Turbo) {
+  CarState my_state = CarState(Position(1, 50, 1.5, 1, 1), 15.0, 1.6, Switch::kSwitchLeft, 1, TurboState());
+  my_state.AddNewTurbo(Turbo(30, 3));
+  CarState enemy_state = CarState(Position(3, 10, 1.5, 1, 0), 8.0, 1.6, Switch::kStay, 1, TurboState());
+
+  Command command;
+  EXPECT_FALSE(car_tracker_->IsSafeAttack(my_state, enemy_state, &command));
+  EXPECT_TRUE(car_tracker_->IsSafeAttack(my_state, enemy_state, &command, true));
+  EXPECT_TRUE(command.TurboSet());
 }
 
 // TODO Turbo attack

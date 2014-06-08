@@ -632,16 +632,22 @@ bool CarTracker::HasBumped(
 bool CarTracker::IsSafeAttack(
     const CarState& my_state,
     const CarState& current_enemy_state,
-    Command* command) {
+    Command* command,
+    bool allow_turbo) {
   CarState enemy_state = current_enemy_state;
 
   if (DistanceBetween(my_state.position(), enemy_state.position()) > 200) {
     return false;
   }
 
+  if (allow_turbo && !my_state.turbo_state().available()) {
+    std::cerr << "ERROR: Trying to attack wit turbo when not available" << std::endl;
+    return false;
+  }
+
   // Assume that enemy will not switch lanes.
   Command command1;
-  if (!IsSafeAttackWithoutSwitches(my_state, enemy_state, &command1)) {
+  if (!IsSafeAttackWithoutSwitches(my_state, enemy_state, &command1, allow_turbo)) {
     return false;
   }
 
@@ -652,7 +658,7 @@ bool CarTracker::IsSafeAttack(
   Command command2 = command1;
   if (enemy_state.position().end_lane() > 0) {
     enemy_state.set_switch_state(Switch::kSwitchLeft);
-    if (!IsSafeAttackWithoutSwitches(my_state, enemy_state, &command2)) {
+    if (!IsSafeAttackWithoutSwitches(my_state, enemy_state, &command2, allow_turbo)) {
       std::cout << "IsSafeAttack: If enemy switches to left, attack would be unsuccessful." << std::endl;
       return false;
     }
@@ -662,7 +668,7 @@ bool CarTracker::IsSafeAttack(
   Command command3 = command1;
   if (enemy_state.position().end_lane() < race_->track().lanes().size()) {
     enemy_state.set_switch_state(Switch::kSwitchRight);
-    if (!IsSafeAttackWithoutSwitches(my_state, enemy_state, &command3)) {
+    if (!IsSafeAttackWithoutSwitches(my_state, enemy_state, &command3, allow_turbo)) {
       std::cout << "IsSafeAttack: If enemy switches to right, attack would be unsuccessful." << std::endl;
       return false;
     }
@@ -680,7 +686,8 @@ bool CarTracker::IsSafeAttack(
 bool CarTracker::IsSafeAttackWithoutSwitches(
     const CarState& current_state,
     const CarState& current_enemy_state,
-    Command* command) {
+    Command* command,
+    bool allow_turbo) {
   *command = Command(1.0);
 
   CarState my_state = current_state;
@@ -697,12 +704,12 @@ bool CarTracker::IsSafeAttackWithoutSwitches(
   for (int ticks_after = 1; ticks_after < enemy_safe_states.size(); ++ticks_after) {
     // Compute follow command.
     Command follow_command = Command(1.0);
-    if (my_state.position().end_lane() != enemy_state.position().end_lane()) {
-      if (my_state.position().end_lane() < enemy_state.position().end_lane()) {
-        follow_command = Command(Switch::kSwitchRight);
-      } else {
-        follow_command = Command(Switch::kSwitchLeft);
-      }
+    if (allow_turbo && !my_state.turbo_state().is_on()) follow_command = Command::Turbo();
+    if (my_state.position().end_lane() < enemy_state.position().end_lane() && my_state.switch_state() != Switch::kSwitchRight) {
+      follow_command = Command(Switch::kSwitchRight);
+    }
+    if (my_state.position().end_lane() > enemy_state.position().end_lane() && my_state.switch_state() != Switch::kSwitchLeft) {
+      follow_command = Command(Switch::kSwitchLeft);
     }
 
     if (ticks_after == 1) *command = follow_command;

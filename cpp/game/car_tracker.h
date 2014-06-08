@@ -220,7 +220,8 @@ class CarTracker : public CarPredictor {
   bool IsSafeAttack(
     const CarState& current_state,
     const CarState& enemy_state,
-    Command* command);
+    Command* command,
+    bool allow_turbo=false);
 
   // FOR UNITTESTS ONLY
   CrashModel* mutable_crash_model() { return &crash_model_; }
@@ -233,7 +234,8 @@ class CarTracker : public CarPredictor {
   bool IsSafeAttackWithoutSwitches(
     const CarState& current_state,
     const CarState& enemy_state,
-    Command* command);
+    Command* command,
+    bool allow_turbo);
 
   void LogState();
   double RadiusInPosition(const Position& position);

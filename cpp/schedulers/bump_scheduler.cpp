@@ -138,8 +138,7 @@ void BumpScheduler::Schedule2(const CarState& state) {
   } else {
     // No turbo, check all cars
     for (auto& enemy : race_tracker_.enemies()) {
-      if (enemy.color() == race_tracker_.my_color())
-        continue;
+      if (enemy.color() == race_tracker_.my_color()) continue;
       if (enemy.has_finished()) continue;
       if (enemy.is_dead()) continue;
 
@@ -150,6 +149,26 @@ void BumpScheduler::Schedule2(const CarState& state) {
         command_ = command;
         std::cout << "Safe attack found. Targeting: " << bump_target_ << std::endl;
         return;
+      }
+    }
+
+    // Turboo bump
+    if (FLAGS_bump_with_turbo && state.turbo_state().available()) {
+      // Check all cars
+      for (auto& enemy : race_tracker_.enemies()) {
+        if (enemy.color() == race_tracker_.my_color()) continue;
+        if (enemy.has_finished()) continue;
+        if (enemy.is_dead()) continue;
+
+        Command safe_command;
+        Command command;
+        if (car_tracker_.IsSafeAttack(state, enemy.state(), &command, true)) {
+          has_bump_target_ = true;
+          bump_target_ = enemy.color();
+          command_ = command;
+          std::cout << "Safe attack with turbo found. Targeting: " << bump_target_ << std::endl;
+          return;
+        }
       }
     }
   }
