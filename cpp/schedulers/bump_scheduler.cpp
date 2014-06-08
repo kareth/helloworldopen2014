@@ -116,7 +116,43 @@ game::Command BumpScheduler::FollowSwitch(const game::CarState& me, const game::
 }
 
 void BumpScheduler::Schedule2(const CarState& state) {
+  if (has_bump_target_) {
+    const CarState& enemy_state = race_tracker_.enemy(bump_target_).state();
 
+    // Already bumped
+    if (race_tracker_.BumpOccured(race_tracker_.my_color(), bump_target_)) {
+      std::cout << "Removing attacking target (bump occured). " << std::endl;
+      has_bump_target_ = false;
+      return;
+    }
+
+    // Make sure that the attack is still safe.
+    Command command;
+    if (car_tracker_.IsSafeAttack(state, enemy_state, &command)) {
+      command_ = command;
+      return;
+    }
+
+    std::cout << "ERROR: Attack not safe any more :(" << std::endl;
+    has_bump_target_ = false;
+  } else {
+    // No turbo, check all cars
+    for (auto& enemy : race_tracker_.enemies()) {
+      if (enemy.color() == race_tracker_.my_color())
+        continue;
+      if (enemy.has_finished()) continue;
+      if (enemy.is_dead()) continue;
+
+      Command command;
+      if (car_tracker_.IsSafeAttack(state, enemy.state(), &command)) {
+        has_bump_target_ = true;
+        bump_target_ = enemy.color();
+        command_ = command;
+        std::cout << "Safe attack found. Targeting: " << bump_target_ << std::endl;
+        return;
+      }
+    }
+  }
 }
 
 }  // namespace schedulers

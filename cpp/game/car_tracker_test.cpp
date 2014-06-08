@@ -625,4 +625,94 @@ TEST_F(IsBumpInevitableTest, Basic) {
   EXPECT_TRUE(car_tracker_->IsBumpInevitable(my_state_before, my_state_after, enemy_state, kTicks));
 }
 
+class IsSafeAttackTest : public ::testing::Test {
+ protected:
+  const double kEps = 1e-9;
+
+  void SetUp() {
+    json game_init_json = json::parse_file("data/gameInit.json");
+    const auto& race_json = game_init_json["data"]["race"];
+
+    race_.ParseFromJson(race_json);
+    car_tracker_.reset(new CarTracker(&race_, PhysicsParams()));
+    car_tracker_->mutable_crash_model()->RecordSafeAngle(60.0);
+  }
+
+  CarState Simulate(const Position& position,
+                    double velocity,
+                    int ticks) {
+    CarState my_state(position);
+    my_state.set_velocity(velocity);
+    for (int i = 0; i < ticks; ++i) {
+      my_state = car_tracker_->Predict(my_state, Command(0));
+    }
+    return my_state;
+  }
+
+  Race race_;
+  std::unique_ptr<CarTracker> car_tracker_;
+};
+
+TEST_F(IsSafeAttackTest, AttackIsSafe) {
+  CarState my_state = CarState(Position(15, 6.89269, -33.8908, 0, 0), 6.64891, -29.9215, Switch::kStay, 1, TurboState());
+  CarState enemy_state = CarState(Position(15, 48.3466, -54.7536, 0, 0), 5.98552, -52.4519, Switch::kStay, 1, TurboState());
+
+  Command command;
+  ASSERT_TRUE(car_tracker_->IsSafeAttack(my_state, enemy_state, &command));
+  EXPECT_TRUE(command.ThrottleSet());
+  EXPECT_EQ(1.0, command.throttle());
+}
+
+TEST_F(IsSafeAttackTest, AttackIsNotSafe) {
+  CarState my_state = CarState(Position(14, 64.145, -25.8268, 0, 0), 6.92306, -21.6981, Switch::kStay, 1, TurboState());
+  CarState enemy_state = CarState(Position(15, 36.2534, -49.7306, 0, 0), 6.23232, -46.6116, Switch::kStay, 1, TurboState());
+
+  Command command;
+  EXPECT_FALSE(car_tracker_->IsSafeAttack(my_state, enemy_state, &command));
+}
+
+TEST_F(IsSafeAttackTest, AttackWouldNotCrashEnemy) {
+  CarState my_state = CarState(Position(5, 23.6888, 26.6101, 1, 1), 7.04921, 23.5348, Switch::kStay, 1, TurboState());
+  CarState enemy_state = CarState(Position(5, 67.7012, 46.953, 1, 1), 6.29279, 44.2028, Switch::kStay, 1, TurboState());
+
+  Command command;
+  EXPECT_FALSE(car_tracker_->IsSafeAttack(my_state, enemy_state, &command));
+}
+
+TEST_F(IsSafeAttackTest, ConsiderAllSwitches) {
+  CarState my_state = CarState(Position(2, 30, 1.5, 1, 1), 11.0, 1.6, Switch::kStay, 1, TurboState());
+  CarState enemy_state = CarState(Position(2, 90, 1.5, 1, 1), 8.0, 1.6, Switch::kStay, 1, TurboState());
+
+  Command command;
+  EXPECT_FALSE(car_tracker_->IsSafeAttack(my_state, enemy_state, &command));
+}
+
+TEST_F(IsSafeAttackTest, FollowEnemy) {
+  CarState my_state = CarState(Position(2, 50, 1.5, 0, 0), 11.0, 1.6, Switch::kStay, 1, TurboState());
+  CarState enemy_state = CarState(Position(3, 10, 1.5, 0, 1), 8.0, 1.6, Switch::kStay, 1, TurboState());
+
+  Command command;
+  EXPECT_TRUE(car_tracker_->IsSafeAttack(my_state, enemy_state, &command));
+  ASSERT_TRUE(command.SwitchSet());
+  EXPECT_EQ(Switch::kSwitchRight, command.get_switch());
+}
+
+TEST_F(IsSafeAttackTest, CantFollowEnemy) {
+  CarState my_state = CarState(Position(2, 50, 1.5, 1, 1), 11.0, 1.6, Switch::kSwitchLeft, 1, TurboState());
+  CarState enemy_state = CarState(Position(3, 10, 1.5, 1, 1), 8.0, 1.6, Switch::kStay, 1, TurboState());
+
+  Command command;
+  EXPECT_FALSE(car_tracker_->IsSafeAttack(my_state, enemy_state, &command));
+}
+
+TEST_F(IsSafeAttackTest, AppliedSwitchButCanFollow) {
+  CarState my_state = CarState(Position(2, 50, 1.5, 1, 1), 15.0, 1.6, Switch::kSwitchLeft, 1, TurboState());
+  CarState enemy_state = CarState(Position(3, 10, 1.5, 1, 0), 8.0, 1.6, Switch::kStay, 1, TurboState());
+
+  Command command;
+  EXPECT_TRUE(car_tracker_->IsSafeAttack(my_state, enemy_state, &command));
+}
+
+// TODO Turbo attack
+
 }  // namespace game

@@ -33,6 +33,7 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const u
     bump_scheduler_->Schedule(state);
 
     if (bump_scheduler_->HasTarget()) {
+      std::cout << "using attack command" << std::endl;
       command_ = bump_scheduler_->command();
       return;
     }

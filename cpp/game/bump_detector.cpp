@@ -19,6 +19,8 @@ void BumpDetector::Record(const std::vector<EnemyTracker>& enemies, const std::m
       if (a.is_dead() || b.is_dead())
         continue;
 
+      // NOTE - if this logic changes, update also CarTracker!!!
+
       double distance = car_tracker_.DistanceBetween(a_pos, b_pos);
       // We need to compare start_lane and end_lane, as for switches,
       // bump only occurs if those 2 params are equal for both cars
@@ -40,5 +42,6 @@ bool BumpDetector::BumpOccured(const std::string& color, const std::string& colo
   }
   return false;
 }
+
 
 }  // namespace game

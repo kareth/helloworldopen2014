@@ -615,22 +615,166 @@ bool CarTracker::IsBumpInevitable(
   return false;
 }
 
-bool CarTracker::IsSafeAttack(
-    const CarState& current_state,
-    const CarState& enemy_state,
-    Command* command) {
-  if (DistanceBetween(current_state.position(), enemy_state.position()) > 100) {
+bool CarTracker::HasBumped(
+    const CarState& state1,
+    const CarState& state2) {
+  const double kCarLength = race_->cars()[0].length();
+
+  if (state1.position().start_lane() != state2.position().start_lane() ||
+      state1.position().end_lane() != state2.position().end_lane()) {
     return false;
   }
 
-  CarState my_state = current_state;
-  for (int ticks_after = 1; ticks_after < 100; ++ticks_after) {
+  return DistanceBetween(state1.position(), state2.position(), nullptr, kCarLength + 1) <= kCarLength + 1e-9 ||
+         DistanceBetween(state2.position(), state1.position(), nullptr, kCarLength + 1) <= kCarLength + 1e-9;
+}
 
-    if (!crash_model_.IsSafe(my_state.position().angle())) {
+bool CarTracker::IsSafeAttack(
+    const CarState& my_state,
+    const CarState& current_enemy_state,
+    Command* command) {
+  CarState enemy_state = current_enemy_state;
+
+  if (DistanceBetween(my_state.position(), enemy_state.position()) > 200) {
+    return false;
+  }
+
+  // Assume that enemy will not switch lanes.
+  Command command1;
+  if (!IsSafeAttackWithoutSwitches(my_state, enemy_state, &command1)) {
+    return false;
+  }
+
+  // TODO In theory we don't need to simulate below if enemy couldn't perform
+  // switch operation.
+
+  // If enemy can change lane to left, simulate that.
+  Command command2 = command1;
+  if (enemy_state.position().end_lane() > 0) {
+    enemy_state.set_switch_state(Switch::kSwitchLeft);
+    if (!IsSafeAttackWithoutSwitches(my_state, enemy_state, &command2)) {
+      std::cout << "IsSafeAttack: If enemy switches to left, attack would be unsuccessful." << std::endl;
       return false;
     }
   }
 
+  // If enemy can change lane to right, simulate that.
+  Command command3 = command1;
+  if (enemy_state.position().end_lane() < race_->track().lanes().size()) {
+    enemy_state.set_switch_state(Switch::kSwitchRight);
+    if (!IsSafeAttackWithoutSwitches(my_state, enemy_state, &command3)) {
+      std::cout << "IsSafeAttack: If enemy switches to right, attack would be unsuccessful." << std::endl;
+      return false;
+    }
+  }
+
+  if (command1 == command2 && command2 == command3) {
+    *command = command1;
+    return true;
+  }
+
+  std::cout << "Simulating different switches returned different commands." << std::endl;
+  return false;
+}
+
+bool CarTracker::IsSafeAttackWithoutSwitches(
+    const CarState& current_state,
+    const CarState& current_enemy_state,
+    Command* command) {
+  *command = Command(1.0);
+
+  CarState my_state = current_state;
+  CarState enemy_state = current_enemy_state;
+
+  vector<CarState> enemy_safe_states{enemy_state};
+  if (!GenerateSafeStates(enemy_state, &enemy_safe_states)) {
+    std::cout << "IsSafeAttack: Cannot find safe states for enemy. Attack not worth it" << std::endl;
+    return false;
+  }
+
+  bool safe_state_bumped = false;
+
+  for (int ticks_after = 1; ticks_after < enemy_safe_states.size(); ++ticks_after) {
+    // Compute follow command.
+    Command follow_command = Command(1.0);
+    if (my_state.position().end_lane() != enemy_state.position().end_lane()) {
+      if (my_state.position().end_lane() < enemy_state.position().end_lane()) {
+        follow_command = Command(Switch::kSwitchRight);
+      } else {
+        follow_command = Command(Switch::kSwitchLeft);
+      }
+    }
+
+    if (ticks_after == 1) *command = follow_command;
+    my_state = Predict(my_state, follow_command);
+    enemy_state = Predict(enemy_state, Command(1));
+
+    if (DistanceBetween(my_state.position(), enemy_state.position(), nullptr, 201) > 200) {
+      std::cerr << "IsSafeAttack: Can't attack because we applied switch." << std::endl;
+      return false;
+    }
+
+    if (!crash_model_.IsSafe(my_state.position().angle()) ||
+        !crash_model_.IsSafe(enemy_state.position().angle())) {
+      return false;
+    }
+
+    // TODO We check if enemy crashes only at first and last bump assuming that
+    // in all states in between he will crash. Consider checking this in all
+    // intermiediate states.
+    const CarState& enemy_safe_state = enemy_safe_states[ticks_after];
+    if (!safe_state_bumped && HasBumped(my_state, enemy_safe_state)) {
+      safe_state_bumped = true;
+      CarState tmp = my_state;
+      tmp.set_velocity(enemy_safe_state.velocity() * 0.8);
+      if (!GenerateSafeStates(tmp, nullptr)) {
+        std::cout << "Attack bump would crash me (first bump). Not worth it" << std::endl;
+        return false;
+      }
+      tmp = enemy_safe_state;
+      tmp.set_velocity(my_state.velocity() * 0.9);
+      if (GenerateSafeStates(tmp, nullptr)) {
+        std::cout << "Attack bump would not crash enemy (first bump). Not worth it" << std::endl;
+        return false;
+      }
+    }
+
+    // This is last possible bump.
+    if (HasBumped(my_state, enemy_state)) {
+      std::cout << "Final bump after " << ticks_after << " ticks" << std::endl;
+      std::cout << "my_state: " << my_state.ShortDebugString() << std::endl;
+      std::cout << "enemy_state: " << enemy_state.ShortDebugString() << std::endl;
+      CarState tmp = my_state;
+      tmp.set_velocity(enemy_state.velocity() * 0.8);
+      if (!GenerateSafeStates(tmp, nullptr)) {
+        std::cout << "Attack bump would crash me (last bump). Not worth it" << std::endl;
+        return false;
+      }
+      tmp = enemy_state;
+      tmp.set_velocity(my_state.velocity() * 0.9);
+      if (GenerateSafeStates(tmp, nullptr)) {
+        std::cout << "Attack bump would not crash enemy (last bump). Not worth it" << std::endl;
+        return false;
+      }
+      return true;
+    }
+
+    if (safe_state_bumped) {
+      double velocity;
+      if (CanBumpAfterNTicks(my_state, current_enemy_state, ticks_after, &velocity)) {
+        CarState tmp = my_state;
+        tmp.set_velocity(velocity * 0.8);
+        if (!GenerateSafeStates(tmp, nullptr)) {
+          std::cout << "Attack bump would crash me (middle bump). Not worth it" << std::endl;
+          return false;
+        }
+      } else {
+        std::cerr << "ERROR: CanBumpAfterNTicks says bump is impossible, even though it was possible!" << std::endl;
+      }
+    }
+  }
+
+  std::cout << "Finished simulation." << std::endl;
   return false;
 }
 
