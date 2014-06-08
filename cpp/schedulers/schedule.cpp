@@ -138,35 +138,49 @@ void schedulers::Sched::ShiftLeft(const game::CarState& state) {
     throttles_[i] = throttles_[i + 1];
   }
   throttles_[size() - 1] = 0.0;
-  switch_position_ -= 1;
+  if (switch_position_ != -1)
+    switch_position_ -= 1;
 
   UpdateDistance(state);
 }
 
-void schedulers::Sched::ShiftLeftFillSafe(const game::CarState& state, double distance_to_switch, double last_throttle) {
+bool schedulers::Sched::ShiftLeftFillSafe(const game::CarState& state, double distance_to_switch, double last_throttle) {
   ShiftLeft(state);
   // Try 1.0 at the end
   throttles_[size() - 1] = 1.0;
   if (IsSafe(state, distance_to_switch, last_throttle)) {
-    return ;
+    return true;
+  }
+
+  // Then try simply 0.0
+  throttles_[size() - 1] = 0.0;
+  if (IsSafe(state, distance_to_switch, last_throttle)) {
+    return true;
   }
 
   // If not then try to set the last value + switch at the end.
   // Tt might work if a switch appeared in the horizon
   if (distance_to_switch >= 0) {
     throttles_[size() - 1] = throttles_[size() - 2];
+    UpdateDistance(state);
+    // Switch is outside distance, so this is not the problem, so we cannot cope with this
+    if (distance_to_switch > distance_) {
+        // Undo
+        throttles_[size() - 1] = 0.0;
+        UpdateDistance(state);
+        return false; 
+    }
 
     int saved_switch_position_ = switch_position_;
     switch_position_ = size() - 1;
     if (IsSafe(state, distance_to_switch, last_throttle)) {
-      return;
+      return true;
     }
     // Undo switch position change
     switch_position_ = saved_switch_position_;
+    throttles_[size() - 1] = 0.0;
   }
-
-  // Otherwise, fall back to 0.0
-  throttles_[size() - 1] = 0.0;
+  return false;
 }
 
 void schedulers::Sched::Reset(const game::CarState& state) {

@@ -79,6 +79,8 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   bool initial_schedule_safe_;
   double last_schedule_time_; // ms
   double last_time_limit_; // ms
+  double last_distance_to_switch_; 
+  double last_throttle_; 
   int last_game_tick_ = -1000;
 
   bool log_to_csv_;
