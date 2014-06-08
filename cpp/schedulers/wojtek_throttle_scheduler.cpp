@@ -54,14 +54,14 @@ bool WojtekThrottleScheduler::RepairInitialSchedule(const game::CarState& state,
   }
 
   // Try to repair switch
-  int ticks = schedule.GetTicksToTheRequiredSwitch(state, distance_to_switch);
-  if (ticks < 0) {
+  int tick_for_switch = schedule.GetLatestTickSwitchIsDue(state, distance_to_switch);
+  if (tick_for_switch < 0) {
     // Switch is too far away, so it not the problem in this Schedule
     return false;
   }
 
   // Try to inject the switch at three positions before the switch is due
-  for (int tick = ticks; tick >= std::max(0, ticks - 2); --tick) {
+  for (int tick = tick_for_switch; tick >= std::max(0, tick_for_switch - 2); --tick) {
     if (schedule.TryUpdateSwitchPosition(state, tick, distance_to_switch, last_throttle)) {
       schedule.UpdateDistance(state);
       return true;
@@ -69,12 +69,12 @@ bool WojtekThrottleScheduler::RepairInitialSchedule(const game::CarState& state,
   }
 
   // If the above failed, try to 0.0 after the switch...
-  for (int i = ticks; i < schedule.size(); ++i) {
+  for (int i = tick_for_switch; i < schedule.size(); ++i) {
     schedule[i] = 0.0;
   }
 
   // ... and once again try to inject the switch
-  for (int tick = ticks; tick >= std::max(0, ticks - 2); --tick) {
+  for (int tick = tick_for_switch; tick >= std::max(0, tick_for_switch - 2); --tick) {
     if (schedule.TryUpdateSwitchPosition(state, tick, distance_to_switch, last_throttle)) {
       schedule.UpdateDistance(state);
       return true;
