@@ -67,6 +67,8 @@ class EnemyTracker {
   // Car color
   const std::string& color() const { return color_; }
 
+  bool IsThreatToMe(const EnemyTracker& enemy) const;
+
  private:
   bool ShouldRecord() const;
   double Velocity(const Position& position) const;

@@ -29,6 +29,18 @@ bool EnemyTracker::ShouldRecord() const {
   return true;
 }
 
+bool EnemyTracker::IsThreatToMe(const EnemyTracker& enemy) const {
+  const double kCarLength = race_.cars()[0].length();
+  auto safe_position = car_tracker_.PredictPosition(enemy.state().position(), 3 * kCarLength);
+
+  // Wont reach safe_position before spawn
+  if (!IsReady() || TimeToPosition(safe_position) > enemy.time_to_spawn())
+    return true;
+  else
+    return false;
+}
+
+
 void EnemyTracker::RecordPosition(const game::Position& position) {
   RecordTick(position);
   state_ = car_tracker_.CreateCarState(state_, position);
