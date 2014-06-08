@@ -65,6 +65,7 @@ class ShortestPathSwitchScheduler : public SwitchScheduler {
 
    // Index of piece where we want to switch
    int target_switch_;
+   int target_lane_;
 
    // Scheduled direction
    game::Switch direction_;

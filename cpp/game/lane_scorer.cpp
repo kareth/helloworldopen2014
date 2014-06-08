@@ -111,6 +111,8 @@ double LaneScorer::ScoreLivingEnemy(const EnemyTracker& me, const EnemyTracker& 
     bool will_bump = BumpPosition(me, enemy, end_position, &bump_position);
 
     if (will_bump) {
+      if (FLAGS_log_overtaking)
+        printf(" dd %lf %lf bb \n", me.ExpectedVelocity(bump_position), enemy.ExpectedVelocity(bump_position));
       return EnemyBumpScore(enemy, me.ExpectedVelocity(bump_position), enemy.ExpectedVelocity(bump_position));
     } else {
       return 0;
@@ -143,7 +145,8 @@ bool LaneScorer::BumpPosition(const EnemyTracker& me, const EnemyTracker& enemy,
   int enemy_time = enemy.TimeToPosition(car_tracker_.PredictPosition(end_position, kCarLength * 1.1), &enemy_prediction);
 
   //printf("Predicting bump position, %d and %d steps done.\n", my_time, enemy_time);
-  printf(" {{%d %d}} ", my_time, enemy_time);
+  if (FLAGS_log_overtaking)
+    printf(" {{%d %d}} ", my_time, enemy_time);
 
   if (my_time > enemy_time)
     return false;

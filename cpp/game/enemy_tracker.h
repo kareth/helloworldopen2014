@@ -35,7 +35,7 @@ class EnemyTracker {
 
   // Returns predicted velocity at position p.
   // Doesnt count the situation where we are dead
-  int ExpectedVelocity(const Position& p) const { return Velocity(p); }
+  double ExpectedVelocity(const Position& p) const { return Velocity(p); }
 
   // OBSOLETE
   // Approximation-wise

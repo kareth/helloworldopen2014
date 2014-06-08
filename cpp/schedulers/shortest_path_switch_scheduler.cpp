@@ -14,18 +14,23 @@ ShortestPathSwitchScheduler::ShortestPathSwitchScheduler(
     game::CarTracker& car_tracker)
   : race_(race), car_tracker_(car_tracker), race_tracker_(race_tracker),
     should_switch_now_(false), waiting_for_switch_(false),
-    target_switch_(-1), last_throttle_(0), already_issued_switch_(Switch::kStay) {
-
+    target_switch_(-1), target_lane_(-1), last_throttle_(0), already_issued_switch_(Switch::kStay) {
   path_optimizer_.reset(new game::DoublePathOptimizer(race, car_tracker_));
   throttle_scheduler_.reset(WojtekThrottleScheduler::CreateQuickScheduler(race, car_tracker));
 }
 
 bool ShortestPathSwitchScheduler::WaitingToReachIssuedSwitch(const game::CarState& state) {
-  if (state.position().piece() == target_switch_) {
+  // TODO doesnt work in special case:
+  // If we fail to switch scheduled switch AND in the same time we didnt get any tick
+  // on switch piece :D
+  if (state.position().end_lane() == target_lane_ ||
+      target_switch_ == state.position().piece()) {
     should_switch_now_ = false;
     waiting_for_switch_ = false;
-    target_switch_ = -1;
     already_issued_switch_ = Switch::kStay;
+    target_switch_ = -1;
+    target_lane_ = state.position().end_lane();
+    direction_ = Switch::kStay;
   }
   return waiting_for_switch_;
 }
@@ -57,17 +62,18 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
         return a.second > b.second;
       });  // Last are the best
 
-  /*for (auto p : scores) {
-    printf("{%d %d}  ",p.first, p.second);
-  }
-  printf("\n");*/
+  //printf("Total Scores: \n");
+  //for (auto p : scores) {
+  //  printf("{%lf %d}  ",p.first, p.second);
+  // }
+  //printf("\n");
 
 
   auto target = Position(race_.track().NextSwitch(state.position().piece()), 0);
   target.set_start_lane(state_.position().end_lane());
   target.set_end_lane(state_.position().end_lane());
   double distance = car_tracker_.DistanceBetween(state_.position(), target);  // Distance to switch
-  //printf("                                                                             distance: %lf\n",distance);
+  //printf("distance: %lf\n",distance);
 
   for (int i = 0; i < scores.size(); i++) {
     auto dir = scores[i].second;
@@ -90,12 +96,14 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
           waiting_for_switch_ = false;
           should_switch_now_ = false;
           target_switch_ = -1;
+          target_lane_ = state.position().end_lane();
         } else {
           if (dir != already_issued_switch_) { // If we already issued that switch, we dont have to care
             should_switch_now_ = true;
             waiting_for_switch_ = false;
           }
           target_switch_ = race_.track().NextSwitch(state.position().piece());
+          target_lane_ = state.position().end_lane() + int(dir) - 1;
           direction_ = dir;
         }
         return;  // found best
@@ -105,22 +113,11 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
 }
 
 bool ShortestPathSwitchScheduler::IsChangeDecision(const Switch& s) {
-  if (s == Switch::kStay) {
-    if (should_switch_now_ == false && waiting_for_switch_ == false)
-      return false;
-    else
-      return true;
-  } else {
-    if (should_switch_now_ == false && waiting_for_switch_ == false) {
-      return true;
-    } else {
-      return direction_ == s;
-    }
-  }
+  return target_lane_ != state_.position().end_lane() + int(s) - 1;
 }
 
 double ShortestPathSwitchScheduler::DistanceToSwitch() {
-  //printf(" [%d %d %d] \n", waiting_for_switch_, should_switch_now_, target_switch_);
+  //printf(" [%d %d %d / %d] \n", waiting_for_switch_, should_switch_now_, target_switch_, already_issued_switch_);
   if (waiting_for_switch_)
     return -1;
   if (should_switch_now_) {
@@ -140,6 +137,15 @@ void ShortestPathSwitchScheduler::Switched() {
   already_issued_switch_ = direction_;
 }
 
+game::Switch ShortestPathSwitchScheduler::ExpectedSwitch() {
+  if (should_switch_now_ && !waiting_for_switch_) {
+    return direction_;
+  } else {
+    return Switch::kStay;
+  }
+}
+
+
 // OBSOLETE!!!!!!!!
 bool ShortestPathSwitchScheduler::ShouldSwitch() {
   if (should_switch_now_ && !waiting_for_switch_) {
@@ -154,14 +160,6 @@ bool ShortestPathSwitchScheduler::ShouldSwitch() {
       return true;
   }
   return false;
-}
-
-game::Switch ShortestPathSwitchScheduler::ExpectedSwitch() {
-  if (should_switch_now_ && !waiting_for_switch_) {
-    return direction_;
-  } else {
-    return Switch::kStay;
-  }
 }
 
 }  // namespace schedulers
