@@ -2,7 +2,7 @@
 
 DECLARE_bool(check_if_safe_ahead);
 DECLARE_bool(bump_with_turbo);
-DEFINE_bool(new_attack, false, "");
+DEFINE_bool(new_attack, true, "");
 
 using game::Command;
 using ::game::CarState;
