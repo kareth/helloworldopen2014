@@ -44,7 +44,9 @@ class Sched {
   // distance_to_switch < 0 if no switch ahead.
   bool IsSafe(const game::CarState& state, double distance_to_switch, double last_throttle);
   void ShiftLeft(const game::CarState& state);
-  void ShiftLeftFillSafe(const game::CarState& state, double distance_to_switch, double last_throttle);
+
+  // Returns issafe
+  bool ShiftLeftFillSafe(const game::CarState& state, double distance_to_switch, double last_throttle);
 
   void Reset(const game::CarState& state);
   void Print();
