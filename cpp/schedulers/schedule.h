@@ -20,7 +20,7 @@ class Sched {
   void UpdateDistance(const game::CarState& state);
   void UpdateDistance(double new_distance); // Explicitely
 
-  // Number of ticks until switch. <0 if no switch ahead
+  // Number of ticks until switch according to the schedule. Returns <0 if no switch ahead
   int GetTicksToTheRequiredSwitch(const game::CarState& state, double distance_to_switch);
 
   // Afterwards, you should call UpdateDistance in most cases
