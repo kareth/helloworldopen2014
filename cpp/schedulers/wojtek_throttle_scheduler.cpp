@@ -49,8 +49,17 @@ WojtekThrottleScheduler::~WojtekThrottleScheduler() {
 bool WojtekThrottleScheduler::RepairInitialSchedule(const game::CarState& state, Sched& schedule,
     double distance_to_switch, double last_throttle) {
   if (distance_to_switch < 0) {
-    // I can repair only switch-related issues (TODO)
-    return false;
+    if (schedule.switch_position() >= 0) {
+      // Nonneeded switch found
+      schedule.RemoveSwitch();
+      schedule.UpdateDistance(state); // just in case...
+      if (schedule.IsSafe(state, distance_to_switch, last_throttle)) { 
+        return true;
+      }
+    } else {
+      // I can repair only switch-related issues (TODO)
+      return false;
+    }
   }
 
   // Try to repair switch
