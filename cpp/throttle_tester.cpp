@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
   while (physics.size() < 100) {
     //                  speed_decay       acceleration       angle_decay angle_change_speed     target_angle_fac target_angle_treshold
     double b = range(-0.002, -0.001);
-    physics.push_back({{range(0.9, 0.99), range(0.1, 0.5)}, {1.9, -0.9, b, range(0.3, 0.7), 0.3 * b}});
+    physics.push_back({{range(0.979, 0.981), range(0.15, 0.25)}, {1.9, -0.9, b, range(0.45, 0.6), -240 * b}});
 
     /*printf("{%lf %lf}{%lf %lf %lf %lf}\n",
         physics.back().first[0],
