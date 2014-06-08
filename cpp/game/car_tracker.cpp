@@ -742,7 +742,7 @@ bool CarTracker::IsSafeAttackWithoutSwitches(
     enemy_state = Predict(enemy_state, Command(1));
 
     if (DistanceBetween(my_state.position(), enemy_state.position(), nullptr, 201) > 200) {
-      std::cerr << "IsSafeAttack: Can't attack because we applied switch." << std::endl;
+      std::cout << "IsSafeAttack: Can't attack because we applied switch." << std::endl;
       return false;
     }
 
