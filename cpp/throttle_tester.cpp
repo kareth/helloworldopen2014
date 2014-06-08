@@ -31,6 +31,14 @@ std::string random_race_id() {
   return std::string(buffer);
 }
 
+namespace {
+
+double range(double a, double b) {
+  double r = double(rand() % 1000000) / 1000000.0;
+  return a + r * (b-a);
+}
+
+}  // anonymous namespace
 
 int main(int argc, char** argv) {
   std::vector<std::pair<std::vector<double>, std::vector<double> > > physics;
@@ -43,6 +51,21 @@ int main(int argc, char** argv) {
     {{0.98, 0.198433}, {1.9, -0.9, -0.00129546, 0.56454 , 0.31091 }},
     {{0.98, 0.210197}, {1.9, -0.9, -0.00121806, 0.506844, 0.292334}},
   };
+
+  srand(123456789);
+  while (physics.size() < 100) {
+    //                  speed_decay       acceleration       angle_decay angle_change_speed     target_angle_fac target_angle_treshold
+    physics.push_back({{range(0.9, 0.99), range(0.1, 0.5)}, {1.9, -0.9, range(-0.001, -0.002), range(0.3, 0.7), range(0.25, 0.35)}});
+
+    /*printf("{%lf %lf}{%lf %lf %lf %lf}\n",
+        physics.back().first[0],
+        physics.back().first[1],
+        physics.back().second[0],
+        physics.back().second[1],
+        physics.back().second[2],
+        physics.back().second[3]
+        );*/
+  }
 
   // FLAGS_throttle_scheduler = "BinaryThrottleScheduler";
   // FLAGS_switch_scheduler = "NeverSwitchScheduler";
