@@ -7,6 +7,7 @@
 #include "bots/raw_bot.h"
 
 DECLARE_bool(log_simulator_csv);
+DECLARE_int32(laps);
 
 using jsoncons::json;
 
@@ -63,7 +64,7 @@ class Simulator {
     Race race;
 
     int max_ticks_to_simulate = 10000;
-    int max_laps_to_simulate = 3;
+    int max_laps_to_simulate = FLAGS_laps;
 
     PhysicsParams physics_params;
 

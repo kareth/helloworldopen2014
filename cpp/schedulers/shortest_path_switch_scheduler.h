@@ -4,6 +4,10 @@
 #include "schedulers/switch_scheduler.h"
 #include "game/race_tracker.h"
 #include "game/double_path_optimizer.h"
+#include "game/greedy_path_optimizer.h"
+#include "schedulers/throttle_scheduler.h"
+#include "schedulers/wojtek_throttle_scheduler.h"
+#include "utils/deadline.h"
 
 DECLARE_bool(overtake);
 
@@ -42,8 +46,16 @@ class ShortestPathSwitchScheduler : public SwitchScheduler {
    // Sets lap strategy
    void set_strategy(const Strategy& strategy) { strategy_ = strategy; }
 
+   void set_last_throttle(double t) override { last_throttle_ = t; }
+
+   // Returns ramaining distance to scheduled switch
+   // We have to issue command before that moment
+   double DistanceToSwitch();
+
  private:
   bool WaitingToReachIssuedSwitch(const game::CarState& state);
+
+  bool IsChangeDecision(const game::Switch& s);
 
    // True if we plan to issue command before next switch
    bool should_switch_now_;
@@ -57,12 +69,19 @@ class ShortestPathSwitchScheduler : public SwitchScheduler {
    // Scheduled direction
    game::Switch direction_;
 
+   game::Switch already_issued_switch_;
+
    std::unique_ptr<game::PathOptimizerInterface> path_optimizer_;
+
+   std::unique_ptr<ThrottleScheduler> throttle_scheduler_;
+   double last_throttle_;
 
    game::CarTracker& car_tracker_;
    game::RaceTracker& race_tracker_;
    const game::Race& race_;
    Strategy strategy_;
+
+   game::CarState state_;
 };
 
 }  // namespace schedulers

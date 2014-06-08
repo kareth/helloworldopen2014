@@ -47,7 +47,7 @@ void BinaryThrottleScheduler::Overtake(const string& color) {
   printf("Feature not implemented.\n");
 }
 
-void BinaryThrottleScheduler::Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline) {
+bool BinaryThrottleScheduler::Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline, double distance_to_switch, double last_throttle) {
   // TODO(kareth) strategies
   if (strategy_ == Strategy::kOptimizeCurrentLap &&
       race_.track().IsLastStraight(state.position())) {
@@ -64,6 +64,7 @@ void BinaryThrottleScheduler::Schedule(const game::CarState& state, int game_tic
     OptimizeTurboBrake(state);
   }
   Log(state);
+  return true; //FIXME
 }
 
 void BinaryThrottleScheduler::OptimizeTurboBrake(const game::CarState& state) {
@@ -139,6 +140,11 @@ int BinaryThrottleScheduler::FindBestMask(const CarState& state, double* distanc
   }
 
   return mask;
+}
+
+bool BinaryThrottleScheduler::TimeToSwitch(int game_tick) {
+    //TODO(If we want to maintain binary throttle scheduler to make switches. Else no switches and possible crashes)
+    return false;
 }
 
 void BinaryThrottleScheduler::Log(const game::CarState& state) {

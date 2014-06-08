@@ -3,10 +3,10 @@
 #include "schedulers/never_switch_scheduler.h"
 #include "schedulers/binary_throttle_scheduler.h"
 #include "schedulers/wojtek_throttle_scheduler.h"
-#include "schedulers/magic_throttle_scheduler.h"
 #include "utils/deadline.h"
 
 #include "gflags/gflags.h"
+#include <assert.h>
 
 DECLARE_bool(check_if_safe_ahead);
 
@@ -26,6 +26,8 @@ BulkScheduler::BulkScheduler(const game::Race& race,
 
   bump_scheduler_.reset(
       new BumpScheduler(race_, race_tracker_, car_tracker_));
+
+  last_throttle_ = 0;
 }
 
 void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline) {
@@ -35,29 +37,37 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const u
     if (bump_scheduler_->HasTarget()) {
       std::cout << "using attack command" << std::endl;
       command_ = bump_scheduler_->command();
+      if (!command_.SwitchSet() && !command_.TurboSet())
+        last_throttle_ = command_.throttle();
       return;
     }
   }
+
   // Bumper has priority over anything else.
 
   turbo_scheduler_->Schedule(state);
   switch_scheduler_->Schedule(state);
 
-  // TODO IMPORTANT!
-  // Passing expected switch is dangerous.
-  // If we schedule for that event, and fail to switch in time
-  // our schedule is invalidated and causes crashes
-  //
-  // If we want to switch, schedule throttle for target lane bent
+
+  //std::cout << state.position().ShortDebugString() << std::endl;
+  //printf("(%d %lf %lf)\n", switch_scheduler_->ExpectedSwitch(), switch_scheduler_->DistanceToSwitch(), last_throttle_);
+  //if (switch_scheduler_->DistanceToSwitch() > 1000)
+  //  assert(false);
+  //printf("\n");
+  // We assume that the path wih given switch is safe!
   auto state_with_switch = state;
   if (switch_scheduler_->ExpectedSwitch() != game::Switch::kStay)
     state_with_switch.set_switch_state(switch_scheduler_->ExpectedSwitch());
-  throttle_scheduler_->Schedule(state_with_switch, game_tick, deadline);
+  throttle_scheduler_->Schedule(state_with_switch,
+                                game_tick,
+                                deadline,
+                                switch_scheduler_->DistanceToSwitch(),
+                                last_throttle_);
   // I assume that after throttle_scheduler, there is nothing computationally intensive, so that throttle_scheduler can take all remaining time (deadline)
 
   if (turbo_scheduler_->ShouldFireTurbo()) {
     command_ = game::Command(game::TurboToggle::kToggleOn);
-  } else if (switch_scheduler_->ShouldSwitch()) {
+  } else if (throttle_scheduler_->TimeToSwitch(game_tick)) {
     command_ = game::Command(switch_scheduler_->SwitchDirection());
   } else {
     command_ = game::Command(throttle_scheduler_->throttle());
@@ -73,6 +83,11 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const u
       command_ = safe_command;
     }
   }
+
+  if (!command_.SwitchSet() && !command_.TurboSet())
+    last_throttle_ = command_.throttle();
+  switch_scheduler_->set_last_throttle(last_throttle_);
+  //std::cout << command_.DebugString() << std::endl;
 }
 
 void BulkScheduler::set_strategy(const Strategy& strategy) {
@@ -104,9 +119,6 @@ ThrottleScheduler* BulkScheduler::CreateThrottleScheduler() {
   } else if (FLAGS_throttle_scheduler == "WojtekThrottleScheduler") {
     std::cout << "Using WojtekThrottleScheduler" << std::endl;
     return new WojtekThrottleScheduler(race_, car_tracker_);
-  } else if (FLAGS_throttle_scheduler == "MagicThrottleScheduler") {
-    std::cout << "Using " << FLAGS_throttle_scheduler << std::endl;
-    return new MagicThrottleScheduler(race_, car_tracker_);
   }
 
   std::cerr << "UNKNOWN throttle scheduler: " << FLAGS_throttle_scheduler << std::endl;

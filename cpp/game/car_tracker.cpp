@@ -96,6 +96,31 @@ CarState CarTracker::Predict(const CarState& state, const Command& command) {
   return CarState(position, velocity, state.position().angle(), switch_state, throttle, turbo_state);
 }
 
+  // Return distance when starting from initial velocity and using throttles
+double CarTracker::PredictDistance(const CarState& state, 
+    const vector<double>& throttles) const {
+  TurboState turbo_state = state.turbo_state();
+  double velocity = state.velocity();
+
+  double distance = 0;
+  for (double throttle : throttles) {
+    if (turbo_state.is_on()) {
+      throttle *= turbo_state.turbo().factor();
+      turbo_state.Decrement();
+    }
+    velocity = velocity_model_.Predict(velocity, throttle);
+    distance += velocity;
+  }
+  return distance;
+}
+
+// Return distance when starting from initial velocity and using throttles how_many times
+double CarTracker::PredictDistance(const CarState& state, int how_many, 
+    double throttle) const {
+  return PredictDistance(state, vector<double>(how_many, throttle));
+}
+
+
 void CarTracker::Record(const Position& position, bool bump) {
   if (just_started_) {
     just_started_ = false;

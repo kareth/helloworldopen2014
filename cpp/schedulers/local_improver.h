@@ -10,8 +10,10 @@ namespace schedulers {
 class LocalImprover {
  public:
   LocalImprover() {}
-  bool ImproveOne(const game::CarState& state, Sched& schedule, int idx, double step);
-  bool Improve(const game::CarState& state, Sched& schedule, double step, const utils::Deadline& deadline);
+  bool Improve(const game::CarState& state, Sched& schedule, double step, const utils::Deadline& deadline, double distance_to_switch, double last_throttle);
+
+ private:
+  bool ImproveOne(const game::CarState& state, Sched& schedule, int idx, double step, double distance_to_switch, double last_throttle);
 };
 
 } // namespace

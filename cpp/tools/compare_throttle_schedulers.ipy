@@ -23,11 +23,10 @@ maps = (
 )
 
 physics = range(0,6)
-#physics = range(0,7)
 
 NO_LAPS = 3
 
-MAX_TIME_TO_MOVE_MS = 3.0
+MAX_TIME_TO_MOVE_MS = 30.0
 
 def avg(x):
     return sum(x)/len(x)
@@ -39,7 +38,8 @@ with open(os.path.join('results',"results.csv"), "w") as f:
         for map in maps:
             for physic in physics:
                 answer_time = int(MAX_TIME_TO_MOVE_MS * 1000)
-                res = !bin/throttle_tester --throttle_scheduler=$scheduler --nocheck_if_safe_ahead --track=$map --physics=$physic --answer_time=$answer_time
+                #res = !bin/throttle_tester --throttle_scheduler=$scheduler --nocheck_if_safe_ahead --track=$map --physics=$physic --answer_time=$answer_time --laps=$NO_LAPS
+                res = !bin/throttle_tester --throttle_scheduler=$scheduler --track=$map --physics=$physic --answer_time=$answer_time --laps=$NO_LAPS
                 if scheduler == 'WojtekThrottleScheduler':
                     name = os.path.join('results', "wojtek-" + map + "-" + str(physic) + ".csv")
                     !mv wojtek_data_log.csv $name 2>/dev/null
@@ -57,9 +57,11 @@ with open(os.path.join('results',"results.csv"), "w") as f:
                 print(line)
                 f.write(line + '\n')
 
+        print()
         print('summary for {}'.format(scheduler))
         print('total_avg_ticks_per_lap = {}'.format(sum(float(line.split(',')[4])/NO_LAPS for line in lines)))
         print('max_tick_time           = {}'.format(max([float(line.split(',')[6]) for line in lines])))
         print('avg_tick_time           = {}'.format(avg([float(line.split(',')[7]) for line in lines])))
+        print('number of crashes       = {}'.format(sum([line.split(',')[8] == 'True' for line in lines])))
         print()
         

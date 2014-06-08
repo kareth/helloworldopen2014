@@ -68,6 +68,9 @@ class CarTracker : public CarPredictor {
 
   CarState Predict(const CarState& state, const Command& command);
 
+  double PredictDistance(const CarState& state, const vector<double>& throttles) const;
+  double PredictDistance(const CarState& state, int how_many, double throttle) const;
+
   bool IsSafe(const CarState& state, const Command& command);
 
   bool IsSafe(const CarState& state, double safe_speed = 3);
