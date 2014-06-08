@@ -36,6 +36,9 @@ class BotInterface {
   virtual void TurboEnded(const std::string& color) {}
 
   virtual void CarDNF(const std::string& color) {}
+
+  virtual void LastTickApproved(double time) {}
+  virtual void LastTickIgnored(double time) {}
 };
 
 }  // namespace bots

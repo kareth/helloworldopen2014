@@ -11,6 +11,7 @@
 
 #include "bots/bot_interface.h"
 #include "utils/game_visualizer.h"
+#include "utils/stopwatch.h"
 
 namespace bots {
 
@@ -62,8 +63,10 @@ class RawBot {
   msg_vector ProcessOnCarPositions(const jsoncons::json& data);
 
   jsoncons::json last_on_car_positions_;
-  
+
   jsoncons::json history;
+
+  utils::StopWatch stopwatch_;
 };
 
 }  // namespace bots

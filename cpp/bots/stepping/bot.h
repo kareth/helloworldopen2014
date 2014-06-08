@@ -47,9 +47,14 @@ class Bot : public bots::BotInterface {
 
   void CarDNF(const std::string& color) override;
 
+  void LastTickApproved(double time);
+  void LastTickIgnored(double time);
+
  private:
   void SetStrategy(const game::CarState& state);
   void ScheduleOvertakes();
+
+  void RecordCommand(const game::Command& command);
 
   game::Race race_;
 
@@ -67,6 +72,8 @@ class Bot : public bots::BotInterface {
   std::unique_ptr<game::RaceTracker> race_tracker_;
   std::unique_ptr<game::BumpTracker> bump_tracker_;
 
+  game::Command last_command_;
+  double last_throttle_ = 0;
 };
 
 }  // namespace stepping

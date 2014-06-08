@@ -35,6 +35,21 @@ Bot::~Bot() {
   }
 }
 
+void Bot::LastTickApproved(double time) {
+  RecordCommand(command_);
+  if (command_.ThrottleSet())
+    last_throttle_ = command.throttle();
+}
+
+void Bot::LastTickIgnored(double time) {
+  RecordCommand(game::Command(last_throttle_));
+}
+
+void Bot::RecordCommand(const game::Command& command) {
+  scheduler_->IssuedCommand(command);
+  car_tracker_->RecordCommand(command);
+}
+
 void Bot::NewRace(const Race& race) {
   race_ = race;
   // We do not want to loose all models between qualification and race.
@@ -78,8 +93,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
   scheduler_->Schedule(state, game_tick, utils::Deadline(std::chrono::microseconds(FLAGS_answer_time)));
   command = scheduler_->command();
 
-  scheduler_->IssuedCommand(command);
-  car_tracker_->RecordCommand(command);
+  last_command_ = command;
   return command;
 }
 
