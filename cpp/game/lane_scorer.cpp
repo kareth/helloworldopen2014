@@ -123,7 +123,7 @@ double LaneScorer::ScoreLivingEnemy(const EnemyTracker& me, const EnemyTracker& 
 }
 
 double LaneScorer::EnemyBumpScore(const EnemyTracker& enemy, double my_speed, double his_speed) {
-  if (his_speed < 0.95 * my_speed) {
+  if (his_speed < 0.97 * my_speed) {
     return double(kDeadCrash) * (1.0 - his_speed / my_speed);
   } else {
     return 0;
