@@ -9,6 +9,7 @@
 
 #include "game/turbo.h"
 #include "gflags/gflags.h"
+#include "utils/stopwatch.h"
 
 DEFINE_bool(dump_history, false, "");
 DEFINE_bool(print_track, false, "");
@@ -128,6 +129,7 @@ RawBot::msg_vector RawBot::OnGameStart(const jsoncons::json& msg) {
 
 RawBot::msg_vector RawBot::ProcessOnCarPositions(const jsoncons::json& msg) {
   const clock_t begin_time = clock();
+  utils::StopWatch stopwatch;
 
   const auto& data = msg.get("data", jsoncons::json(""));
 
@@ -163,7 +165,8 @@ RawBot::msg_vector RawBot::ProcessOnCarPositions(const jsoncons::json& msg) {
   }
 
   if (FLAGS_continuous_integration) {
-    std::cout << "game_tick: " << game_tick << " time: " << double(clock() - begin_time) /  CLOCKS_PER_SEC * 1000 << "ms" << std::endl;
+    std::cout << "game_tick: " << game_tick << " time: " << double(clock() - begin_time) /  CLOCKS_PER_SEC * 1000 << "ms " 
+        << "stopwatch: " << stopwatch.elapsed() << " ms" << std::endl;
   }
 
   return command;
