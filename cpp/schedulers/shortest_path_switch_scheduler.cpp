@@ -40,17 +40,22 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
   auto time_loss = path_optimizer_->Score(state.position());
   // [-100 - 100] = (-)overtake, (0)neutral, (+) bump competitive
   auto obstacle_scores = race_tracker_.ScoreLanes(state);
-  vector<std::pair<int, Switch>> scores;
+  vector<std::pair<double, Switch>> scores;
 
   for (auto& el : time_loss) {
     Switch dir = el.first;
-    int score =
+    double score =
       - time_loss[dir]                       // ticks
-      + std::min(0, obstacle_scores[dir]) * 1000  // overtaking strictly more important
-      + std::max(0, obstacle_scores[dir]) * 1;    // bumping just a bit better
+      + std::min(0, obstacle_scores[dir]) * 1000.0  // overtaking strictly more important
+      + std::max(0, obstacle_scores[dir]) * 1.0;    // bumping just a bit better
     scores.push_back({ score, dir });
   }
-  sort(scores.begin(), scores.end());  // Last are the best
+  sort(scores.begin(), scores.end(), [] (const std::pair<double, Switch>& a, const std::pair<double, Switch>& b) {
+        if (a.first > b.first) return true;
+        if (a.first < b.first) return false;
+        if (a.second == Switch::kStay) return true;
+        return a.second > b.second;
+      });  // Last are the best
 
   /*for (auto p : scores) {
     printf("{%d %d}  ",p.first, p.second);
@@ -64,7 +69,7 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
   double distance = car_tracker_.DistanceBetween(state_.position(), target);  // Distance to switch
   //printf("                                                                             distance: %lf\n",distance);
 
-  for (int i = scores.size() - 1; i >= 0; i--) {
+  for (int i = 0; i < scores.size(); i++) {
     auto dir = scores[i].second;
     if (!IsChangeDecision(dir)) {
       //printf("no_change\n");
