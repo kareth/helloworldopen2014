@@ -104,7 +104,17 @@ int EnemyTracker::TimeToPosition(const Position& target, vector<Position>* steps
 
   for (int limit = 0; limit < 1000; limit++, time++) {
     double target_velocity = Velocity(position);
-    double reachable_velocity = car_tracker_.velocity_model().Predict(velocity, 1);
+
+    double max_throttle = 1.0;
+
+    // TODO if guy dies, is turbo resetted on crash or on spawn?
+    // +-1 for sure...
+    if (state_.turbo_state().is_on() &&
+        state_.turbo_state().ticks_left() > time) {
+      max_throttle = state_.turbo_state().turbo().factor();
+    }
+
+    double reachable_velocity = car_tracker_.velocity_model().Predict(velocity, max_throttle);
 
     // TODO turbo
     if (target_velocity > reachable_velocity * 1.05) { // Acceleration from too low speed
