@@ -128,8 +128,11 @@ RawBot::msg_vector RawBot::OnGameStart(const jsoncons::json& msg) {
 }
 
 RawBot::msg_vector RawBot::ProcessOnCarPositions(const jsoncons::json& msg) {
-  const clock_t begin_time = clock();
-  utils::StopWatch stopwatch;
+  clock_t begin_time = clock();
+  if (FLAGS_continuous_integration) {
+    printf("Time from last received msg: %lf ms\n", stopwatch_.elapsed());
+  }
+  stopwatch_.reset();
 
   const auto& data = msg.get("data", jsoncons::json(""));
 
@@ -146,6 +149,7 @@ RawBot::msg_vector RawBot::ProcessOnCarPositions(const jsoncons::json& msg) {
     auto color = position.ParseFromJson(*it);
 
     if (position.last_tick() != -1 && position.last_tick() != last_game_tick_ - 1) {
+      printf("Last tick missed! ;(((\n");
       bot_->LastTickIgnored(0);
     } else {
       bot_->LastTickApproved(0);
@@ -164,8 +168,10 @@ RawBot::msg_vector RawBot::ProcessOnCarPositions(const jsoncons::json& msg) {
 
   if (FLAGS_continuous_integration) {
     std::cout << "game_tick: " << game_tick << " time: " << double(clock() - begin_time) /  CLOCKS_PER_SEC * 1000 << "ms " 
-        << "stopwatch: " << stopwatch.elapsed() << " ms" << std::endl;
+        << "stopwatch: " << stopwatch_.elapsed() << " ms" << std::endl << std::endl;
+
   }
+
 
   return command;
 }

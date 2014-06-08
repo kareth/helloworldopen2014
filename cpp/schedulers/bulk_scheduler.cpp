@@ -4,6 +4,7 @@
 #include "schedulers/binary_throttle_scheduler.h"
 #include "schedulers/wojtek_throttle_scheduler.h"
 #include "utils/deadline.h"
+#include "utils/stopwatch.h"
 
 #include "gflags/gflags.h"
 #include <assert.h>
@@ -14,6 +15,7 @@ DECLARE_string(throttle_scheduler);
 DECLARE_string(switch_scheduler);
 DECLARE_bool(disable_attack);
 DECLARE_bool(log_overtaking);
+DECLARE_bool(continuous_integration);
 
 namespace schedulers {
 
@@ -32,6 +34,7 @@ BulkScheduler::BulkScheduler(const game::Race& race,
 }
 
 void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline) {
+  utils::StopWatch stopwatch;
   if (!FLAGS_disable_attack) {
     bump_scheduler_->Schedule(state);
 
@@ -44,10 +47,17 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const u
     }
   }
 
+  double attack_time = stopwatch.elapsed();
+
   // Bumper has priority over anything else.
 
+  stopwatch.reset();
   turbo_scheduler_->Schedule(state);
+  double turbo_time = stopwatch.elapsed();
+
+  stopwatch.reset();
   switch_scheduler_->Schedule(state);
+  double switch_time = stopwatch.elapsed();
 
 
   if (FLAGS_log_overtaking) std::cout << state.position().ShortDebugString() << std::endl;
@@ -59,12 +69,16 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const u
   auto state_with_switch = state;
   if (switch_scheduler_->ExpectedSwitch() != game::Switch::kStay)
     state_with_switch.set_switch_state(switch_scheduler_->ExpectedSwitch());
+
+
+  stopwatch.reset();
   throttle_scheduler_->Schedule(state_with_switch,
                                 game_tick,
                                 deadline,
                                 switch_scheduler_->DistanceToSwitch(),
                                 last_throttle_);
   // I assume that after throttle_scheduler, there is nothing computationally intensive, so that throttle_scheduler can take all remaining time (deadline)
+  double throttle_time = stopwatch.elapsed();
 
   if (turbo_scheduler_->ShouldFireTurbo()) {
     command_ = game::Command(game::TurboToggle::kToggleOn);
@@ -74,6 +88,7 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const u
     command_ = game::Command(throttle_scheduler_->throttle());
   }
 
+  stopwatch.reset();
   game::Command safe_command;
   if (FLAGS_check_if_safe_ahead) {
     // Make sure that if we want to make switch now, we don't use state_with_switch.
@@ -84,11 +99,17 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const u
       command_ = safe_command;
     }
   }
+  double ahead_time = stopwatch.elapsed();
 
   if (!command_.SwitchSet() && !command_.TurboSet())
     last_throttle_ = command_.throttle();
   switch_scheduler_->set_last_throttle(last_throttle_);
   //std::cout << command_.DebugString() << std::endl;
+  //
+  if (FLAGS_continuous_integration) {
+    printf("Scheduler times: Attack(%lfms) Turbo(%lfms) Switch(%lfms) Throttle(%lfms) Ahead(%lfms)\n",
+        attack_time, turbo_time, switch_time, throttle_time, ahead_time);
+  }
 }
 
 void BulkScheduler::set_strategy(const Strategy& strategy) {

@@ -36,9 +36,9 @@ Bot::~Bot() {
 }
 
 void Bot::LastTickApproved(double time) {
-  RecordCommand(command_);
-  if (command_.ThrottleSet())
-    last_throttle_ = command.throttle();
+  RecordCommand(last_command_);
+  if (last_command_.ThrottleSet())
+    last_throttle_ = last_command_.throttle();
 }
 
 void Bot::LastTickIgnored(double time) {
