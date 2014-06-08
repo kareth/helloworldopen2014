@@ -159,6 +159,7 @@ void BumpScheduler::Schedule2(const CarState& state) {
         if (enemy.color() == race_tracker_.my_color()) continue;
         if (enemy.has_finished()) continue;
         if (enemy.is_dead()) continue;
+        if (!race_tracker_.WorthBumping(enemy.color())) continue;
 
         Command safe_command;
         Command command;
