@@ -35,14 +35,19 @@ Bot::~Bot() {
   }
 }
 
-void Bot::LastTickApproved(double time) {
-  RecordCommand(last_command_);
-  if (last_command_.ThrottleSet())
-    last_throttle_ = last_command_.throttle();
+void Bot::LastTickApproved(const string& color, double time) {
+  if (color == color_) {
+    RecordCommand(last_command_);
+    if (last_command_.ThrottleSet())
+      last_throttle_ = last_command_.throttle();
+  }
 }
 
-void Bot::LastTickIgnored(double time) {
-  RecordCommand(game::Command(last_throttle_));
+void Bot::LastTickIgnored(const string& color, double time) {
+  if (color == color_) {
+    printf("Last tick missed! ;(((\n");
+    RecordCommand(game::Command(last_throttle_));
+  }
 }
 
 void Bot::RecordCommand(const game::Command& command) {

@@ -47,8 +47,8 @@ class Bot : public bots::BotInterface {
 
   void CarDNF(const std::string& color) override;
 
-  void LastTickApproved(double time);
-  void LastTickIgnored(double time);
+  void LastTickApproved(const string& color, double time);
+  void LastTickIgnored(const string& color, double time);
 
  private:
   void SetStrategy(const game::CarState& state);
