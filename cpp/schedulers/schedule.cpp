@@ -81,8 +81,12 @@ bool schedulers::Sched::TryUpdateSwitchPosition(const game::CarState& state, int
 //TODO: Improve performance by adding "from"
 // Whether schedule is safe and switch-correct
 bool schedulers::Sched::IsSafe(const game::CarState& state, double distance_to_switch, double last_throttle) {
-  bool check_switch = (distance_to_switch >= 0);
-  
+  bool switch_should_be_planned = (distance_to_switch >= 0);
+
+  // We do not want switches in schedule when were not told to have one
+  if (!switch_should_be_planned && switch_position_ >= 0)
+      return false;
+
   double distance = 0;
   game::CarState next = state;
   // Are all scheduled states safe and switch-correct?
@@ -94,7 +98,7 @@ bool schedulers::Sched::IsSafe(const game::CarState& state, double distance_to_s
       return false;
     }
 
-    if (check_switch) {
+    if (switch_should_be_planned) {
       // Check whether switch is planned in tick from range [0,pos]
       distance += next.velocity();
       if (distance_to_switch <= distance) {
@@ -109,7 +113,7 @@ bool schedulers::Sched::IsSafe(const game::CarState& state, double distance_to_s
   }
 
   // Check whether the planned switch is correct
-  if (check_switch && distance_to_switch <= distance) {
+  if (switch_should_be_planned && distance_to_switch <= distance) {
     if (switch_position_ < 0) {
         // We should have switch before the end of the horizon, but we have not
         //std::cerr << "bbbb: " << distance << " " << distance_to_switch << std::endl;
