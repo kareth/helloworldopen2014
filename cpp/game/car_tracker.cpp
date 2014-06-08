@@ -785,5 +785,4 @@ bool CarTracker::IsSafeAttackWithoutSwitches(
   return false;
 }
 
-
 }  // namespace game

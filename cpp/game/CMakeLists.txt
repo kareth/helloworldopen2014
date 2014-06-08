@@ -76,6 +76,7 @@ set(GAME_TESTS
   track_test.cpp
   velocity_model_test.cpp
   velocity_predictor_test.cpp
+  race_tracker_test.cpp
 )
 
 add_library(game ${GAME_SOURCES})

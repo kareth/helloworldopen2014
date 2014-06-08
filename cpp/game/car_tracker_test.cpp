@@ -734,6 +734,4 @@ TEST_F(IsSafeAttackTest, Turbo) {
   EXPECT_TRUE(command.TurboSet());
 }
 
-// TODO Turbo attack
-
 }  // namespace game
