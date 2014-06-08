@@ -1,9 +1,17 @@
-#!/usr/bin/env ipython
+#!/usr/bin/env ipython-2.7
 # -*- coding: utf-8 -*-
 
 import os
 import os.path
 from __future__ import division
+import gflags
+import sys
+
+FLAGS = gflags.FLAGS
+
+gflags.DEFINE_integer('physics', 7, 'number of physics [1,100]. Default 7')
+gflags.DEFINE_integer('laps', 10, 'number of laps. Default 10')
+gflags.DEFINE_float('answer_time', 30.0, 'max time for decision')
 
 schedulers = (
     "WojtekThrottleScheduler",
@@ -23,9 +31,11 @@ maps = (
     "usa",
 )
 
-physics = range(0,7)
-
-NO_LAPS = 10 
+try:
+    argv = FLAGS(sys.argv)  # parse flags
+except FLAGS.FlagsError as e:
+    print('{}\\nUsage: {} ARGS\\n{}'.format(e, sys.argv[0], FLAGS))
+    sys.exit(1)
 
 MAX_TIME_TO_MOVE_MS = 30.0
 
@@ -37,10 +47,9 @@ with open(os.path.join('results',"results.csv"), "w") as f:
     for scheduler in schedulers:
         lines = []
         for map in maps:
-            for physic in physics:
-                answer_time = int(MAX_TIME_TO_MOVE_MS * 1000)
-                #res = !bin/throttle_tester --throttle_scheduler=$scheduler --nocheck_if_safe_ahead --track=$map --physics=$physic --answer_time=$answer_time --laps=$NO_LAPS
-                res = !bin/throttle_tester --throttle_scheduler=$scheduler --track=$map --physics=$physic --answer_time=$answer_time --laps=$NO_LAPS --log_wojtek_to_file
+            for physic in range(0, FLAGS.physics):
+                answer_time = int(FLAGS.answer_time * 1000)
+                res = !bin/throttle_tester --throttle_scheduler=$scheduler --track=$map --physics=$physic --answer_time=$answer_time --laps=$FLAGS.laps --log_wojtek_to_file
                 name_out = os.path.join('results', map + "-" + str(physic) + ".out")
                 with open(name_out, 'w') as x:
                     x.write("\n".join(res))
@@ -64,7 +73,7 @@ with open(os.path.join('results',"results.csv"), "w") as f:
 
         print()
         print('summary for {}'.format(scheduler))
-        print('total_avg_ticks_per_lap = {}'.format(sum(float(line.split(',')[4])/NO_LAPS for line in lines)))
+        print('total_avg_ticks_per_lap = {}'.format(sum(float(line.split(',')[4])/FLAGS.laps for line in lines)))
         print('max_tick_time           = {}'.format(max([float(line.split(',')[6]) for line in lines])))
         print('avg_tick_time           = {}'.format(avg([float(line.split(',')[7]) for line in lines])))
         print('number of crashes       = {}'.format(sum([line.split(',')[8] == 'True' for line in lines])))
