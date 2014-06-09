@@ -6,7 +6,7 @@ BumpDetector::BumpDetector(CarTracker& car_tracker, const Race& race)
   : car_tracker_(car_tracker), race_(race) {
 }
 
-void BumpDetector::Record(const std::vector<EnemyTracker>& enemies, const std::map<std::string, Position>& positions) {
+void BumpDetector::Record(const std::vector<EnemyTracker>& enemies, const std::map<std::string, Position>& positions, int game_tick) {
   bumps_.clear();
   const double kCarLength = race_.cars()[0].length();
   for (auto& a : enemies) {
@@ -31,6 +31,8 @@ void BumpDetector::Record(const std::vector<EnemyTracker>& enemies, const std::m
           a_pos.start_lane() == b_pos.start_lane() &&
           a_pos.end_lane() == b_pos.end_lane()) {
         bumps_.push_back({ a.color(), b.color() });
+
+        history_[{ a.color(), b.color() }].push_back(game_tick);
         printf("Bump detected! %s %s\n", a.color().c_str(), b.color().c_str());
       }
     }
@@ -46,5 +48,16 @@ bool BumpDetector::BumpOccured(const std::string& color, const std::string& colo
   return false;
 }
 
+int BumpDetector::BumpsBetween(const std::string& color, const std::string& color2, int time_span) {
+  int res = 0;
+  for (int i = history_[{ color, color2 }].size() - 1; i >= 0; i--) {
+    int t = history_[{color, color2}][i];
+    if (t > last_tick_ - time_span)
+      res++;
+    else
+      break;
+  }
+  return res;
+}
 
 }  // namespace game

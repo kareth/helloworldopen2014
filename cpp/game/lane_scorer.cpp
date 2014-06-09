@@ -6,6 +6,8 @@
 DECLARE_bool(log_overtaking);
 DECLARE_bool(continuous_integration);
 DECLARE_double(overtake_treshold);
+DEFINE_int32(bumps_to_overtake, 3, "Bumps to overtake");
+DEFINE_int32(ticks_to_overtake, 100, "ticks span to count bumps");
 
 namespace game {
 
@@ -116,21 +118,26 @@ double LaneScorer::ScoreLivingEnemy(const EnemyTracker& me, const EnemyTracker& 
     if (will_bump) {
       if (FLAGS_log_overtaking)
         printf(" dd %lf %lf bb \n", me.ExpectedVelocity(bump_position), enemy.ExpectedVelocity(bump_position));
-      return EnemyBumpScore(enemy, me.ExpectedVelocity(bump_position), enemy.ExpectedVelocity(bump_position));
+      return EnemyBumpScore(me, enemy, me.ExpectedVelocity(bump_position), enemy.ExpectedVelocity(bump_position));
     } else {
       return 0;
     }
   } else {
-    return EnemyBumpScore(enemy, me.state().velocity(), enemy.state().velocity());
+    return EnemyBumpScore(me, enemy, me.state().velocity(), enemy.state().velocity());
   }
 }
 
-double LaneScorer::EnemyBumpScore(const EnemyTracker& enemy, double my_speed, double his_speed) {
+double LaneScorer::EnemyBumpScore(const EnemyTracker& me, const EnemyTracker& enemy, double my_speed, double his_speed) {
   if (his_speed < FLAGS_overtake_treshold * my_speed) {
     if (my_speed == 0)
       return 0;
     return double(kDeadCrash) * (1.0 - his_speed / my_speed);
   } else {
+    if (race_tracker_.bump_detector().BumpsBetween(me.color(), enemy.color(), FLAGS_ticks_to_overtake) >=
+        FLAGS_bumps_to_overtake) {
+      return -5;
+    }
+    // Check for minimal speed
     return 0;
   }
   // if (race_tracker_.IsCompetitive(enemy.color()))

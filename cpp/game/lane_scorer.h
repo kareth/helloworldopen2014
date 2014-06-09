@@ -51,7 +51,7 @@ class LaneScorer {
   // Scales linearly by far, should probably be other
   // TODO if the guy is just 5% slower, we can possibly just
   //      get stuck behind him. What if we should overtake?
-  double EnemyBumpScore(const EnemyTracker& enemy, double my_speed, double his_speed);
+  double EnemyBumpScore(const EnemyTracker& me, const EnemyTracker& enemy, double my_speed, double his_speed);
 
   // Returns true if bump will occur
   // result in bump_position as position of the car ahead (enemy)

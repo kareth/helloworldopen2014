@@ -56,7 +56,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
   }
 
   //race_tracker_->Record(positions);
-  race_tracker_->Record(positions);
+  race_tracker_->Record(positions, game_tick);
 
   // TODO
   if (crashed_)

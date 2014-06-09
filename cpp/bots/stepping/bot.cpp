@@ -68,6 +68,7 @@ void Bot::NewRace(const Race& race) {
   } else {
     car_tracker_->set_race(&race_);
     race_tracker_->ResurrectCars();
+    race_tracker_->ResetBumpDetector();
   }
 
   scheduler_.reset(
@@ -88,7 +89,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
     return Command(0);
   }
 
-  race_tracker_->Record(positions);
+  race_tracker_->Record(positions, game_tick);
 
   // TODO
   if (crashed_)

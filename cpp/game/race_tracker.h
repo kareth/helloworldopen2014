@@ -44,7 +44,7 @@ class RaceTracker {
 
   // Recording methods
 
-  void Record(const std::map<std::string, game::Position>& positions);
+  void Record(const std::map<std::string, game::Position>& positions, int game_tick);
   void RecordCrash(const std::string& color);
   void RecordLapTime(const std::string& color, int time);
   void FinishedRace(const std::string& color);
@@ -71,6 +71,10 @@ class RaceTracker {
 
   // Returns true if there was bump between those two cars in last tick
   bool BumpOccured(const std::string& color, const std::string& color2);
+
+  BumpDetector& bump_detector() { return bump_detector_; }
+
+  void ResetBumpDetector() { bump_detector_.Reset(); }
 
  private:
   // TODO(tomek) deprecated version of IsSafeAhead() method.

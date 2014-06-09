@@ -14,8 +14,8 @@ RaceTracker::RaceTracker(game::CarTracker& car_tracker,
     lane_scorer_(race, car_tracker, *this, enemies_, color) {
 }
 
-void RaceTracker::Record(const std::map<std::string, Position>& positions) {
-  bump_detector_.Record(enemies_, positions);
+void RaceTracker::Record(const std::map<std::string, Position>& positions, int game_tick) {
+  bump_detector_.Record(enemies_, positions, game_tick);
   for (auto& p : positions) {
     if (indexes_.find(p.first) == indexes_.end()) {
       indexes_[p.first] = enemies_.size();

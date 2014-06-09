@@ -17,6 +17,8 @@ DECLARE_bool(disable_attack);
 DECLARE_bool(log_overtaking);
 DECLARE_bool(continuous_integration);
 
+DEFINE_bool(stop_after_some_time, false, "");
+
 namespace schedulers {
 
 BulkScheduler::BulkScheduler(const game::Race& race,
@@ -86,6 +88,10 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const u
     command_ = game::Command(switch_scheduler_->SwitchDirection());
   } else {
     command_ = game::Command(throttle_scheduler_->throttle());
+
+    if (FLAGS_stop_after_some_time && game_tick > 500){
+      command_ = game::Command(0);
+    }
   }
 
   stopwatch.reset();
