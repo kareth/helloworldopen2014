@@ -390,6 +390,37 @@ bool CarTracker::MinVelocity(const CarState& car_state, int ticks, const Positio
   return smaller && greater;
 }
 
+bool CarTracker::MaxVelocity(const CarState& enemy_state, const CarState& my_state, int ticks, double* max_velocity) {
+  *max_velocity = 0.0;
+  bool ok = false;
+  for (int i = 0; i <= ticks; ++i) {
+    for (int j = 0; i + j <= ticks; ++j) {
+      int k = ticks - i - j;
+
+      vector<double> throttles;
+      for (int z = 0; z < i; ++z) throttles.push_back(1);
+      for (int z = 0; z < j; ++z) throttles.push_back(0);
+      for (int z = 0; z < k; ++z) throttles.push_back(1);
+
+      bool all_safe = true;
+      CarState tmp = enemy_state;
+      for (int z = 0; z < (int)throttles.size() - 1; z++) {
+        tmp = Predict(tmp, Command(throttles[z]));
+        if (!crash_model_.IsSafe(tmp.position().angle())) { all_safe = false; break; }
+      }
+      CarState t = Predict(tmp, Command(throttles.back()));
+      if (!crash_model_.IsSafe(t.position().angle())) { all_safe = false; }
+      if (!all_safe) continue;
+
+      if (!HasBumped(tmp, my_state) && HasBumped(t, my_state)) {
+        ok = true;
+        *max_velocity = fmax(*max_velocity, t.velocity());
+      }
+    }
+  }
+  return ok;
+}
+
 bool CarTracker::HasSomeoneMaybeBumpedMe(const map<string, Position>& positions, const std::string& color) {
   const double kCarLength = race_->cars().at(0).length();
 

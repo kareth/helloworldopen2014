@@ -46,7 +46,9 @@ void Bot::LastTickApproved(const string& color, double time) {
 
 void Bot::LastTickIgnored(const string& color, double time) {
   if (color == color_) {
-    printf("Last tick missed! ;(((\n");
+    if (!crashed_) {
+      printf("Last tick missed! ;(((\n");
+    }
     RecordCommand(game::Command(last_throttle_));
   }
 }
@@ -96,7 +98,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
     return Command(0);
 
   if (FLAGS_fastbanana_mode) {
-    if (race_.laps() != -1) {  // Qual
+    if (race_.qualification_phase()) {  // Qual
       if (car_tracker_->IsReady())
         return Command(0);
       // else normal throttle

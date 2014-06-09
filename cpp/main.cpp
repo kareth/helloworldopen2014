@@ -66,7 +66,9 @@ void run(utils::Connection* connection, bots::RawBot* bot,
 
   for (;;) {
     boost::system::error_code error;
+    utils::StopWatch stopwatch;
     auto response = connection->receive_response(&error);
+    std::cout << "Waiting for the message: " << stopwatch.elapsed() << std::endl;
 
     if (error == boost::asio::error::eof) {
       std::cout << "Connection closed" << std::endl;

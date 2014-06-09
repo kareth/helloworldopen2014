@@ -213,6 +213,11 @@ class CarTracker : public CarPredictor {
       int ticks_after,
       double* min_velocity) const;
 
+  bool MaxVelocity(const CarState& enemy_state,
+                   const CarState& my_state,
+                   int ticks,
+                   double* max_velocity);
+
   bool IsBumpInevitable(
       const CarState& my_state_before,
       const CarState& my_state_after,
@@ -225,6 +230,10 @@ class CarTracker : public CarPredictor {
     const CarState& enemy_state,
     Command* command,
     bool allow_turbo=false);
+
+  bool IsSafeBehind(const CarState& current_state,
+      const vector<double>& schedule,
+      Command* safe_command);
 
   // FOR UNITTESTS ONLY
   CrashModel* mutable_crash_model() { return &crash_model_; }

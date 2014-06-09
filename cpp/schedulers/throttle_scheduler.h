@@ -25,7 +25,7 @@ class ThrottleScheduler {
   virtual bool Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline, 
                    double distance_to_switch = -1, double last_throttle = 0) = 0;
 
-  // Execute after executing Schedule. 
+  // Execute after executing Schedule.
   virtual bool TimeToSwitch(int game_tick) = 0;
 
   virtual const std::vector<double>& full_schedule() const = 0;

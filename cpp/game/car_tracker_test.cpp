@@ -635,7 +635,7 @@ class IsSafeAttackTest : public ::testing::Test {
 
     race_.ParseFromJson(race_json);
     car_tracker_.reset(new CarTracker(&race_, PhysicsParams()));
-    car_tracker_->mutable_crash_model()->RecordSafeAngle(60.0);
+    car_tracker_->mutable_crash_model()->force_angle(60.0);
   }
 
   CarState Simulate(const Position& position,
@@ -732,6 +732,52 @@ TEST_F(IsSafeAttackTest, Turbo) {
   EXPECT_FALSE(car_tracker_->IsSafeAttack(my_state, enemy_state, &command));
   EXPECT_TRUE(car_tracker_->IsSafeAttack(my_state, enemy_state, &command, true));
   EXPECT_TRUE(command.TurboSet());
+}
+
+class IsSafeBehindTest : public ::testing::Test {
+ protected:
+  const double kEps = 1e-9;
+
+  void SetUp() {
+    json game_init_json = json::parse_file("data/gameInit.json");
+    const auto& race_json = game_init_json["data"]["race"];
+
+    race_.ParseFromJson(race_json);
+    car_tracker_.reset(new CarTracker(&race_, PhysicsParams()));
+    car_tracker_->mutable_crash_model()->force_angle(60.0);
+  }
+
+  CarState Simulate(const Position& position,
+                    double velocity,
+                    int ticks) {
+    CarState my_state(position);
+    my_state.set_velocity(velocity);
+    for (int i = 0; i < ticks; ++i) {
+      my_state = car_tracker_->Predict(my_state, Command(0));
+    }
+    return my_state;
+  }
+
+  Race race_;
+  std::unique_ptr<CarTracker> car_tracker_;
+};
+
+TEST_F(IsSafeBehindTest, Basic) {
+  CarState my_state = CarState(Position(15, 55.7086, -57.3014, 0, 0), 5.75364, -55.8652, Switch::kSwitchLeft, 1, TurboState());
+  my_state = car_tracker_->Predict(my_state, Command(0));
+  CarState enemy_state = CarState(Position(15, 15.384, -38.9491, 0, 0), 7.21031, -34.7034, Switch::kStay, 1, TurboState());
+
+  double velocity;
+  EXPECT_TRUE(car_tracker_->MaxVelocity(enemy_state, my_state, 1, &velocity));
+  EXPECT_NEAR(7.2661037999999998, velocity, 1e-5);
+}
+
+TEST_F(IsSafeBehindTest, CarIsAhead) {
+  CarState my_state = CarState(Position(8, 10.3849,59.8309, 1, 0), 7.31955, 59.5423, Switch::kSwitchLeft, 1, TurboState());
+  CarState enemy_state = CarState(Position(8, 0.752464, 59.6429, 0, 0), 7.29057, 58.6743, Switch::kStay, 1, TurboState());
+
+  double velocity;
+  EXPECT_FALSE(car_tracker_->MaxVelocity(enemy_state, my_state, 8, &velocity));
 }
 
 }  // namespace game

@@ -11,9 +11,9 @@
 #include "gflags/gflags.h"
 #include "utils/stopwatch.h"
 
-DEFINE_bool(dump_history, false, "");
 DEFINE_bool(print_track, false, "");
 DECLARE_bool(continuous_integration);
+DEFINE_bool(log_command, false, "");
 
 using jsoncons::json;
 
@@ -40,19 +40,9 @@ RawBot::RawBot(BotInterface* bot)
       { "turboEnd", &RawBot::OnTurboStart }
     }
 {
-  history["positions"] = json(json::an_array);
-  history["commands"] = json(json::an_array);
 }
 
 RawBot::~RawBot() {
-  if (FLAGS_dump_history) {
-    std::ofstream file;
-    file.open("bin/history.json");
-    jsoncons::output_format format;
-    history.to_stream(file, format);
-    file << std::endl;
-    file.close();
-  }
 }
 
 RawBot::msg_vector RawBot::CommandToMsg(const game::Command& command, int game_tick) {
@@ -159,10 +149,8 @@ RawBot::msg_vector RawBot::ProcessOnCarPositions(const jsoncons::json& msg) {
 
   visualizer_.Update(positions);
   auto command = CommandToMsg(bot_->GetMove(positions, game_tick), game_tick);
-
-  if (FLAGS_dump_history) {
-    history["positions"].add(data[0]);
-    history["commands"].add(command);
+  if (FLAGS_log_command) {
+    std::cout << "command: " << command[0] << std::endl;
   }
 
   if (FLAGS_continuous_integration) {

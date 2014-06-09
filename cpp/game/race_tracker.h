@@ -40,7 +40,10 @@ class RaceTracker {
 
   bool IsSafeAttack(const CarState& current_state, const Command& command, Command* safe_command);
 
-  bool IsSafeBehind(const CarState& current_state, const Command& command, Command* safe_command);
+  bool IsSafeBehind(const CarState& current_state,
+                    const vector<double>& schedule,
+                    const Command& command,
+                    Command* safe_command);
 
   // Recording methods
 

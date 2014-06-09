@@ -18,6 +18,7 @@ class Connection {
   void send_requests(const std::vector<jsoncons::json>& msgs);
 
  private:
+  jsoncons::json history_;
   boost::asio::io_service io_service;
   tcp::socket socket;
   boost::asio::streambuf response_buf;

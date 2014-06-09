@@ -1,0 +1,26 @@
+Race id: 236526375
+Host: 10.101.102.2, port: 8091, name: Need for C, key:rzWZlJyRc7UxAg
+Waiting for the message: 15.427
+Server: Join
+Waiting for the message: 1.32182e+06
+Server: Your Car - brown
+Waiting for the message: 20.402
+Server: Game Init
+Waiting to lock the file ...
+File locked.
+Unlocking file ...
+File unlocked.
+Missing 10 percents of radiuses for  start_radius: 190 end_radius: 210 angle: 22.5
+Missing 10 percents of radiuses for  start_radius: 190 end_radius: 210 angle: 22.5
+Missing 10 percents of radiuses for  start_radius: 190 end_radius: 210 angle: 22.5
+We have all switch lengths!
+Using WojtekThrottleScheduler
+Using ShortestPathSwitchScheduler
+Missing 10 percents of radiuses for  start_radius: 190 end_radius: 210 angle: 22.5
+Missing 10 percents of radiuses for  start_radius: 190 end_radius: 210 angle: 22.5
+Missing 10 percents of radiuses for  start_radius: 190 end_radius: 210 angle: 22.5
+We have all switch lengths!
+Waiting for the message: 0.157
+Waiting for the message: 4788.68
+Server: Disqualification - disconnected on tick 0 (connection lost)
+{"color":"blue","name":"ITArama"}

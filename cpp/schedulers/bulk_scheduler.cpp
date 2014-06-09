@@ -10,12 +10,14 @@
 #include <assert.h>
 
 DECLARE_bool(check_if_safe_ahead);
+DEFINE_bool(check_if_safe_behind, false, "");
 
 DECLARE_string(throttle_scheduler);
 DECLARE_string(switch_scheduler);
 DECLARE_bool(disable_attack);
 DECLARE_bool(log_overtaking);
 DECLARE_bool(continuous_integration);
+DEFINE_bool(safe_start, false, "");
 
 DEFINE_bool(stop_after_some_time, false, "");
 
@@ -36,6 +38,14 @@ BulkScheduler::BulkScheduler(const game::Race& race,
 }
 
 void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline) {
+  if (FLAGS_safe_start && race_.race_phase()) {
+    if (game_tick < 100) {
+      car_tracker_.mutable_crash_model()->force_angle(30.0);
+    } else {
+      car_tracker_.mutable_crash_model()->force_angle(60.0);
+    }
+  }
+
   utils::StopWatch stopwatch;
   if (!FLAGS_disable_attack) {
     bump_scheduler_->Schedule(state);
@@ -96,6 +106,19 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const u
 
   stopwatch.reset();
   game::Command safe_command;
+  if (FLAGS_check_if_safe_behind) {
+    if (!race_tracker_.IsSafeBehind(state_with_switch, throttle_scheduler_->full_schedule(), command_, &safe_command)) {
+      if (command_ == safe_command) {
+        std::cout << "INFO: It is not safe behind but we don't have defense :(." << std::endl;
+      } else {
+        std::cout << "INFO: It is not safe behind. Slowing down." << std::endl;
+        command_ = safe_command;
+      }
+    }
+  }
+  double behind_time = stopwatch.elapsed();
+
+  stopwatch.reset();
   if (FLAGS_check_if_safe_ahead) {
     // Make sure that if we want to make switch now, we don't use state_with_switch.
     // That could cause us to ignore the switch even though we haven't actually switched.
@@ -113,8 +136,8 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const u
   //std::cout << command_.DebugString() << std::endl;
   //
   if (FLAGS_continuous_integration) {
-    printf("Scheduler times: Attack(%lfms) Turbo(%lfms) Switch(%lfms) Throttle(%lfms) Ahead(%lfms)\n",
-        attack_time, turbo_time, switch_time, throttle_time, ahead_time);
+    printf("Scheduler times: Attack(%lfms) Turbo(%lfms) Switch(%lfms) Throttle(%lfms) Ahead(%lfms) Behind(%lfms)\n",
+        attack_time, turbo_time, switch_time, throttle_time, ahead_time, behind_time);
   }
 }
 
