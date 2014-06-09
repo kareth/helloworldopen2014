@@ -3,6 +3,8 @@
 using game::Position;
 using game::Race;
 
+DECLARE_double(turbo_bump_treshold);
+
 namespace game {
 
 RaceTracker::RaceTracker(game::CarTracker& car_tracker,
@@ -66,15 +68,7 @@ bool RaceTracker::WorthBumping(const std::string& color) {
   if (enemy(color).is_dead())
     return false;
 
-  int from = race_.track().NextSwitch(car_tracker_.current_state().position().piece());
-  int to = race_.track().NextSwitch(from);
-
-  bool result = !enemy(color_).CanOvertake(enemy(color), from, to);
-
-  if (!result)
-    printf("Could do Turbo bumping, but the guy (%s) is not worth it\n", color.c_str());
-
-  return result;
+  return (enemy(color).best_lap() * FLAGS_turbo_bump_treshold < enemy(color_).best_lap());
 }
 
 // TODO move?

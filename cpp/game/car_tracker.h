@@ -73,7 +73,7 @@ class CarTracker : public CarPredictor {
 
   bool IsSafe(const CarState& state, const Command& command);
 
-  bool IsSafe(const CarState& state, double safe_speed = 3);
+  bool IsSafe(const CarState& state, double safe_speed = 2);
   // TODO hardcoded safe_speed
 
   // TODO Add nice comments

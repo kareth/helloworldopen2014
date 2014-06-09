@@ -95,14 +95,10 @@ double LaneScorer::ScoreEnemy(const EnemyTracker& me, const EnemyTracker& enemy,
 }
 
 double LaneScorer::ScoreDeadEnemy(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position) {
-  auto safe_position = car_tracker_.PredictPosition(enemy.state().position(), 3 * kCarLength);
-
-  // Wont reach safe_position before spawn
-  if (!me.IsReady() || me.TimeToPosition(safe_position) > enemy.time_to_spawn()) {
-    return (int) kDeadCrash;
-  } else {
+  if (me.IsThreatToMe(enemy))
+    return int(kDeadCrash);
+  else
     return 0;
-  }
 }
 
 double LaneScorer::ScoreLivingEnemy(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position) {

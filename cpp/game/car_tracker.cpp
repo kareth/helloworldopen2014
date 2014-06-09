@@ -202,7 +202,7 @@ bool CarTracker::IsSafe(const CarState& state, const Command& command) {
 
 bool CarTracker::IsSafe(const CarState& state, double safe_speed) {
   auto s = state;
-  while (s.velocity() > safe_speed) {
+  for (int i = 0; i < 200 && s.velocity() > safe_speed; ++i) {
     if (!crash_model_.IsSafe(s.position().angle())) {
       return false;
     }

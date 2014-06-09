@@ -98,6 +98,8 @@ class Simulator {
     double max_tick_time_ms = 0;
     double sum_tick_time_ms = 0;
 
+    bool was_first_crash = false;
+
     std::ofstream ofs;
     if (FLAGS_log_simulator_csv) {
       ofs.open("data.csv", std::ofstream::out);
@@ -131,7 +133,10 @@ class Simulator {
       state = next_state;
 
       if (fabs(state.position().angle()) > 60.0) {
-        result.crashed = true;
+        if (was_first_crash || total_ticks > 200) {
+          result.crashed = true;
+        }
+        was_first_crash = true;
 
         raw_bot->React(CrashMessage());
         Position position = state.position();

@@ -39,7 +39,7 @@ game::Command Bot::ComputeMove(const Position& position, int game_tick) {
 game::Command Bot::GetMove(
     const std::map<std::string, Position>& positions, int game_tick)  {
   const auto& my_position = positions.find(color_)->second;
-  car_tracker_->Record(my_position);
+  car_tracker_->Record(my_position, car_tracker_->HasSomeoneMaybeBumpedMe(positions, color_));
 
   Command command = ComputeMove(my_position, game_tick);
 
