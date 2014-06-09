@@ -17,6 +17,7 @@ DECLARE_string(switch_scheduler);
 DECLARE_bool(disable_attack);
 DECLARE_bool(log_overtaking);
 DECLARE_bool(continuous_integration);
+DEFINE_bool(safe_start, false, "");
 
 namespace schedulers {
 
@@ -35,6 +36,14 @@ BulkScheduler::BulkScheduler(const game::Race& race,
 }
 
 void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const utils::Deadline& deadline) {
+  if (FLAGS_safe_start && race_.race_phase()) {
+    if (game_tick < 100) {
+      car_tracker_.mutable_crash_model()->force_angle(30.0);
+    } else {
+      car_tracker_.mutable_crash_model()->force_angle(60.0);
+    }
+  }
+
   utils::StopWatch stopwatch;
   if (!FLAGS_disable_attack) {
     bump_scheduler_->Schedule(state);

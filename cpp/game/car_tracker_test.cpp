@@ -635,7 +635,7 @@ class IsSafeAttackTest : public ::testing::Test {
 
     race_.ParseFromJson(race_json);
     car_tracker_.reset(new CarTracker(&race_, PhysicsParams()));
-    car_tracker_->mutable_crash_model()->RecordSafeAngle(60.0);
+    car_tracker_->mutable_crash_model()->force_angle(60.0);
   }
 
   CarState Simulate(const Position& position,
@@ -744,7 +744,7 @@ class IsSafeBehindTest : public ::testing::Test {
 
     race_.ParseFromJson(race_json);
     car_tracker_.reset(new CarTracker(&race_, PhysicsParams()));
-    car_tracker_->mutable_crash_model()->RecordSafeAngle(60.0);
+    car_tracker_->mutable_crash_model()->force_angle(60.0);
   }
 
   CarState Simulate(const Position& position,

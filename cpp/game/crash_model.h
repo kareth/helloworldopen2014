@@ -17,14 +17,13 @@ namespace game {
 class CrashModel {
  public:
   CrashModel() {
-    guess_safe_angle_ = fmin(50.0, FLAGS_safe_angle - 5.0);
+    safe_angle_ = 50.0;
   }
 
   ~CrashModel() {
     if (FLAGS_print_models) {
       std::cout << "==== Crash Model ====" << std::endl;
       std::cout << "safe_angle: " << safe_angle_ << std::endl;
-      std::cout << "unsafe_angle: " << unsafe_angle_ << std::endl;
       std::cout << (ready_ ? "with crash" : "without crash") << std::endl;
       std::cout << std::endl << std::endl;
     }
@@ -32,37 +31,30 @@ class CrashModel {
 
   void RecordCarCrash(double unsafe_angle) {
     ready_ = true;
-    unsafe_angle_ = fmin(unsafe_angle_, fabs(unsafe_angle));
   }
 
   void RecordSafeAngle(double angle) {
-    safe_angle_ = fmax(safe_angle_, fabs(angle));
   }
 
   void RecordDriftModelReady() {
-    guess_safe_angle_ = FLAGS_safe_angle;
+    safe_angle_ = 60.0;
   }
 
   bool IsSafe(double angle) const {
-    if (IsReady()) {
-      return fabs(angle) < safe_angle_;
-    } else {
-      return fabs(angle) < fmax(guess_safe_angle_, safe_angle_);
-    }
+    return fabs(angle) < safe_angle_;
   }
 
   // Returns true if there was at least one crash.
   bool IsReady() const {
-    return ready_;
+    return true;
   }
 
   double GetModel() const {
-    if (IsReady()) {
-      // I don't accept safe_angle of zero
-      return fmax(1, safe_angle_);
-    } else {
-      return fmax(1, fmax(guess_safe_angle_, safe_angle_));
-    }
+    return safe_angle_;
+  }
+
+  void force_angle(double safe_angle) {
+    safe_angle_ = safe_angle;
   }
 
  private:
@@ -71,9 +63,7 @@ class CrashModel {
   bool ready_ = false;
 
   // The angle that will not cause crash.
-  double guess_safe_angle_;
   double safe_angle_ = 0.0;
-  double unsafe_angle_ = 90.0;
 };
 
 }  // namespace game
