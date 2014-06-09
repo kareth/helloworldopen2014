@@ -37,7 +37,7 @@ class CrashModel {
   }
 
   void RecordDriftModelReady() {
-    safe_angle_ = 60.0;
+    safe_angle_ = 59.99;
   }
 
   bool IsSafe(double angle) const {
