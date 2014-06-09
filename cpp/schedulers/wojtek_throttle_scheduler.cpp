@@ -97,12 +97,12 @@ bool WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tic
         const utils::Deadline& deadline, double distance_to_switch, double last_throttle) {
   last_time_limit_ = deadline.GetDurationToExpire().count() * 1000.0;
   utils::StopWatch stopwatch;
-  if (log_to_csv_) printf("%f %f\n", distance_to_switch, last_throttle);
+  if (FLAGS_log_schedule) printf("%f %f\n", distance_to_switch, last_throttle);
 
   // We want to use the last best_schedule_ if possible. Generally always 
   // tick_diff should always be 1, but I take extra care if 
   // (for some unknown reason) this is not the case
-  if (log_to_csv_) { printf("in [%d] ", best_schedule_.IsSafe(state, distance_to_switch, last_throttle)); best_schedule_.Print(); }
+  if (FLAGS_log_schedule) { printf("in [%d] ", best_schedule_.IsSafe(state, distance_to_switch, last_throttle)); best_schedule_.Print(); }
   int tick_diff = game_tick - last_game_tick_;
   if (1 <= tick_diff && tick_diff <= 4) {
     for (int i = 0; i < tick_diff; ++i) {
@@ -114,7 +114,7 @@ bool WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tic
   }
   // Must do it (never ever think of removing it!)
   best_schedule_.UpdateDistance(state); 
-  if (log_to_csv_) { printf("sh [%d] ", best_schedule_.IsSafe(state, distance_to_switch, last_throttle)); best_schedule_.Print(); }
+  if (FLAGS_log_schedule) { printf("sh [%d] ", best_schedule_.IsSafe(state, distance_to_switch, last_throttle)); best_schedule_.Print(); }
 
   // Initial schedule should be safe normally. 
   // Not safe only if future predictions or switch or turbo decisions have changed
@@ -127,11 +127,11 @@ bool WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tic
     }
   }
 
-  if (log_to_csv_) { printf("re [%d] ", best_schedule_.IsSafe(state, distance_to_switch, last_throttle)); best_schedule_.Print(); }
+  if (FLAGS_log_schedule) { printf("re [%d] ", best_schedule_.IsSafe(state, distance_to_switch, last_throttle)); best_schedule_.Print(); }
   branch_and_bound_.Improve(state, best_schedule_, deadline, distance_to_switch, last_throttle);
-  if (log_to_csv_) { printf("bb [%d] ", best_schedule_.IsSafe(state, distance_to_switch, last_throttle)); best_schedule_.Print(); }
+  if (FLAGS_log_schedule) { printf("bb [%d] ", best_schedule_.IsSafe(state, distance_to_switch, last_throttle)); best_schedule_.Print(); }
   local_improver_.Improve(state, best_schedule_, 0.1, deadline, distance_to_switch, last_throttle);
-  if (log_to_csv_) { printf("ls [%d] ", best_schedule_.IsSafe(state, distance_to_switch, last_throttle)); best_schedule_.Print(); }
+  if (FLAGS_log_schedule) { printf("ls [%d] ", best_schedule_.IsSafe(state, distance_to_switch, last_throttle)); best_schedule_.Print(); }
 
   bool is_safe = best_schedule_.IsSafe(state, distance_to_switch, last_throttle);
   if (!is_safe) {
@@ -145,9 +145,9 @@ bool WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tic
   last_distance_to_switch_ = distance_to_switch;
   last_throttle_ = last_throttle;
   Log(state);
-  if (log_to_csv_)
+  if (FLAGS_log_schedule)
       printf("finished issafe %d\n",is_safe);
-  if (log_to_csv_) best_schedule_.Print();
+  if (FLAGS_log_schedule) best_schedule_.Print();
   return is_safe;
 }
 
