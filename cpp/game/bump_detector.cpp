@@ -50,7 +50,7 @@ bool BumpDetector::BumpOccured(const std::string& color, const std::string& colo
 
 int BumpDetector::BumpsBetween(const std::string& color, const std::string& color2, int time_span) {
   int res = 0;
-  for (int i = history_[{ color, color2 }].size() - 1; i >= 0; i--) {
+  for (int i = int(history_[{ color, color2 }].size()) - 1; i >= 0; i--) {
     int t = history_[{color, color2}][i];
     if (t > last_tick_ - time_span)
       res++;
