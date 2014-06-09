@@ -36,7 +36,7 @@ class PerfectPathOptimizer : public PathOptimizerInterface {
   void ComputeScores();
 
   // [piece][lane]
-  vector<vector<double>> lane_times_;
+  vector<vector<vector<double>>> lane_times_;
   vector<vector<map<Switch, double>>> lane_scores_;
 
   VelocityPredictor velocity_predictor_;
