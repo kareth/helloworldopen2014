@@ -56,7 +56,7 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const u
   double turbo_time = stopwatch.elapsed();
 
   stopwatch.reset();
-  switch_scheduler_->Schedule(state);
+  switch_scheduler_->Schedule(state, utils::Deadline(std::chrono::microseconds(4000)));
   double switch_time = stopwatch.elapsed();
 
 

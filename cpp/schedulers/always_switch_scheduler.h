@@ -29,7 +29,7 @@ class AlwaysSwitchScheduler : public SwitchScheduler {
    void set_strategy(const Strategy& strategy) override { }
 
    // Updates the state and calculates next state
-   void Schedule(const game::CarState& state) override {
+   void Schedule(const game::CarState& state, const utils::Deadline& deadline) override {
      if (state.switch_state() == game::Switch::kStay) {
        if (state.position().end_lane() != 0) {
          switch_ = game::Switch::kSwitchLeft;

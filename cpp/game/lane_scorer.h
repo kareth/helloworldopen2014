@@ -2,6 +2,7 @@
 #define CPP_GAME_LANE_SCORER_H_
 
 #include "game/enemy_tracker.h"
+#include "utils/deadline.h"
 
 namespace game {
 
@@ -24,7 +25,7 @@ class LaneScorer {
   //
   // @lane should be valid track lane
   // @labe should be reachable from my position without doing full lap
-  double ScoreLane(int from, int to, int lane);
+  double ScoreLane(int from, int to, int lane, const utils::Deadline& deadline);
 
  private:
   // Returns score for the enemy

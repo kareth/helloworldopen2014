@@ -3,6 +3,7 @@
 
 #include "game/car_tracker.h"
 #include "schedulers/strategy.h"
+#include "utils/deadline.h"
 
 namespace schedulers {
 
@@ -19,7 +20,7 @@ class SwitchScheduler {
    virtual void set_strategy(const Strategy& strategy) = 0;
 
    // Updates the state and calculates next state
-   virtual void Schedule(const game::CarState& state) = 0;
+   virtual void Schedule(const game::CarState& state, const utils::Deadline& deadline) = 0;
 
    virtual void Switched() = 0;
 

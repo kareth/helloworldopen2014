@@ -22,7 +22,7 @@ LaneScorer::~LaneScorer() {
   printf("Lane scorer longest computation time: %lf ms\n", longest_calculation_time_);
 }
 
-double LaneScorer::ScoreLane(int from, int to, int lane) {
+double LaneScorer::ScoreLane(int from, int to, int lane, const utils::Deadline& deadline) {
   utils::StopWatch timer;
   using std::max; using std::min;
   auto& me = *std::find_if(enemies_.begin(), enemies_.end(), [this](const EnemyTracker& e){ return e.color() == this->color_; });
@@ -40,6 +40,11 @@ double LaneScorer::ScoreLane(int from, int to, int lane) {
   int lane_score = 0;
   for (auto& enemy : enemies_) {
     if (enemy.color() == color_) continue;  // Me
+    if (deadline.HasExpired()) {
+      printf("Lane score: Duration expired\n");
+      return lane_score;
+    }
+
     int score = ScoreEnemy(me, enemy, end_position);
 
     if (FLAGS_log_overtaking)

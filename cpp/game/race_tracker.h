@@ -7,6 +7,7 @@
 #include "game/car_tracker.h"
 #include "game/bump_detector.h"
 #include "game/lane_scorer.h"
+#include "utils/deadline.h"
 
 namespace game {
 
@@ -54,7 +55,7 @@ class RaceTracker {
   void ResurrectCars();
 
   // Lane scores based on who is there
-  std::map<Switch, int> ScoreLanes(const CarState& state);
+  std::map<Switch, int> ScoreLanes(const CarState& state, const utils::Deadline& deadline);
 
   // TODO
   // Move to enemy?

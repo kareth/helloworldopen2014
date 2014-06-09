@@ -21,7 +21,7 @@ class ShortestPathSwitchScheduler : public SwitchScheduler {
 
    // Calculates the most optimal switch decision
    // based on lengths, and cars on track
-   void Schedule(const game::CarState& state);
+   void Schedule(const game::CarState& state, const utils::Deadline& deadline);
 
    // Saves that switch command has been sent this tick
    // IMPORTANT: Must allways be invoked once we switch

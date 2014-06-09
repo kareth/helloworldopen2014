@@ -35,7 +35,7 @@ bool ShortestPathSwitchScheduler::WaitingToReachIssuedSwitch(const game::CarStat
   return waiting_for_switch_;
 }
 
-void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
+void ShortestPathSwitchScheduler::Schedule(const game::CarState& state, const utils::Deadline& deadline) {
   state_ = state;
 
   // Check if we reached target switch
@@ -44,7 +44,7 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state) {
   // [0 - inf] = time loss for each decision compared to optimum
   auto time_loss = path_optimizer_->Score(state.position());
   // [-100 - 100] = (-)overtake, (0)neutral, (+) bump competitive
-  auto obstacle_scores = race_tracker_.ScoreLanes(state);
+  auto obstacle_scores = race_tracker_.ScoreLanes(state, deadline);
   vector<std::pair<double, Switch>> scores;
 
   for (auto& el : time_loss) {
