@@ -4,10 +4,10 @@ timestamp=$(date +%s)
 echo "Starting congestion run with 2 fast and 4 slow bots. Logs are available under logs/${timestamp}_bot_{1-6}.log"
 echo "Results should be available in about 4 minutes"
 echo "Starting bot 1"
-./default_run --track=keimola --num_players=6 --bot_algorithm=stepping --bot=NFC-Boss-1 --log_masks=false --disable_visualizer=true --host=prost.helloworldopen.com --password="nfc-congestion3" --continuous_integration --nolog_schedule --log_position --new_attack --noperfect_switches $@ > logs/${timestamp}_bot_1.log &
+./default_run --track=keimola --num_players=6 --bot_algorithm=stepping --bot=NFC-Boss-1 --log_masks=false --disable_visualizer=true --host=prost.helloworldopen.com --password="nfc-congestion3" --continuous_integration --nolog_schedule --log_position --new_attack $@ > logs/${timestamp}_bot_1.log &
 sleep 1
 echo "Starting bot 2"
-./default_run --track=keimola --num_players=6 --bot_algorithm=stepping --bot=NFC-Boss-2 --log_masks=false --disable_visualizer=true --host=prost.helloworldopen.com --password="nfc-congestion3" --continuous_integration --nolog_schedule --log_position --new_attack --noperfect_switches $@ > logs/${timestamp}_bot_2.log &
+./default_run --track=keimola --num_players=6 --bot_algorithm=stepping --bot=NFC-Boss-2 --log_masks=false --disable_visualizer=true --host=prost.helloworldopen.com --password="nfc-congestion3" --continuous_integration --nolog_schedule --log_position --new_attack $@ > logs/${timestamp}_bot_2.log &
 sleep 1
 echo "Starting bot 3"
 ./default_run --track=keimola --num_players=6 --bot_algorithm=constant --constant_throttle=0.75 --bot=NFC-0.75 --always_switch=true --host=prost.helloworldopen.com --password="nfc-congestion3" --disable_visualizer=true --continuous_integration $@ > logs/${timestamp}_bot_3.log &
