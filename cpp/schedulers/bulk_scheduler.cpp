@@ -10,6 +10,7 @@
 #include <assert.h>
 
 DECLARE_bool(check_if_safe_ahead);
+DEFINE_bool(check_if_safe_behind, false, "");
 
 DECLARE_string(throttle_scheduler);
 DECLARE_string(switch_scheduler);
@@ -90,6 +91,19 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const u
 
   stopwatch.reset();
   game::Command safe_command;
+  if (FLAGS_check_if_safe_behind) {
+    if (!race_tracker_.IsSafeBehind(state_with_switch, throttle_scheduler_->full_schedule(), command_, &safe_command)) {
+      if (command_ == safe_command) {
+        std::cout << "INFO: It is not safe behind but we don't have defense :(." << std::endl;
+      } else {
+        std::cout << "INFO: It is not safe behind. Slowing down." << std::endl;
+        command_ = safe_command;
+      }
+    }
+  }
+  double behind_time = stopwatch.elapsed();
+
+  stopwatch.reset();
   if (FLAGS_check_if_safe_ahead) {
     // Make sure that if we want to make switch now, we don't use state_with_switch.
     // That could cause us to ignore the switch even though we haven't actually switched.
@@ -107,8 +121,8 @@ void BulkScheduler::Schedule(const game::CarState& state, int game_tick, const u
   //std::cout << command_.DebugString() << std::endl;
   //
   if (FLAGS_continuous_integration) {
-    printf("Scheduler times: Attack(%lfms) Turbo(%lfms) Switch(%lfms) Throttle(%lfms) Ahead(%lfms)\n",
-        attack_time, turbo_time, switch_time, throttle_time, ahead_time);
+    printf("Scheduler times: Attack(%lfms) Turbo(%lfms) Switch(%lfms) Throttle(%lfms) Ahead(%lfms) Behind(%lfms)\n",
+        attack_time, turbo_time, switch_time, throttle_time, ahead_time, behind_time);
   }
 }
 

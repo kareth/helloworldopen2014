@@ -14,6 +14,7 @@
 DEFINE_bool(dump_history, false, "");
 DEFINE_bool(print_track, false, "");
 DECLARE_bool(continuous_integration);
+DEFINE_bool(log_command, false, "");
 
 using jsoncons::json;
 
@@ -159,6 +160,9 @@ RawBot::msg_vector RawBot::ProcessOnCarPositions(const jsoncons::json& msg) {
 
   visualizer_.Update(positions);
   auto command = CommandToMsg(bot_->GetMove(positions, game_tick), game_tick);
+  if (FLAGS_log_command) {
+    std::cout << "command: " << command[0] << std::endl;
+  }
 
   if (FLAGS_dump_history) {
     history["positions"].add(data[0]);

@@ -269,59 +269,67 @@ bool RaceTracker::IsSafe(const CarState& current_state, const Command& command,
   return true;
 }
 
-bool RaceTracker::IsSafeBehind(const CarState& current_state, const Command& command, Command* safe_command) {
-  const auto& my_state = current_state;
+bool RaceTracker::IsSafeBehind(const CarState& current_state,
+                               const vector<double>& schedule,
+                               const Command& command,
+                               Command* safe_command) {
   const double kCarLength = race_.cars().at(0).length();
-  const double kDangerousDistance = 20;
-  const int kTicks = 10;
+  *safe_command = command;
 
-  for (const auto& enemy : enemies_) {
-    if (enemy.color() == color_) {
-      // states[color_] = car_tracker_.Predict(my_state, command);
-      continue;
-    }
+  vector<CarState> states{current_state};
+  for (double throttle : schedule) {
+    states.push_back(car_tracker_.Predict(states.back(), Command(throttle)));
+  }
 
-    // TODO ppl can spawn here and it doesnt take it under consideration
-    if (enemy.is_dead()) {
-      continue;
-    }
+  for (int ticks_after = 1; ticks_after < states.size(); ++ticks_after) {
+    const auto& my_state = states[ticks_after];
+    for (const auto& enemy : enemies_) {
+      if (enemy.color() == color_) continue;
+      if (enemy.is_dead()) continue;
+      if (enemy.has_finished()) continue;
 
-    double distance = car_tracker_.DistanceBetween(enemy.state().position(), my_state.position());
-    if (distance > kDangerousDistance + kCarLength) {
-      // std::cout << "He is too far, assuming safe" << std::endl;
-      continue;
-    }
-
-    CarState my_prev = car_tracker_.Predict(my_state, command);
-    CarState his_prev = car_tracker_.Predict(enemy.state(), Command(1));
-
-    for (int i = 0; i < kTicks; ++i) {
-      CarState my_new = car_tracker_.Predict(my_prev, Command(0));
-      CarState his_new = car_tracker_.Predict(his_prev, Command(1));
-
-      // BUMP
-      if (car_tracker_.DistanceBetween(his_new.position(), my_new.position()) < kCarLength) {
-        CarState tmp = my_new;
-        tmp.set_velocity(0.9 * his_new.velocity());
-        if (!car_tracker_.IsSafe(tmp)) {
-          std::cout << "Not safe, he can bump into me :(" << std::endl;
-          *safe_command = Command(0);
-          return false;
-        }
-        break;
+      if (car_tracker_.DistanceBetween(enemy.state().position(), my_state.position()) > 200) {
+        // std::cout << "Car too far away to attack us. " << std::endl;
+        continue;
       }
 
-      if (!car_tracker_.crash_model().IsSafe(his_new.position().angle()))
-        break;
-
-      my_prev = my_new;
-      his_prev = his_new;
+      double velocity = 0.0;
+      // std::cout << "ticks_after: " << ticks_after << std::endl;
+      // std::cout << "enemy_state: " << enemy.state().ShortDebugString() << std::endl;
+      // std::cout << "my_state: " << my_state.ShortDebugString() << std::endl;
+      if (car_tracker_.MaxVelocity(enemy.state(), my_state, ticks_after, &velocity)) {
+        std::cout << "Enemy can hit us in " << ticks_after << " ticks with velocity " << velocity << std::endl;
+        CarState tmp = my_state;
+        tmp.set_velocity(0.9 * velocity);
+        if (!car_tracker_.GenerateSafeStates(tmp, nullptr)) {
+          std::cout << "Enemy can bump and crash us in " << ticks_after << " ticks" << std::endl;
+          vector<CarState> safe_states;
+          if (!car_tracker_.GenerateSafeStates(car_tracker_.Predict(current_state, Command(0)), &safe_states)) {
+            std::cout << "Issueing command 0 would crash us :(. No possible defense" << std::endl;
+            return false;
+          }
+          vector<double> zero_throttles(safe_states.size(), 0.0);
+          if (schedule[0] != 0.0) {
+            std::cout << "Second IsSafeBehind to make sure Command(0) will help." << std::endl;
+            if (IsSafeBehind(current_state, zero_throttles, command, safe_command)) {
+              std::cout << "Command(0) will save us." << std::endl;
+              *safe_command = Command(0);
+              return false;
+            } else {
+              std::cout << "IsSafeBehind: Command(0) is also not safe." << std::endl;
+              return false;
+            }
+          } else {
+            std::cout << "We already issue command 0 and we still can be bumped. No defense." << std::endl;
+            return false;
+          }
+        }
+      }
     }
   }
 
   return true;
 }
-
 
 // Record methods
 
