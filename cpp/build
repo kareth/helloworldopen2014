@@ -15,7 +15,7 @@ function build_without_cmake() {
   git rev-parse HEAD
   # Build without cmake
   flags="-O2 -std=c++11 -I jsoncons/src/ -I . -l pthread -l boost_system -l boost_filesystem -o bin/bot"
-  g++ \
+  clang \
     main.cpp common_flags.cpp \
     utils/protocol.cpp utils/connection.cpp utils/game_visualizer.cpp utils/deadline.cpp \
     bots/raw_bot.cpp bots/tomek/bot.cpp bots/piotr/bot.cpp bots/greedy/bot.cpp bots/basic/bot.cpp bots/stepping/bot.cpp bots/constant/bot.cpp bots/kamikaze/bot.cpp \
