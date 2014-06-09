@@ -87,7 +87,8 @@ void GreedyTurboScheduler::FindLongestStraights() {
   int from = -1;
   double length = 0;
   for (int i = 0; i < pieces.size(); i++) {
-    if (pieces[i].type() == game::PieceType::kStraight) {
+    if (pieces[i].type() == game::PieceType::kStraight ||
+        (pieces[i].radius() >= 150 && from != -1)) {
       if (from == -1)
         from = i;
       length += pieces[i].length();
