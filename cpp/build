@@ -20,7 +20,7 @@ function build_without_cmake() {
     utils/protocol.cpp utils/connection.cpp utils/game_visualizer.cpp utils/deadline.cpp \
     bots/raw_bot.cpp bots/tomek/bot.cpp bots/piotr/bot.cpp bots/greedy/bot.cpp bots/basic/bot.cpp bots/stepping/bot.cpp bots/constant/bot.cpp bots/kamikaze/bot.cpp \
     game/car.cpp game/car_tracker.cpp game/command.cpp game/gauss.cpp game/position.cpp game/race.cpp game/result.cpp game/simplex.cpp game/track.cpp game/turbo.cpp game/lane_length_model.cpp game/radius_model.cpp game/approximation.cpp game/drift_model.cpp game/enemy_tracker.cpp game/race_tracker.cpp game/bump_tracker.cpp game/bump_detector.cpp game/spawn_model.cpp game/lane_scorer.cpp game/physics_params.cpp game/velocity_predictor.cpp game/geometry.cpp game/greedy_path_optimizer.cpp game/double_path_optimizer.cpp game/perfect_path_optimizer.cpp \
-    schedulers/binary_throttle_scheduler.cpp schedulers/shortest_path_switch_scheduler.cpp schedulers/greedy_turbo_scheduler.cpp schedulers/bulk_scheduler.cpp schedulers/bump_scheduler.cpp schedulers/wojtek_throttle_scheduler.cpp schedulers/magic_throttle_scheduler.cpp schedulers/bb.cpp schedulers/local_improver.cpp schedulers/schedule.cpp \
+    schedulers/binary_throttle_scheduler.cpp schedulers/shortest_path_switch_scheduler.cpp schedulers/greedy_turbo_scheduler.cpp schedulers/bulk_scheduler.cpp schedulers/bump_scheduler.cpp schedulers/wojtek_throttle_scheduler.cpp schedulers/bb.cpp schedulers/local_improver.cpp schedulers/schedule.cpp \
     gflags/gflags.cc gflags/gflags_reporting.cc gflags/gflags_completions.cc \
     physics/speed_tracker.cpp \
     $flags
