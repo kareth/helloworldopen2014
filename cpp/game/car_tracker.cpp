@@ -2,6 +2,7 @@
 #include "gflags/gflags.h"
 
 DECLARE_string(race_id);
+DEFINE_bool(fix_velocity_after_bump, true, "");
 
 namespace game {
 
@@ -118,7 +119,7 @@ double CarTracker::PredictDistance(const CarState& state, int how_many,
 }
 
 
-void CarTracker::Record(const Position& position, bool bump) {
+void CarTracker::Record(const Position& position, bool bump, double bump_velocity) {
   if (just_started_) {
     just_started_ = false;
     state_ = CarState(position);
@@ -150,6 +151,12 @@ void CarTracker::Record(const Position& position, bool bump) {
     // Note: because of switches, it is better to use our model.
     if (!lane_length_perfect && velocity_model_.IsReady()) {
       velocity = velocity_model_.Predict(state_.velocity(), effective_throttle);
+    }
+
+    // If bump, it is better to predict from enemy velocity.
+    if (bump) {
+      std::cout << "Using velocity from enemy (" << bump_velocity << ") instead of calculated one " << velocity << std::endl;
+      velocity = bump_velocity;
     }
 
     if (position.start_lane() != position.end_lane()) {

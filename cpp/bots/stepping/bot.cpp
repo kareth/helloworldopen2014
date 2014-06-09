@@ -81,7 +81,11 @@ void Bot::NewRace(const Race& race) {
 game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick)  {
   game_tick_ = game_tick;
   const Position& position = positions.at(color_);
-  car_tracker_->Record(position, car_tracker_->HasSomeoneMaybeBumpedMe(positions, color_));
+
+  double bump_velocity;
+  bool bump = race_tracker_->HasSomeoneMaybeBumpedMe(positions, &bump_velocity);
+  car_tracker_->Record(position, bump, bump_velocity);
+
   auto& state = car_tracker_->current_state();
   if (FLAGS_log_position) {
     std::cout << state.ShortDebugString() << std::endl;

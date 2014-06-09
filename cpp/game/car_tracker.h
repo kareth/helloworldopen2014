@@ -56,7 +56,7 @@ class CarTracker : public CarPredictor {
     last_record_had_bump = false;
   }
 
-  void Record(const Position& position, bool bump=false);
+  void Record(const Position& position, bool bump=false, double bump_velocity=0.0);
 
   void RecordCommand(const Command& command) {
     last_command_ = command;

@@ -76,8 +76,12 @@ class RaceTracker {
   bool BumpOccured(const std::string& color, const std::string& color2);
 
   BumpDetector& bump_detector() { return bump_detector_; }
-
   void ResetBumpDetector() { bump_detector_.Reset(); }
+
+  bool HasSomeoneMaybeBumpedMe(const map<string, Position>& positions, double* bump_velocity);
+  bool HasBumped(
+      const Position& position1,
+      const Position& position2);
 
  private:
   // TODO(tomek) deprecated version of IsSafeAhead() method.
