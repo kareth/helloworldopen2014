@@ -37,6 +37,7 @@ double LaneScorer::ScoreLane(int from, int to, int lane, const utils::Deadline& 
                                         end_position.start_lane(),
                                         end_position.end_lane());
 
+  my_prediction_calculated_ = false;
   int lane_score = 0;
   for (auto& enemy : enemies_) {
     if (enemy.color() == color_) continue;  // Me
@@ -126,6 +127,8 @@ double LaneScorer::ScoreLivingEnemy(const EnemyTracker& me, const EnemyTracker& 
 
 double LaneScorer::EnemyBumpScore(const EnemyTracker& enemy, double my_speed, double his_speed) {
   if (his_speed < FLAGS_overtake_treshold * my_speed) {
+    if (my_speed == 0)
+      return 0;
     return double(kDeadCrash) * (1.0 - his_speed / my_speed);
   } else {
     return 0;
@@ -135,8 +138,11 @@ double LaneScorer::EnemyBumpScore(const EnemyTracker& enemy, double my_speed, do
 }
 
 bool LaneScorer::BumpPosition(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position, Position* bump_position) {
-  vector<Position> my_prediction, enemy_prediction;
-  int my_time = me.TimeToPosition(end_position, &my_prediction);
+  if (!my_prediction_calculated_) {
+    my_prediction_.clear();
+    my_time_ = me.TimeToPosition(end_position, &my_prediction_);
+    my_prediction_calculated_ = true;
+  }
 
   /*std::cout << " end_position: " << end_position.ShortDebugString() << std::endl
             << " enemy_target: " << car_tracker_.PredictPosition(end_position, kCarLength * 1.1).ShortDebugString() << std::endl
@@ -144,18 +150,19 @@ bool LaneScorer::BumpPosition(const EnemyTracker& me, const EnemyTracker& enemy,
             << " enemy: " << enemy.state().position().ShortDebugString() << std::endl
             << std::endl;*/
 
+  vector<Position> enemy_prediction;
   int enemy_time = enemy.TimeToPosition(car_tracker_.PredictPosition(end_position, kCarLength * 1.1), &enemy_prediction);
 
   //printf("Predicting bump position, %d and %d steps done.\n", my_time, enemy_time);
   if (FLAGS_log_overtaking)
-    printf(" {{%d %d}} ", my_time, enemy_time);
+    printf(" {{%d %d}} ", my_time_, enemy_time);
 
-  if (my_time > enemy_time)
+  if (my_time_ > enemy_time)
     return false;
 
   // TODO can make binsearch here, worth it?
-  for (int i = 0; i < min(my_prediction.size(), enemy_prediction.size()); i++) {
-    auto my_position = my_prediction[i];
+  for (int i = 0; i < min(my_prediction_.size(), enemy_prediction.size()); i++) {
+    auto my_position = my_prediction_[i];
     auto enemy_position = enemy_prediction[i];
 
     if (car_tracker_.DistanceBetween(my_position, enemy_position, nullptr, kCarLength) < kCarLength) {

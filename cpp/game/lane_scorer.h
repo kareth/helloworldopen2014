@@ -60,6 +60,10 @@ class LaneScorer {
   // TODO OPTIMIZE its very slow
   bool BumpPosition(const EnemyTracker& me, const EnemyTracker& enemy, const Position& end_position, Position* bump_position);
 
+  std::vector<Position> my_prediction_;
+  bool my_prediction_calculated_;
+  int my_time_;
+
   std::vector<EnemyTracker>& enemies_;
   const Race& race_;
   CarTracker& car_tracker_;
