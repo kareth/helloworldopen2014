@@ -353,6 +353,7 @@ void RaceTracker::FinishedRace(const std::string& color) {
 }
 
 void RaceTracker::DNF(const std::string& color) {
+  // TODO
   enemy(color).DNF();
 }
 
