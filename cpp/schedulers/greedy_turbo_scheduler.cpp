@@ -97,7 +97,10 @@ void GreedyTurboScheduler::FindLongestStraights() {
         (pieces[piece].radius() >= 150 && from != -1)) {
       if (from == -1)
         from = piece;
-      length += pieces[piece].length();
+
+      game::Position position(piece, 0);
+      double piece_length = car_tracker_.lane_length_model().Length(position);
+      length += piece_length;
     } else {
       if (from != -1) {
         int to = (piece + pieces.size() - 1);
