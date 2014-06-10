@@ -21,46 +21,50 @@ void GreedyTurboScheduler::Schedule(const game::CarState& state) {
     return;
   }
 
+  if (straights_.size() == 0) {
+    should_fire_now_ = false;
+    return;
+  }
+
   // TODO its kind of greedy,
   // first of all - we shouldnt count just straights
   // second, it has to make some kind of decisions based on turbo freq
 
-  if (strategy_ == Strategy::kOptimizeRace) {
-    // Longest overall
-    if (state.position().piece() == straights_[0].from()) {
+  // Longest overall
+  //
+  if (strategy_ == Strategy::kOptimizeRace
+      || strategy_ == Strategy::kOptimizeNextLap) {
+    if (IsOnStraightBegin(state, straights_[0])) {
       should_fire_now_ = true;
     } else if (CanFireBeforeStraight(state, straights_[0])) {
       should_fire_now_ = true;
     }
   } else if (strategy_ == Strategy::kOptimizeCurrentLap) {
     // Longest in between now and lap end
-    for (auto& s : straights_) {
-      if (s.from() == state.position().piece()) {
+    for (int i = 0; i < straights_.size(); i++) {
+      if (IsOnStraightBegin(state, straights_[i])) {
         should_fire_now_ = true;
-      } else if (CanFireBeforeStraight(state, s)) {
+      } else if (CanFireBeforeStraight(state, straights_[i])) {
         should_fire_now_ = true;
-      } if (s.from() > state.position().piece()) {
+      } if (straights_[i].from() > state.position().piece()) {
         return;
       }
     }
-  } else if (strategy_ == Strategy::kOptimizeNextLap) {
-    // Give him best speed for next lap
-    // TODO not optimal, just taking last piece
-    // TODO commenting this wins usa
-    auto last = &straights_[0];
-    for (auto& s : straights_)
-      if (s.from() > last->from())
-        last = &s;
-
-    // If connected to 0
-    if (last->to() == race_.track().pieces().size() - 1)
-      if (state.position().piece() == last->from())
-        should_fire_now_ = true;
   }
+
+}
+
+bool GreedyTurboScheduler::IsOnStraightBegin(const game::CarState& state, const Straight& straight) {
+  game::Position begin_position(straight.from(), 0);
+  begin_position.set_start_lane(state.position().start_lane());
+  begin_position.set_end_lane(state.position().start_lane());
+
+  double distance = car_tracker_.DistanceBetween(begin_position, state.position());
+  return distance < 100.0;
 }
 
 bool GreedyTurboScheduler::CanFireBeforeStraight(const game::CarState& state, const Straight& straight) {
-  if (state.position().piece() == straight.from())
+  if (IsOnStraightBegin(state, straight))
     return true;
 
   if (state.position().piece() > straight.from())
@@ -71,7 +75,7 @@ bool GreedyTurboScheduler::CanFireBeforeStraight(const game::CarState& state, co
       state.position().piece() >= straight.from() - 2) {
     auto s = car_tracker_.Predict(state, game::Command(game::TurboToggle::kToggleOn));
     int max_ticks = 80;
-    while (max_ticks-- > 0 && s.position().piece() != straight.from()) {
+    while (max_ticks-- > 0 && !IsOnStraightBegin(s, straight)) {
       if (!car_tracker_.crash_model().IsSafe(s.position().angle()))
         return false;
       s = car_tracker_.Predict(s, game::Command(1));
@@ -86,22 +90,31 @@ void GreedyTurboScheduler::FindLongestStraights() {
 
   int from = -1;
   double length = 0;
-  for (int i = 0; i < pieces.size(); i++) {
-    if (pieces[i].type() == game::PieceType::kStraight ||
-        (pieces[i].radius() >= 150 && from != -1)) {
+  for (int i = 0; i < pieces.size() * 2; i++) {
+    int piece = i % pieces.size();
+
+    if (pieces[piece].type() == game::PieceType::kStraight ||
+        (pieces[piece].radius() >= 150 && from != -1)) {
       if (from == -1)
-        from = i;
-      length += pieces[i].length();
+        from = piece;
+
+      game::Position position(piece, 0);
+      double piece_length = car_tracker_.lane_length_model().Length(position);
+      length += piece_length;
     } else {
       if (from != -1) {
-        straights_.push_back(Straight(length, from, i - 1));
+        int to = (piece + pieces.size() - 1);
+        straights_.push_back(Straight(length, from, to));
         length = 0;
         from = -1;
       }
+
+      // Finish if we already calculated the straight that has passed across
+      // the start line
+      if (i >= pieces.size() - 1)
+        break;
     }
   }
-  if (from != -1)
-    straights_.push_back(Straight(length, from, pieces.size() - 1));
 
   sort(straights_.begin(), straights_.end(), [](const Straight& a, const Straight& b) {
       if (a.length() - b.length() > 1e-9) return true;
