@@ -11,7 +11,7 @@ FLAGS = gflags.FLAGS
 
 gflags.DEFINE_integer('physics', 7, 'number of physics [1,100]. Default 7')
 gflags.DEFINE_integer('laps', 10, 'number of laps. Default 10')
-gflags.DEFINE_float('answer_time', 30.0, 'max time for decision')
+gflags.DEFINE_float('answer_time', 5.0, 'max time for decision')
 
 schedulers = (
     "WojtekThrottleScheduler",
@@ -37,8 +37,6 @@ except FLAGS.FlagsError as e:
     print('{}\\nUsage: {} ARGS\\n{}'.format(e, sys.argv[0], FLAGS))
     sys.exit(1)
 
-MAX_TIME_TO_MOVE_MS = 30.0
-
 def avg(x):
     return sum(x)/len(x)
 
@@ -50,7 +48,7 @@ with open(os.path.join('results',"results.csv"), "w") as f:
             for physic in range(0, FLAGS.physics):
                 answer_time = int(FLAGS.answer_time * 1000)
                 #res = !bin/throttle_tester --throttle_scheduler=$scheduler --track=$map --physics=$physic --answer_time=$answer_time --laps=$FLAGS.laps --log_wojtek_to_file
-                res = !bin/throttle_tester --throttle_scheduler=$scheduler --track=$map --physics=$physic --answer_time=$answer_time --laps=$FLAGS.laps
+                res = !bin/throttle_tester --track=$map --physics=$physic --answer_time=$answer_time --laps=$FLAGS.laps
                 name_out = os.path.join('results', map + "-" + str(physic) + ".out")
                 with open(name_out, 'w') as x:
                     x.write("\n".join(res))
