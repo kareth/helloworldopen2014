@@ -47,6 +47,8 @@ class GreedyTurboScheduler : public TurboScheduler {
    void FindLongestStraights();
    bool CanFireBeforeStraight(const game::CarState& state, const Straight& straight);
 
+   bool IsOnStraightBegin(const game::CarState& state, const Straight& straight);
+
    game::CarTracker& car_tracker_;
    const game::Race& race_;
 
