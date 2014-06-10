@@ -60,10 +60,10 @@ bool RaceTracker::HasSomeoneMaybeBumpedMe(const map<string, Position>& positions
     if (HasBumped(my_position, position)) {
       if (car_tracker_.DistanceBetween(position, my_position, nullptr, kCarLength + 1) <= kCarLength + 1e-9) {
         // If he bumped me.
-        *bump_velocity = car_tracker_.velocity_model().Predict(enemy(color).state().velocity(), 0) * 0.9;
+        *bump_velocity = enemy(color).state().velocity() * 0.9;
       } else {
         // If I bumped him.
-        *bump_velocity = car_tracker_.velocity_model().Predict(enemy(color).state().velocity(), 0) * 0.8;
+        *bump_velocity = enemy(color).state().velocity() * 0.8;
       }
       return true;
     }
