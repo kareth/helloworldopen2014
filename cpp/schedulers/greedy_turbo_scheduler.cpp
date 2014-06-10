@@ -21,6 +21,11 @@ void GreedyTurboScheduler::Schedule(const game::CarState& state) {
     return;
   }
 
+  if (straights_.size() == 0) {
+    should_fire_now_ = false;
+    return;
+  }
+
   // TODO its kind of greedy,
   // first of all - we shouldnt count just straights
   // second, it has to make some kind of decisions based on turbo freq
