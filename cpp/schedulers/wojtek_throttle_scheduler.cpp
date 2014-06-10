@@ -112,6 +112,8 @@ bool WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tic
     // We will still try to use the old schedule, but, it could be not safe.
     // This will be checked subsequently
   }
+  Sched& initial_shifted_schedule = best_schedule_;
+  
   // Must do it (never ever think of removing it!)
   best_schedule_.UpdateDistance(state); 
   if (FLAGS_log_schedule) { printf("sh [%d] ", best_schedule_.IsSafe(state, distance_to_switch, last_throttle)); best_schedule_.Print(); }
@@ -135,9 +137,7 @@ bool WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tic
 
   bool is_safe = best_schedule_.IsSafe(state, distance_to_switch, last_throttle);
   if (!is_safe) {
-  //  std::cerr << "Schedule is not safe. Generally, this should not happen" << std::endl;
-  //  TODO: Make this warning turned off for Quick
-    best_schedule_.Reset(state);
+    best_schedule_ = initial_shifted_schedule;
   }
 
   last_game_tick_ = game_tick;
