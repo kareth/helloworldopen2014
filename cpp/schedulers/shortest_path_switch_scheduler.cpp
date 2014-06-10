@@ -55,6 +55,19 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state, const ut
       - time_loss[dir]                       // ticks
       + std::min(0, obstacle_scores[dir]) * 1000.0  // overtaking strictly more important
       + std::max(0, obstacle_scores[dir]) * 1.0;    // bumping just a bit better
+
+    if (FLAGS_safe_switches) {
+      int first_switch = race_.track().NextSwitch(0);
+      int second_switch = race_.track().NextSwitch(first_switch);
+      int target_switch = race_.track().NextSwitch(state.position().piece());
+
+      if (race_.race_phase() &&
+          state.position().lap() == 0 &&
+          (target_switch == first_switch || target_switch == second_switch)) {
+        score = - time_loss[dir];
+      }
+    }
+
     scores.push_back({ score, dir });
   }
   sort(scores.begin(), scores.end(), [] (const std::pair<double, Switch>& a, const std::pair<double, Switch>& b) {
