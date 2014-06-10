@@ -19,7 +19,11 @@ schedulers = (
 #    "MagicThrottleScheduler",
 )
 
-maps = (
+maps = []
+for i in range(0,10):
+    maps.append("random" + str(i))
+
+maps += (
     "elaeintarha",
     "pentag",
     "england",
@@ -30,6 +34,7 @@ maps = (
     "suzuka",
     "usa",
 )
+
 
 try:
     argv = FLAGS(sys.argv)  # parse flags

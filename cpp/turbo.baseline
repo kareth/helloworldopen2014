@@ -1,0 +1,26 @@
+WojtekThrottleScheduler,random0,0,448,2272,14902.1,2.098,0.471429,False
+WojtekThrottleScheduler,random1,0,426,2160,16063,2.098,0.436333,False
+WojtekThrottleScheduler,random2,0,404,2056,13702.2,1.937,0.499528,False
+WojtekThrottleScheduler,random3,0,378,1919,12743.1,2.377,0.429387,False
+WojtekThrottleScheduler,random4,0,369,1882,13275.5,2.515,0.442391,False
+WojtekThrottleScheduler,random5,0,390,1981,16292.7,1.759,0.350465,False
+WojtekThrottleScheduler,random6,0,343,1751,13507,2.391,0.396667,False
+WojtekThrottleScheduler,random7,0,399,2024,14891.2,2.188,0.402856,False
+WojtekThrottleScheduler,random8,0,331,1685,12772,3.135,0.47792,False
+WojtekThrottleScheduler,random9,0,365,1869,14705.3,3.381,0.487821,False
+WojtekThrottleScheduler,elaeintarha,0,321,1647,13061.5,1.997,0.312846,False
+WojtekThrottleScheduler,pentag,0,547,2778,18338.7,3.32,0.589817,False
+WojtekThrottleScheduler,england,0,542,2747,19288.4,2.194,0.431614,False
+WojtekThrottleScheduler,france,0,420,2148,15974.3,4.092,0.566166,False
+WojtekThrottleScheduler,germany,0,508,2572,16922.1,4.518,0.601386,False
+WojtekThrottleScheduler,imola,0,441,2245,14852.6,3.308,0.573812,False
+WojtekThrottleScheduler,keimola,0,433,2208,16574,1.949,0.381058,False
+WojtekThrottleScheduler,suzuka,0,542,2753,19013.9,2.967,0.477184,False
+WojtekThrottleScheduler,usa,0,289,1491,13707.9,0.83,0.166148,False
+()
+summary for WojtekThrottleScheduler
+total_avg_ticks_per_lap = 8037.6
+max_tick_time           = 4.518
+avg_tick_time           = 0.447096210526
+number of crashes       = 0
+()
