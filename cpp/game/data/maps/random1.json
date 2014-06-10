@@ -1,0 +1,13 @@
+{   "id":"test",
+    "lanes":[
+        {"index":0,"distanceFromCenter":-10},
+        {"index":1,"distanceFromCenter":10}
+    ],
+    "name" : "Test",
+    "startingPoint": {
+        "angle":90,
+        "position": {"x":0,"y":0}
+    },
+        "pieces": [{"length":114},{"angle":-60,"radius":98},{"angle":34,"radius":130},{"angle":60,"radius":81,"switch":true},{"angle":91,"radius":93},{"angle":-48,"radius":126},{"length":91},{"angle":42,"radius":129},{"angle":-65,"radius":87},{"angle":85,"radius":129,"switch":true},{"length":97},{"length":123,"switch":true},{"angle":-43,"radius":123},{"angle":27,"radius":84},{"angle":79,"radius":120,"switch":true},{"angle":-75,"radius":97},{"angle":99,"radius":107},{"length":85,"switch":true},{"angle":83,"radius":135},{"angle":-87,"radius":84},{"angle":84,"radius":89},{"angle":81,"radius":66,"switch":true},{"angle":-93,"radius":93,"switch":true},{"length":95},{"angle":-46,"radius":120},{"length":81.92476213898212},{"angle":112,"radius":99},{"length":85.56948316744356}
+            ]
+}
