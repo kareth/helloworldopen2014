@@ -86,8 +86,7 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state, const ut
     if (race_.race_phase() &&
         state.position().lap() == 0 &&
         (target_switch == first_switch || target_switch == second_switch)) {
-      scores.push_back(scores[0]);
-      scores.erase(scores.begin());
+      reverse(scores.begin(), scores.end());
     }
   }
 
