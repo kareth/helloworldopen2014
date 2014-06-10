@@ -4,4 +4,4 @@
   --write_switch_models \
   --log_position \
   --log_schedule \
-  --fastbanana_mode
+  --safe_switches

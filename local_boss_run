@@ -1,29 +1,29 @@
 #!/bin/bash
 mkdir logs
 timestamp=$(date +%s)
+track=keimola
 echo "Starting BOOOOOOSSSSSS run with 8 fast bots. Logs are available under logs/${timestamp}_bot_{1-8}.log"
 echo "Results should be available in about 4 minutes"
 echo "Starting bot 1"
-./default_run --track=keimola --num_players=8 --bot_algorithm=stepping --bot=NFC-Boss-1 --log_masks=false --disable_visualizer=true --host=prost.helloworldopen.com --password="nfc-boss" --continuous_integration --nolog_schedule --log_position --new_attack $@ > logs/${timestamp}_bot_1.log &
-sleep 1
+./default_run --track=${track} --num_players=8 --bot_algorithm=stepping --bot=NFC-Boss-1 --log_masks=false --disable_visualizer=true --host=prost.helloworldopen.com --password="nfc-boss" --continuous_integration --nolog_schedule --log_position --new_attack --safe_switches $@ > logs/${timestamp}_bot_1.log &
+sleep 2
 echo "Starting bot 2"
-./default_run --track=keimola --num_players=8 --bot_algorithm=stepping --bot=NFC-Boss-2 --log_masks=false --disable_visualizer=true --host=prost.helloworldopen.com --password="nfc-boss" --continuous_integration --nolog_schedule --log_position --new_attack $@ > logs/${timestamp}_bot_2.log &
-sleep 1
+./default_run --track=${track} --num_players=8 --bot_algorithm=stepping --bot=NFC-Boss-2 --log_masks=false --disable_visualizer=true --host=prost.helloworldopen.com --password="nfc-boss" --continuous_integration --nolog_schedule --log_position --new_attack $@ > logs/${timestamp}_bot_2.log &
+sleep 2
 echo "Starting bot 3"
-./default_run --track=keimola --num_players=8 --bot_algorithm=stepping --bot=NFC-Boss-3 --log_masks=false --disable_visualizer=true --host=prost.helloworldopen.com --password="nfc-boss" --continuous_integration --nolog_schedule --log_position --new_attack $@ > logs/${timestamp}_bot_3.log &
-sleep 1
+./default_run --track=${track} --num_players=8 --bot_algorithm=stepping --bot=NFC-Boss-3 --log_masks=false --disable_visualizer=true --host=prost.helloworldopen.com --password="nfc-boss" --continuous_integration --nolog_schedule --log_position --new_attack $@ > logs/${timestamp}_bot_3.log &
+sleep 2
 echo "Starting bot 4"
-./default_run --track=keimola --num_players=8 --bot_algorithm=stepping --bot=NFC-Boss-4 --log_masks=false --disable_visualizer=true --host=prost.helloworldopen.com --password="nfc-boss" --continuous_integration --nolog_schedule --log_position --new_attack $@ > logs/${timestamp}_bot_4.log &
-sleep 1
+./default_run --track=${track} --num_players=8 --bot_algorithm=stepping --bot=NFC-Boss-4 --log_masks=false --disable_visualizer=true --host=prost.helloworldopen.com --password="nfc-boss" --continuous_integration --nolog_schedule --log_position --new_attack $@ > logs/${timestamp}_bot_4.log &
+sleep 2
 echo "Starting bot 5"
-./default_run --track=keimola --num_players=8 --bot_algorithm=stepping --bot=NFC-Boss-5 --log_masks=false --disable_visualizer=true --host=prost.helloworldopen.com --password="nfc-boss" --continuous_integration --nolog_schedule --log_position --new_attack $@ > logs/${timestamp}_bot_5.log &
-sleep 1
+./default_run --track=${track} --num_players=8 --bot_algorithm=stepping --bot=NFC-Boss-5 --log_masks=false --disable_visualizer=true --host=prost.helloworldopen.com --password="nfc-boss" --continuous_integration --nolog_schedule --log_position --new_attack $@ > logs/${timestamp}_bot_5.log &
+sleep 2
 echo "Starting bot 6"
-./default_run --track=keimola --num_players=8 --bot_algorithm=stepping --bot=NFC-Boss-6 --log_masks=false --disable_visualizer=true --host=prost.helloworldopen.com --password="nfc-boss" --continuous_integration --nolog_schedule --log_position --new_attack $@ > logs/${timestamp}_bot_6.log &
-sleep 1
+./default_run --track=${track} --num_players=8 --bot_algorithm=stepping --bot=NFC-Boss-6 --log_masks=false --disable_visualizer=true --host=prost.helloworldopen.com --password="nfc-boss" --continuous_integration --nolog_schedule --log_position --new_attack $@ > logs/${timestamp}_bot_6.log &
+sleep 2
 echo "Starting bot 7"
-./default_run --track=keimola --num_players=8 --bot_algorithm=stepping --bot=NFC-Boss-7 --log_masks=false --disable_visualizer=true --host=prost.helloworldopen.com --password="nfc-boss" --continuous_integration --nolog_schedule --log_position --new_attack $@ > logs/${timestamp}_bot_7.log &
-sleep 1
+./default_run --track=${track} --num_players=8 --bot_algorithm=stepping --bot=NFC-Boss-7 --log_masks=false --disable_visualizer=true --host=prost.helloworldopen.com --password="nfc-boss" --continuous_integration --nolog_schedule --log_position --new_attack $@ > logs/${timestamp}_bot_7.log &
+sleep 2
 echo "Starting bot 8"
-./default_run --track=keimola --num_players=8 --bot_algorithm=stepping --bot=NFC-Boss-8 --log_masks=false --disable_visualizer=true --host=prost.helloworldopen.com --password="nfc-boss" --continuous_integration --nolog_schedule --log_position --new_attack $@ > logs/${timestamp}_bot_8.log &
-sleep 1
+./default_run --track=${track} --num_players=8 --bot_algorithm=stepping --bot=NFC-Boss-8 --log_masks=false --disable_visualizer=true --host=prost.helloworldopen.com --password="nfc-boss" --continuous_integration --nolog_schedule --log_position --new_attack $@ > logs/${timestamp}_bot_8.log &
