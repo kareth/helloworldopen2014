@@ -399,7 +399,11 @@ void RaceTracker::FinishedRace(const std::string& color) {
 }
 
 void RaceTracker::DNF(const std::string& color) {
-  // TODO
+  // We can add him with random position, because he DNF'ed anyway.
+  if (indexes_.find(color) == indexes_.end()) {
+    indexes_[color] = enemies_.size();
+    enemies_.push_back(EnemyTracker(car_tracker_, race_,  color, Position()));
+  }
   enemy(color).DNF();
 }
 
