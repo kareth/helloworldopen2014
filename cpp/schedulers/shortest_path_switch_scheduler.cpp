@@ -3,6 +3,8 @@
 DEFINE_bool(overtake, true, "Should car overtake others?");
 DECLARE_bool(log_overtaking);
 
+DEFINE_bool(safe_switches, false, "Switch first 2 switches");
+
 using game::Position;
 using game::Switch;
 
@@ -61,6 +63,21 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state, const ut
         if (a.second == Switch::kStay) return true;
         return a.second > b.second;
       });  // Last are the best
+
+
+  if (FLAGS_safe_switches) {
+    int first_switch = race_.track().NextSwitch(0);
+    int second_switch = race_.track().NextSwitch(first_switch);
+    int target_switch = race_.track().NextSwitch(state.position().piece());
+
+    if (race_.race_phase() &&
+        state.position().lap() == 0 &&
+        (target_switch == first_switch || target_switch == second_switch)) {
+      scores.push_back(scores[0]);
+      scores.erase(scores.begin());
+    }
+  }
+
 
   if (FLAGS_log_overtaking) {
     printf("Total Scores: \n");

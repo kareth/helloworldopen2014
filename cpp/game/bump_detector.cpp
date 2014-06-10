@@ -7,6 +7,7 @@ BumpDetector::BumpDetector(CarTracker& car_tracker, const Race& race)
 }
 
 void BumpDetector::Record(const std::vector<EnemyTracker>& enemies, const std::map<std::string, Position>& positions, int game_tick) {
+  last_tick_ = game_tick;
   bumps_.clear();
   const double kCarLength = race_.cars()[0].length();
   for (auto& a : enemies) {
