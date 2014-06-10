@@ -68,6 +68,8 @@ class Simulator {
 
     PhysicsParams physics_params;
 
+    bool enable_turbo = false;
+
     // The lane to start the race on.
     int starting_lane = 0;
   };
@@ -128,7 +130,16 @@ class Simulator {
         ofs.flush();
       }
 
+      if (command.TurboSet()) {
+        // std::cout << "Simulator: Turbo start" << std::endl;
+        raw_bot->React(TurboStartMessage());
+      }
+
       CarState next_state = car_tracker.Predict(state, command);
+      if (!next_state.turbo_state().is_on() && state.turbo_state().is_on()) {
+        // std::cout << "Simulator: Turbo end" << std::endl;
+        raw_bot->React(TurboEndMessage());
+      }
       result.total_distance += car_tracker.DistanceBetween(state.position(), next_state.position());
       state = next_state;
 
@@ -156,6 +167,12 @@ class Simulator {
 
         if (current_lap == options.max_laps_to_simulate) break;
       }
+
+      if (options.enable_turbo && total_ticks % 600 == 1 && total_ticks != 1) {
+        // std::cout << "Simulator: Turbo available" << std::endl;
+        raw_bot->React(TurboAvailableMessage());
+        state.AddNewTurbo(Turbo(30, 3.0));
+      }
     }
 
     if (FLAGS_log_simulator_csv) {
@@ -170,6 +187,31 @@ class Simulator {
   }
 
  private:
+  jsoncons::json TurboAvailableMessage() {
+    jsoncons::json data;
+    data["msgType"] = "turboAvailable";
+    data["data"] = jsoncons::json();
+    data["data"]["turboFactor"] = 3.0;
+    data["data"]["turboDurationTicks"] = 30;
+    return data;
+  }
+
+  jsoncons::json TurboStartMessage() {
+    jsoncons::json data;
+    data["msgType"] = "turboStart";
+    data["data"] = jsoncons::json();
+    data["data"]["color"] = kCarColor;
+    return data;
+  }
+
+  jsoncons::json TurboEndMessage() {
+    jsoncons::json data;
+    data["msgType"] = "turboEnd";
+    data["data"] = jsoncons::json();
+    data["data"]["color"] = kCarColor;
+    return data;
+  }
+
   jsoncons::json CrashMessage() {
     jsoncons::json data;
     data["msgType"] = "crash";

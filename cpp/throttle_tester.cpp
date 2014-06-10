@@ -24,6 +24,8 @@ DECLARE_string(throttle_scheduler);
 DECLARE_string(switch_scheduler);
 DEFINE_string(track, "keimola", "The track to run simulator on.");
 DEFINE_int32(physics, 0, "The physics to use");
+DEFINE_bool(simulator_enable_turbo, false, "");
+
 
 std::string random_race_id() {
   char buffer[80];
@@ -88,6 +90,7 @@ int main(int argc, char** argv) {
     options.physics_params = game::PhysicsParams::Load();
     options.physics_params.velocity_model_params.model = physics[FLAGS_physics].first;
     options.physics_params.drift_model_params.model = physics[FLAGS_physics].second;
+    options.enable_turbo = FLAGS_simulator_enable_turbo;
 
     options.track_name = FLAGS_track;
     result = simulator->Run(bot.get(), options);
