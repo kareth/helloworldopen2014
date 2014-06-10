@@ -110,6 +110,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
     } else {  // Race
       if (game_tick < 3)
         return Command(0);
+      car_tracker_->mutable_crash_model()->force_angle(59.99);
     }
   }
 
