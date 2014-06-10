@@ -47,6 +47,7 @@ bool RaceTracker::HasSomeoneMaybeBumpedMe(const map<string, Position>& positions
   for (const auto& p : positions) {
     std::string color = p.first;
     const auto& position = p.second;
+    if (color == color_) continue;
 
     // Ignore enemies that do not exist any more (that is strange?).
     if (indexes_.find(color) == indexes_.end()) {

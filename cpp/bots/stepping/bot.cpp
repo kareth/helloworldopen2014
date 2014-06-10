@@ -104,7 +104,7 @@ game::Command Bot::GetMove(const map<string, Position>& positions, int game_tick
   if (FLAGS_fastbanana_mode) {
     if (race_.qualification_phase()) {  // Qual
       if (car_tracker_->IsReady()) {
-        car_tracker_.mutable_crash_model()->force_angle(10.0);
+        car_tracker_->mutable_crash_model()->force_angle(10.0);
       }
       // else normal throttle
     } else {  // Race
