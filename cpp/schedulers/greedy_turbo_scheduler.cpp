@@ -103,7 +103,7 @@ void GreedyTurboScheduler::FindLongestStraights() {
       length += piece_length;
     } else {
       if (from != -1) {
-        int to = (piece + pieces.size() - 1);
+        int to = (piece + pieces.size() - 1) % pieces.size();
         straights_.push_back(Straight(length, from, to));
         length = 0;
         from = -1;

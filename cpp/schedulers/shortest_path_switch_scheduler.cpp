@@ -4,6 +4,7 @@ DEFINE_bool(overtake, true, "Should car overtake others?");
 DECLARE_bool(log_overtaking);
 
 DEFINE_bool(safe_switches, false, "Switch first 2 switches");
+DEFINE_bool(three_switches, false, "Switch first 3 switches");
 
 using game::Position;
 using game::Switch;
@@ -59,11 +60,14 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state, const ut
     if (FLAGS_safe_switches) {
       int first_switch = race_.track().NextSwitch(0);
       int second_switch = race_.track().NextSwitch(first_switch);
+      int third_switch = race_.track().NextSwitch(second_switch);
       int target_switch = race_.track().NextSwitch(state.position().piece());
 
       if (race_.race_phase() &&
           state.position().lap() == 0 &&
-          (target_switch == first_switch || target_switch == second_switch)) {
+          (target_switch == first_switch ||
+           target_switch == second_switch ||
+           (target_switch == third_switch && FLAGS_three_switches))) {
         score = - time_loss[dir];
       }
     }
@@ -81,11 +85,13 @@ void ShortestPathSwitchScheduler::Schedule(const game::CarState& state, const ut
   if (FLAGS_safe_switches) {
     int first_switch = race_.track().NextSwitch(0);
     int second_switch = race_.track().NextSwitch(first_switch);
+    int third_switch = race_.track().NextSwitch(second_switch);
     int target_switch = race_.track().NextSwitch(state.position().piece());
 
     if (race_.race_phase() &&
         state.position().lap() == 0 &&
-        (target_switch == first_switch || target_switch == second_switch)) {
+        (target_switch == first_switch || target_switch == second_switch ||
+         (target_switch == third_switch && FLAGS_three_switches))) {
       reverse(scores.begin(), scores.end());
     }
   }

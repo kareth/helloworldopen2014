@@ -3,7 +3,8 @@
 ./bin/bot --host="$1" --port="$2" --bot="$3" --key="$4" --print_models \
   --write_switch_models \
   --log_position \
-  --safe_switches
+  --safe_switches \
+  --three_switches
 
 # --safe_switches
 # --fastbanana_mode
@@ -11,3 +12,4 @@
 # --log_wojtek_to_file
 # --bumps_to_overtake=3
 # --ticks_to_overtake=100
+# --three_switches
