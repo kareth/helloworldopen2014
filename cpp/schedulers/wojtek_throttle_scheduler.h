@@ -27,14 +27,14 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   static const vector<double> values; // possible throttle values to check
 
   static WojtekThrottleScheduler* CreateQuickScheduler(const game::Race& race, game::CarTracker& car_tracker) {
-      return new WojtekThrottleScheduler(race, car_tracker, QUICK_GROUPS, false);
+      return new WojtekThrottleScheduler(race, car_tracker, QUICK_GROUPS, true);
   }
 
   // Expected time limit in miliseconds
   WojtekThrottleScheduler(const game::Race& race,
                           game::CarTracker& car_tracker,
                           const vector<int>& groups = DEFAULT_GROUPS, 
-                          bool log_to_csv = FLAGS_log_wojtek_to_file);
+                          bool quick = false);
   ~WojtekThrottleScheduler() override;
 
   // Returns scheduled throttle
@@ -82,8 +82,8 @@ class WojtekThrottleScheduler : public ThrottleScheduler {
   double last_distance_to_switch_; 
   double last_throttle_; 
   int last_game_tick_ = -1000;
+  bool quick_ = false;
 
-  bool log_to_csv_;
   std::ofstream log_file_;
 };
 
