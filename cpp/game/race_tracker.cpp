@@ -48,17 +48,27 @@ bool RaceTracker::HasSomeoneMaybeBumpedMe(const map<string, Position>& positions
     std::string color = p.first;
     const auto& position = p.second;
 
+    // Ignore enemies that do not exist any more (that is strange?).
+    if (indexes_.find(color) == indexes_.end()) {
+      continue;
+    }
+
+    // Ignore enemies that are dead or have finished.
+    const auto& e = enemies_[indexes_[color]];
+    if (e.is_dead() || e.has_finished()) continue;
+
     if (HasBumped(my_position, position)) {
-      // FIXME
-      *bump_velocity = enemy(color).state().velocity();
+      if (car_tracker_.DistanceBetween(position, my_position, nullptr, kCarLength + 1) <= kCarLength + 1e-9) {
+        // If he bumped me.
+        *bump_velocity = enemy(color).state().velocity() * 0.9;
+      } else {
+        // If I bumped him.
+        *bump_velocity = enemy(color).state().velocity() * 0.8;
+      }
       return true;
     }
   }
 
-  for (const auto& enemy : enemies_) {
-    if (enemy.is_dead() || enemy.has_finished()) continue;
-
-  }
   return false;
 }
 
