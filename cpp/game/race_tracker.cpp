@@ -26,6 +26,52 @@ void RaceTracker::Record(const std::map<std::string, Position>& positions, int g
   }
 }
 
+bool RaceTracker::HasBumped(
+    const Position& position1,
+    const Position& position2) {
+  const double kCarLength = race_.cars()[0].length();
+
+  if (position1.start_lane() != position2.start_lane() ||
+      position1.end_lane() != position2.end_lane()) {
+    return false;
+  }
+
+  return car_tracker_.DistanceBetween(position1, position2, nullptr, kCarLength + 1) <= kCarLength + 1e-9 ||
+         car_tracker_.DistanceBetween(position2, position1, nullptr, kCarLength + 1) <= kCarLength + 1e-9;
+}
+
+bool RaceTracker::HasSomeoneMaybeBumpedMe(const map<string, Position>& positions, double* bump_velocity) {
+  const double kCarLength = race_.cars().at(0).length();
+
+  const auto& my_position = positions.find(color_)->second;
+  for (const auto& p : positions) {
+    std::string color = p.first;
+    const auto& position = p.second;
+
+    // Ignore enemies that do not exist any more (that is strange?).
+    if (indexes_.find(color) == indexes_.end()) {
+      continue;
+    }
+
+    // Ignore enemies that are dead or have finished.
+    const auto& e = enemies_[indexes_[color]];
+    if (e.is_dead() || e.has_finished()) continue;
+
+    if (HasBumped(my_position, position)) {
+      if (car_tracker_.DistanceBetween(position, my_position, nullptr, kCarLength + 1) <= kCarLength + 1e-9) {
+        // If he bumped me.
+        *bump_velocity = car_tracker_.velocity_model().Predict(enemy(color).state().velocity(), 0) * 0.9;
+      } else {
+        // If I bumped him.
+        *bump_velocity = car_tracker_.velocity_model().Predict(enemy(color).state().velocity(), 0) * 0.8;
+      }
+      return true;
+    }
+  }
+
+  return false;
+}
+
 bool RaceTracker::BumpOccured(const std::string& color, const std::string& color2) {
   return bump_detector_.BumpOccured(color, color2);
 }
