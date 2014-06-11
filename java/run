@@ -1,5 +1,0 @@
-#!/bin/bash
-
-source ../scripts/check_pl_args
-
-java -cp target/noobbot-0.1-SNAPSHOT-jar-with-dependencies.jar noobbot/Main "$@"

@@ -1,5 +1,0 @@
-#!/bin/bash
-
-source ../scripts/check_pl_args
-
-java -jar target/scala-2.10/hwo2014bot.jar "$@"

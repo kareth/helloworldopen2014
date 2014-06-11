@@ -1,5 +1,0 @@
-#!/bin/bash
-
-virtualenv env --no-site-packages --distribute
-
-source env/bin/activate

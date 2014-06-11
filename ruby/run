@@ -1,5 +1,0 @@
-#!/bin/bash
-
-source ../scripts/check_pl_args
-
-ruby main.rb "$@"
