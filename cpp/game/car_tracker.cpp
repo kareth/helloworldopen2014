@@ -154,10 +154,10 @@ void CarTracker::Record(const Position& position, bool bump, double bump_velocit
     }
 
     // If bump, it is better to predict from enemy velocity.
-    if (bump) {
-      std::cout << "Using velocity from enemy (" << bump_velocity << ") instead of calculated one " << velocity << std::endl;
-      velocity = bump_velocity;
-    }
+    // if (bump) {
+    //   std::cout << "Using velocity from enemy (" << bump_velocity << ") instead of calculated one " << velocity << std::endl;
+    //   velocity = bump_velocity;
+    // }
 
     if (position.start_lane() != position.end_lane()) {
       switch_state = Switch::kStay;

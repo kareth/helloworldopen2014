@@ -3,7 +3,7 @@
 ./bin/bot --host="$1" --port="$2" --bot="$3" --key="$4" --print_models \
   --write_switch_models \
   --log_position \
-  --fastbanana_mode
+  --safe_switches
 
 # --safe_switches
 # --fastbanana_mode

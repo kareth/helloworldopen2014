@@ -137,7 +137,8 @@ bool WojtekThrottleScheduler::Schedule(const game::CarState& state, int game_tic
 
   bool is_safe = best_schedule_.IsSafe(state, distance_to_switch, last_throttle);
   if (!is_safe) {
-    best_schedule_ = initial_shifted_schedule;
+  //   best_schedule_ = initial_shifted_schedule;
+    best_schedule_.Reset(state);
   }
 
   last_game_tick_ = game_tick;
