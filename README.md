@@ -1,3 +1,4 @@
+
 #HelloWorldOpen 2014 Need for C code
 This is the winning code of HelloWorldOpen competition. I will try to explain the competition, code structure and strategies below.
 
@@ -8,6 +9,8 @@ The basic idea of the competition was to code AI to compete in slot car racing. 
 
 ##Architectural decisions
 The main decision to make was the choice of language. The protocol required answers within ~5ms so efficency was crucial. The above, and our love to C++ made us choose  it as the bot language.
+
+This repository contains many bots that we used to test our code over the time, and the one that is optimal is called **stepping** located under *cpp/bots/stepping/*
 
 ##Physics used for simulation
 One part of the competition was to figure out physics behind certain parts of simulation. I'll try to present them below.
@@ -96,10 +99,40 @@ Moreover it hold **EnemyTracker** object for each car, keeping track of its deat
 * **TimeToPosition** returning expected time for car to reach given position.
 
 
-###Strategy
+###Decision making
+Decision process was divided into 4 separate entities that optimized some part of the racing. After computing optimal choices from *their* perspective, all that data was joined into final decision.
+Those parts are as follows:
 
+* **BumpScheduler** - Making decisions if we should attack somebody in front of us or not
+* **ThrottleScheduler** - Calculating the most optimal throttle to use in the next ~40 ticks.
+* **SwitchScheduler** - Calculating the most optimal switch to take based on lane lengths and cars that are or can be on them.
+* **TurboScheduler** - Calculating the most optimal place to use turbo
 
+All those schedulers were separated from each other, and connected in one point of the code. Decision making based on aforementioned schedulers were made as follows:
 
+1. If **BumpScheduler** scheduled an attack, do it without checking any other scheduler. Attacks has highest priority, as once attack is scheduled, we are 100% sure that we will be safe and hit the guy. As attacks as almost never suboptimal, we prioritize them above anything else.
+2. If there is no attack, we proceed to schedule turbo with **TurboScheduler**. If scheduler says that now is the perfect moment to use it, we do it right away without checking other schedules.
+3. After that switch/throttle combination follows. **SwitchScheduler** is ther first one to invoke. It scores all possible decisions to make on the next switch, and save the best one together with the information how much time do we have to issue switch command (if necessary).
+Then **ThrottleScheduler** is invoked. It schedules the next ~40 throttle values. If there was any switch scheduled by **SwitchScheduler** it also schedule it in the most optimal place.
+4. After those schedules **ThrottleScheduler** says if its time to switch - then we issue appropriate Switch command, otherwise we send scheduled throttle command.
 
-*Work in progress, MORE COMING SOON!*
+As many of you may notice, commands issued under points 2 - 4 may not always be safe.  Thats why after figuring out the theoretical most optimal command, we check if its safe by using **IsSafeAhead** method. It checks if issuing given command can lead to bumping into another car, that would render our state unsafe. Thats why we never crash after bumping another car.
+
+All of the above is managed by **BulkScheduler**.
+
+Now that you can understand general idea of the algorithm we will reveal some details behind certain schedulers.
+
+##Throttle
+*Work in progres*
+
+##Switching
+*Work in progres*
+
+##Attacking
+*Work in progres*
+
+##Checking safety
+*Work in progress*
+
+*MORE COMING SOON!*
 
