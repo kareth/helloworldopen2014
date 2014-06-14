@@ -7,6 +7,9 @@ This is the winning code of HelloWorldOpen competition. I will try to explain th
 ##About the competition
 The basic idea of the competition was to code AI to compete in slot car racing. The rules were simple. At the beginning you were given the track information, and then 60 times per second you receive information on all cars positions. The only decisions you can make is set Throttle to any value between 0 and 1, switch lane to right or left, or fire turbo once in a while. The only constraint that you have to follow is to keep your drift angle below 60 degrees, as above that your car crashes. You can read more about the rules and protocol in [problem technical specification](https://helloworldopen.com/techspec).
 
+##Running the code
+*Coming soon...*
+
 ##Architectural decisions
 The main decision to make was the choice of language. The protocol required answers within ~5ms so efficency was crucial. The above, and our love to C++ made us choose  it as the bot language.
 
@@ -123,15 +126,49 @@ All of the above is managed by **BulkScheduler**.
 Now that you can understand general idea of the algorithm we will reveal some details behind certain schedulers.
 
 ##Throttle
-*Work in progres*
+*Work in progres. Coming soon.*
+
+
 
 ##Switching
-*Work in progres*
+Switch decisions made in **SwitchScheduler** are based solely on the lane scores. Those scores are decided based on two distinct scorers. The first one, optimizes the length of the chosen path. Second one, takes all cars under consideration, and checks if they can interrupt us. Those scores are then combined into total score and then the best lane that is safe to switch (that there exist a throttle mask that wont crash us) is chosen.
+
+###Length based scores
+We decided to use length based heuristic to asses how optimal given path is. After trying some real simulations we decided that figuring out scores based on real driving time would require huge amount of computation, as the racing time through the lane differs based on entrance and exit velocity/angle.
+
+All lane scores are precomputed. At first, all lane lengths (all possible combinations of [from_lane][to_lane][from_switch] to the next switch) are saved.
+
+Then optimal lap length is calculated, so for each position on the track we have length of the full lap ending in any lane. This way, for each position we can assign *decision scores* representing how much time (length-based) will we loose if we choose given direction, compared to the optimal one. This way one of the scores (left, center, right) is always 0 and others are >=0.
+
+
+###Car based scores
+The main idea behind car based scores is to check if (or how much) particular car is threat to me if I choose certain direction. I will use *target switch* as the switch we want to make decision for, and *end switch* as next switch defining the distance span that has to be safe in order to make certain decision.
+
+First, for each car we check who is closer to the *end switch*. If we are closer than him, we ignore him for now. This is one of assumptions we could make based on the fact that we have fastest throttle algorithms. The only problem here was guys that we switched into - this case wasn't managed by this part of the code. On the other hand, if the car was closer to the *end switch* we scored it based on if its dead or alive.
+
+#####Scoring living enemy
+To score living enemy, we simulate movements of both our car, and enemy car. We generate all car states from now until the *end switch*. Then we check if there is intersection of those states (a.k.a a bump occurs).
+
+If the bump doesnt occur based on the prediction, we return neutral score (as if noone was there).
+
+If the bump occurs, we check what velocities of both cars in the moment of the bump, and score the lane based on the ratio of cars velocity. If my velocity is greater in the moment of the bump, it means that it will probably slow us down.
+
+In addition, if there was N consecutive bumps between me and given enemy in the M past ticks, we force overtake as its probably a case where we push an enemy (previous check doesn't solve that, as if we are already behind en enemy, we wouldnt be able to accelerate enough to create big enough difference in velocity.
+
+#####Scoring dead enemy
+
+Dead enemies are only a threat if they spawn before we pass them. Thats why we simulate our movement until *end switch* and check if in the moment of enemy spawn we are atleast 3 * CarLength ahead. We give that much mistake margin due to a fact that hitting a spawning enemy almost always result in a crash. Its highest priority to avoid that, and margin of that size prevents us from making any mistakes.
 
 ##Attacking
+
+All cars should crash!
+
 *Work in progres*
 
 ##Checking safety
+
+Except for us...
+
 *Work in progress*
 
 *MORE COMING SOON!*
