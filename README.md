@@ -130,8 +130,20 @@ ThrottleScheduler has two responsibilities. For a given tick it decides:
 1. what throttle value should be set and
 2. whether to send the switch command.
 
-*TODO*
+Once executed it searches for a schedule that maximizes the total distance driven in the next 41 ticks (The schedule must also include a place to make a switch, if the switch has to be made in the considered horizon). The search procedure consists of two main phases: i) branch and bound ii) local search. It always tries to return a schedule that is safe. This is possible unless some bump happened.
 
+### Branch and bound
+In the first phase we limit ourself to binary throttle values only. The search space consists of 2^41 points, which is too much in 5ms time. That is why group consecutive ticks into groups. All ticks of one group will get the same value. The group lengths were found experimentally: 1, 1, 4, 2, 2, 4, 1, 8, 8, 4, 4, 2. The search space reduced in this way consists of 2^12 schedules.
+    Branch and bound procedure expands the search tree using a simple recursion (DFS). The search tree is prunned in two ways. First if at the given node the drift angle is higher than the crash angle, we cut the tree. Second, at each node, we compute the lower bound of the total schedule distance by applying a sequence of zeros from the given node to the end of the schedule. If the computed value is less than distance of the currently best known schedule (upper bound) the branch is cut. 
+    At the leaf node, if the schedule is safe, we save it as the upper bound.
+    Last, but not least, before executing the branch and bound procedure, we compute the initial upper bound by using the schedule from the previous tick shifted by one tick to the left and filling the right most place with 0 or 1 (if this makes the schedule safe). Such initial schedule is the vast majority of situations safe and the branch and bound procedure rarely improves it. In cases, where there is a new switch planned, a turbo has been turned on or there was a bump, the initial schedule could be not safe. Before we replace it with a sequence of zeros, we first try to repair it with some simple heuristics.
+
+If required, the switch is scheduled at the last possible place in the schedule.
+
+### Local search
+The local search procedure starts from the schedule returned by the branch and bound. It starts from the first throttle in the schedule. While the resulting schedule is safe, it increases the throttle 0.1. If this is no longer possible, it moves to the next throttle and repeat the procedure. This simple procedure makes the schedule contain non-binary throttle values improving the lap-time by 2-3 ticks (0.032-0.048s) on average.
+
+Overally, the ThrottleScheduler takes around 0.5ms on average on a modern Macbook Pro.
 
 ##Switching
 Switch decisions made in **SwitchScheduler** are based solely on the lane scores. Those scores are decided based on two distinct scorers. The first one, optimizes the length of the chosen path. Second one, takes all cars under consideration, and checks if they can interrupt us. Those scores are then combined into total score and then the best lane that is safe to switch (that there exist a throttle mask that wont crash us) is chosen.
