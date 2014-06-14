@@ -126,17 +126,22 @@ All of the above is managed by **BulkScheduler**.
 Now that you can understand general idea of the algorithm we will reveal some details behind certain schedulers.
 
 ##Throttle
-ThrottleScheduler has two responsibilities. For a given tick it decides:
+The ThrottleScheduler has two responsibilities. For a given tick it decides:
 1. what throttle value should be set and
 2. whether to send the switch command.
 
-Once executed it searches for a schedule that maximizes the total distance driven in the next 41 ticks (The schedule must also include a place to make a switch, if the switch has to be made in the considered horizon). The search procedure consists of two main phases: i) branch and bound ii) local search. It always tries to return a schedule that is safe. This is possible unless some bump happened.
+Once executed it searches for a schedule that maximizes the total distance driven in the next 41 ticks. (The schedule must also include a place to make a switch, if requested). The search procedure consists of two main phases: i) branch and bound and ii) local search. 
+
+The ThrottleScheduler always tries to return a schedule that is safe. This is possible unless some unfortunate interaction with other cars happened.
 
 ### Branch and bound
-In the first phase we limit ourself to binary throttle values only. The search space consists of 2^41 points, which is too much in 5ms time. That is why group consecutive ticks into groups. All ticks of one group will get the same value. The group lengths were found experimentally: 1, 1, 4, 2, 2, 4, 1, 8, 8, 4, 4, 2. The search space reduced in this way consists of 2^12 schedules.
-    Branch and bound procedure expands the search tree using a simple recursion (DFS). The search tree is prunned in two ways. First if at the given node the drift angle is higher than the crash angle, we cut the tree. Second, at each node, we compute the lower bound of the total schedule distance by applying a sequence of zeros from the given node to the end of the schedule. If the computed value is less than distance of the currently best known schedule (upper bound) the branch is cut. 
-    At the leaf node, if the schedule is safe, we save it as the upper bound.
-    Last, but not least, before executing the branch and bound procedure, we compute the initial upper bound by using the schedule from the previous tick shifted by one tick to the left and filling the right most place with 0 or 1 (if this makes the schedule safe). Such initial schedule is the vast majority of situations safe and the branch and bound procedure rarely improves it. In cases, where there is a new switch planned, a turbo has been turned on or there was a bump, the initial schedule could be not safe. Before we replace it with a sequence of zeros, we first try to repair it with some simple heuristics.
+In this phase we use binary throttle values only. The solution space consists of 2^41 points, and searching it in 5ms time is computationally unfeasible. In order to cope with it we join consecutive ticks into groups. All ticks in a group will get the same throttle value. The lengths of the groups we experimentally found to work the best are following: 1, 1, 4, 2, 2, 4, 1, 8, 8, 4, 4, 2. The search space reduced in this way consists of 2^12 schedules, which is still a bit too much for an exhaustive search.
+
+The branch and bound procedure expands the search tree using a simple recursion (DFS). The search tree is prunned in two ways. First if at the given node the drift angle is higher than the crash angle, expanding the node is not necessary. Second, at each node, we compute the lower bound of the total schedule distance by applying a sequence of zeros from the given node to the end of the schedule. If the computed value is less than the distance of the currently best known schedule (upper bound) the branch is cut.
+
+If the schedule at the leaf node is safe, we update the upper bound of the distance.
+
+It is also important to note that before executing the branch and bound procedure, we compute the initial upper bound by using the schedule found in the previous tick shifted by one tick to the left. Such initial schedule is, in the vast majority of situations, safe and the branch and bound procedure rarely can improve it. In cases, where there is a new switch planned, a turbo has been turned on or there was a bump, the initial schedule could be not safe. Before we replace it with a sequence of zeros, we first try to repair it with some simple heuristics.
 
 If required, the switch is scheduled at the last possible place in the schedule.
 
