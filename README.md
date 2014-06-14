@@ -126,8 +126,11 @@ All of the above is managed by **BulkScheduler**.
 Now that you can understand general idea of the algorithm we will reveal some details behind certain schedulers.
 
 ##Throttle
-*Work in progres. Coming soon.*
+ThrottleScheduler has two responsibilities. For a given tick it decides:
+1. what throttle value should be set and
+2. whether to send the switch command.
 
+*TODO*
 
 
 ##Switching
