@@ -2,13 +2,30 @@
 #HelloWorldOpen 2014 Need for C code
 This is the winning code of HelloWorldOpen competition. I will try to explain the competition, code structure and strategies below.
 
-**This is the first version of the code guide. Most of sections will be improved till the end of week!**
-
 ##About the competition
 The basic idea of the competition was to code AI to compete in slot car racing. The rules were simple. At the beginning you were given the track information, and then 60 times per second you receive information on all cars positions. The only decisions you can make is set Throttle to any value between 0 and 1, switch lane to right or left, or fire turbo once in a while. The only constraint that you have to follow is to keep your drift angle below 60 degrees, as above that your car crashes. You can read more about the rules and protocol in [problem technical specification](https://helloworldopen.com/techspec).
 
 ##Running the code
-*Coming soon...*
+####Build
+Cmake build: `./build`
+To build with just pure makefile (without cmake) use `./build --skip_cmake`
+
+####Running client
+In home directory run:
+> ./default_run [flags]
+
+example:
+> ./default_run --host=hakkinen.helloworldopen.com --bot=stepping --num_players=2 --track=imola
+
+For more flags run --help
+
+####Running simulator
+Our local simulator supports any track provided in json format. However It only support one-car race, all actions are possible (throttle, turbo and switches).
+
+Usage:
+
+> ./throttle_tester --track=trackfilename --physics=physicssetnumber
+
 
 ##Architectural decisions
 The main decision to make was the choice of language. The protocol required answers within ~5ms so efficency was crucial. The above, and our love to C++ made us choose  it as the bot language.
@@ -179,17 +196,130 @@ In addition, if there was N consecutive bumps between me and given enemy in the 
 
 Dead enemies are only a threat if they spawn before we pass them. Thats why we simulate our movement until *end switch* and check if in the moment of enemy spawn we are atleast 3 * CarLength ahead. We give that much mistake margin due to a fact that hitting a spawning enemy almost always result in a crash. Its highest priority to avoid that, and margin of that size prevents us from making any mistakes.
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ##Attacking
 
 All cars should crash!
 
-*Work in progres*
+Attack is an action that is meant to do everything possible to cause another car crash. There is simple bulk mechanism to make those decisions, that use a sophisticated prediction method called `IsSafeAttack`
+
+There are two basic types of attacks, bump with turbo and bump without turbo. In most of the cases, turbo bump is not necessary, as regular bump is enough - especially on tracks with longer straights. 
+
+Before making decision on each tick's command, we check if there is a possibility to attack. An attack desicion that is made any time is supposed to be always successful. In other words, if we decide that we can attack someone we are theoretically 100% sure that the bump will happen, and enemy will crash. The *theoretical* part comes from some very rare possibilities of three-way-bumps or unexpected bumps of me or enemy.
+
+The attack check procedure is simple:
+
+* IIf we have target already locked:
+ * If attack is still safe, follow algorithm to execute attack safely and successfully
+ * If attack is no longer safe (probably someone hit us or he hit somebody and changes the parameters of the bump), try to save yourself and unlock the target.
+* If there is no locked target
+ * Check if its possible to execute regular bump, and lock target if necessary
+ * If its not possible to do regular bump, check for turbo bump possibilities. If the enemy is *worth bumping* then lock target on him and use turbo.
+
+####IsSafeAttack method
+
+*Work in progres. For now on you can chceck CarTracker::IsSafeAttack method for details*
 
 ##Checking safety
 
-Except for us...
+*Work in progress. For now on you can check RaceTracker::IsSafeAhead method for details*
 
-*Work in progress*
+## Other details worth noting
+###Enemy movement prediction
+We use specific mechanism to predict movement of enemies (and ourselves). It's crucial to switch decisions, as it allows us to predict if the lane will be congested, and what effect does it have on us.
 
-*MORE COMING SOON!*
+`VelocityPredictor` holds information on so-called `ExpectedVelocity` which defines what is the most probable velocity of a car in given place. Given car state and target position, we can calculate all transition states of the car. Its mainly used to:
+
+* Check if we can pass another dead car before he spawns
+* Check if two cars will bump if they follow the same lane
+* Check if two cars will bump if any lane switch happens
+* Check the velocity of cars during the future bump to assess how bad it is for faster car (us)
+
+Starting from the first position, we check what is the expected velocity of the car, and check if its possible to issue a throttle that transform current velocity to target velocity. If its possible, we issue it and repeat the process with the newly calculated state. If its not possible, we issue 1 (or 0) throttle to reach target velocity as fast as possible. Its important in case of accelerating from a crash, or slowing down after bump. We stop after reaching target position.
+
+Its worth noting that the approximation is not 100% accurate, as we skip all drift angle validation during the process. We also use the top velocity of the car in given position, which may theoreticaly cause some inaccuracies. Anyway, It never happened that the prediction was mistaken by much enough to cause any decision miscalculation.
+
+####Velocity predictor
+`Velocity predictior` role is to save state of each car in order to predict their velocity in each point of the map. Its important not to feed the predictor with *dirty* data, which iclude:
+
+* Short time after car spawn (accelerating time)
+* Short time before car crash (it was surely going too fast)
+* Short time after moment of bump involving given car (the car could be hit and steal too high velocity.
+* Short time before car bump (the car could accelerate wrongly just to hit another car, providing too high expected velocity value)
+
+Predictior  saves only points, that provide *higher* velocity values than the previous ones. In other words, for each lane of the track, we save fastest point and *connect* them with lines. If we run another lap, and our current *connected line* crosses the old line created from old points, it means that the car started to drive faster, and we have to override old (slower) points with new data, until the new data gets slower. This way we save the fastest theoretical velocity of the car in given point. Once we are asked for a velocity in given point, we return the value that corresponds to value on the aforementioned line connecting points.
+
+If we do not have any data in given piece of track, we just save it without checking if its faster. 
+Also, if we ask for expected velocity on lane X, and we have only data on lane Y, we just take corresponding point on the lane we have data on, and take the velocity from there.
+
+Generally the top value method works, expecially with the method used to predict velocidy, when we dont immediately use expected velocity value, but check if there is a possible throttle to satisfy it.
+
+Surprisingly, it also works in most turbo cases. Lets say we have spoiled top velocity values with turbo data. Its really high, but if the car doesnt have turbo on, the only thing we will do is issuing throttle(1) commands, which actually is possible (as if its possible to go even faster with turbo, you can freely drive normal 1 throttle safely). The moment we have to brake below topspeed will happen in the same moment, as optimal entrance velocity is very similar to the case with and without trubo. On the other hand if the enemy really have used turbo there, our state predictor will treat 1 throttle as turbo-modified throttle, so the prediction will include turbo acceleration and will work very well.
+
+The only case that may not be managed too well, is when we have non-turbo data and enemy uses turbo there. We decided not to make any additional decision in this situation, as we assumed that after some number of laps, we will have quite accurate data. In other words, turbo usage of cars is very regular. It car used turbo in the past on straight X and straight Y only, its highly probable that he will only use it there (except for bumping which we don't care for as we don't record it). The predictor never failed for us (on finals and on trainings), so our assumptions turned out to be quite accurate.
+
 
